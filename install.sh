@@ -10,6 +10,6 @@ INSTALLDIR="/home/sergio/CULO";
 EXECDIR="/usr/local/bin"
 mkdir $INSTALLDIR;
 cp -r ./* $INSTALLDIR;
-ln -s $INSTALLDIR/dotcompare.pl /usr/local/bin/;
+ln -s $INSTALLDIR/dotcompare.pl /usr/local/bin/dotcompare;
 echo "dotcompare INSTALLED on $INSTALLDIR";
 
