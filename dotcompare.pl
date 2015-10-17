@@ -46,9 +46,8 @@ help(
 #===============================================================================
 
 # START TIME
-my $init_time  = localtime();
 my $start_time = time();
-print_status($init_time, $start_time, "PROGRAM STARTED");
+print_status(0, "PROGRAM STARTED");
 #--
 
 
@@ -80,10 +79,9 @@ print "}";
 
 
 # END TIME
-my $stop_time = localtime();
 my $end_time  = time();
 my $run_time = sprintf("%.2f", (($end_time - $start_time) / 3600));
-print_status($init_time, $run_time, "PROGRAM FINISHED");
+print_status($run_time, "PROGRAM FINISHED");
 #--
 
 
@@ -302,9 +300,9 @@ sub write_dot {
 
 #--------------------------------------------------------------------------------
 sub print_status {
-	my $current_time  = shift;
 	my $run_time      = shift;
 	my $string        = shift;
+	my $current_time  = localtime();
 
 	print STDERR "#\n####### $string #######\n", 
                  "# Local time: $current_time\n#\n";
