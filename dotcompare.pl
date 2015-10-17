@@ -45,6 +45,14 @@ help(
 # MAIN
 #===============================================================================
 
+# START TIME
+my $init_time  = localtime();
+my $start_time = time();
+print_status($init_time, $start_time, "PROGRAM STARTED");
+#--
+
+
+
 # READ DOT FILES
 @files = sort @files;
 foreach my $file (@files) {
@@ -52,30 +60,32 @@ foreach my $file (@files) {
 }
 
 # COLORS AND COUNTS
-my %groups = initialize_hash(\@files);
-my $colors = load_colors($color_profile);
-my $g_to_c = assign_colors($colors,\%groups);
-
+my %groups           = initialize_groups(\@files);
+my $colors           = load_colors($color_profile);
+my $groups_to_colors = assign_colors($colors,\%groups);
 
 # COUNT NODES AND INTERACTIONS IN GROUPS
 count_nodeints(\%nodes, \%groups, "nodes");
 count_nodeints(\%interactions, \%groups, "ints");
 
-print STDERR "GROUP\tNODES\tINTERACTIONS\n";
-foreach my $group (keys %groups) {
-	print STDERR $group, "\t", 
-	             $groups{$group}->{nodes}, "\t", 
-	             $groups{$group}->{ints}, "\n";
-}
-
+# RESULTS TO TERMINAL
+results_table(\%groups);
 
 # WRITE DOT FILE
 print "digraph ALL {\n";
-
-write_dot(\%nodes, $g_to_c, "NODES");
-write_dot(\%interactions, $g_to_c, "INTERACTIONS");
-
+write_dot(\%nodes, $groups_to_colors, "NODES");
+write_dot(\%interactions, $groups_to_colors, "INTERACTIONS");
 print "}";
+
+
+
+# END TIME
+my $stop_time = localtime();
+my $end_time  = time();
+my $run_time = sprintf("%.2f", (($end_time - $start_time) / 3600));
+print_status($init_time, $run_time, "PROGRAM FINISHED");
+#--
+
 
 #===============================================================================
 # FUNCTIONS 
@@ -133,7 +143,7 @@ sub clean_name {
 }
 
 #--------------------------------------------------------------------------------
-sub initialize_hash {
+sub initialize_groups {
 	
 	my $files_array = shift;
 	my %count_hash  = ();
@@ -254,6 +264,26 @@ sub count_nodeints {
 }
 
 #--------------------------------------------------------------------------------
+sub results_table {
+	my $groups = shift;
+
+	# REMEMBER: THIS FILENAME HAS TO CHANGE TO results_dotfilename.tbl
+	# DO NOT FORGET IT!
+
+	open my $fh, '>', "results.tbl"
+		or die "Can't create results.tbl\n";
+
+	print $fh "GROUP\tNODES\tINTERACTIONS\n";
+	foreach my $group (keys %{$groups}) {
+		print $fh    $group, "\t", 
+	                 $groups{$group}->{nodes}, "\t", 
+	                 $groups{$group}->{ints}, "\n";
+	}
+
+	return;
+}
+
+#--------------------------------------------------------------------------------
 sub write_dot {
 	my $in_data = shift;
 	my $g_to_c  = shift;
@@ -270,6 +300,22 @@ sub write_dot {
 	return;
 }
 
+#--------------------------------------------------------------------------------
+sub print_status {
+	my $current_time  = shift;
+	my $run_time      = shift;
+	my $string        = shift;
+
+	print STDERR "#\n####### $string #######\n", 
+                 "# Local time: $current_time\n#\n";
+
+	if ($string eq "PROGRAM FINISHED") {
+		print STDERR "# Job took ~ $run_time hours\n#\n";
+		# Add all the filenames here! 
+	}
+
+	return;
+}
 
 #--------------------------------------------------------------------------------
 sub help {
