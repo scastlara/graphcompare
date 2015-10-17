@@ -1,5 +1,4 @@
-# Color presets for dotcompare
-//SOFT
+SOFT
 #9196BF
 #9ECC4F
 #CA6347

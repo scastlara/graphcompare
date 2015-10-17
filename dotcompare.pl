@@ -10,7 +10,6 @@
 use warnings;
 use strict;
 use Getopt::Long;
-use Data::Dumper;
 use Algorithm::Combinatorics qw(combinations);
 
 
@@ -57,7 +56,7 @@ my %groups = initialize_hash(\@files);
 my $colors = load_colors($color_profile);
 my $g_to_c = assign_colors($colors,\%groups);
 
-print Dumper(\%nodes);
+
 # COUNT NODES AND INTERACTIONS IN GROUPS
 count_nodeints(\%nodes, \%groups, "nodes");
 count_nodeints(\%interactions, \%groups, "ints");
@@ -140,10 +139,7 @@ sub initialize_hash {
 	my %count_hash  = ();
 	my @g_list = ();
 
-	@{$files_array} = map {
-		clean_name($_);
-	} @{$files_array};
-
+	@{$files_array} = map {clean_name($_)} @{$files_array};
 
 	foreach my $idx (1..@{$files_array} ) {
 		my $iter = combinations($files_array, $idx);
