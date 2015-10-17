@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 #################################################################################
-#                               DOTCompare.pl									#
+#                               dotcompare.pl									#
 #################################################################################
 #
 # This script compares interactions in different dot files.
@@ -10,12 +10,16 @@
 use warnings;
 use strict;
 use Getopt::Long;
+use Data::Dumper;
 use Algorithm::Combinatorics qw(combinations);
 
 
 #===============================================================================
 # VARIABLES 
 #===============================================================================
+our $INSTALL_PATH  = "./"; # SET THIS TO YOUR INSTALLPATH
+
+
 my $dot_files     = "";
 my $color_profile = "SOFT";
 my $help          = "";
@@ -53,7 +57,7 @@ my %groups = initialize_hash(\@files);
 my $colors = load_colors($color_profile);
 my $g_to_c = assign_colors($colors,\%groups);
 
-
+print Dumper(\%nodes);
 # COUNT NODES AND INTERACTIONS IN GROUPS
 count_nodeints(\%nodes, \%groups, "nodes");
 count_nodeints(\%interactions, \%groups, "ints");
@@ -78,13 +82,68 @@ print "}";
 # FUNCTIONS 
 #===============================================================================
 #--------------------------------------------------------------------------------
+sub read_dot {
+	my $dot          = shift;
+	my $nodes        = shift;
+	my $interactions = shift;
+	my $dot_symbol   = clean_name($dot);
+
+	open my $dot_fh, "<", $dot
+		or die "\n\n## ERROR\n", 
+		       "Can't open dot file $dot: $!\n";
+
+	while (<$dot_fh>) {
+		chomp;
+		next if ($_ =~ m/graph/ or $_=~ m/node/ or $_=~ m/{|}/);
+
+		if ($_ =~ m/\->/g) { 
+		# interactions "node1"->"node2"->"node3"
+			$_ =~ s/\"//g;
+			$_ =~ s/\;//g;
+			$_ =~ s/\s?//g;
+			$_ =~ s/\[.+//gi;
+
+			my @genes = split /\->/, $_;
+
+			add_nodes(\@genes, $nodes, $dot_symbol);
+			add_interactions(\@genes,$interactions,$dot_symbol);
+			
+		} else { 
+		# just defined nodes
+			if ($_ =~ m/\"(\w+)\"/) {
+				my @genes = ($1);
+				add_nodes(\@genes, $nodes, $dot_symbol);
+			} # if match
+		
+		} # if node or interaction
+
+	} # while file
+
+	return;
+}
+
+#--------------------------------------------------------------------------------
+sub clean_name {
+	my $file_name = shift;
+	my $cleaned   = $file_name;
+
+	$cleaned =~ s/\.dot//g; 
+	$cleaned =~ s/.+\///; 
+
+	return($cleaned);
+}
+
+#--------------------------------------------------------------------------------
 sub initialize_hash {
 	
 	my $files_array = shift;
 	my %count_hash  = ();
 	my @g_list = ();
 
-	@{$files_array} = map {s/\.dot//g; $_} @{$files_array};
+	@{$files_array} = map {
+		clean_name($_);
+	} @{$files_array};
+
 
 	foreach my $idx (1..@{$files_array} ) {
 		my $iter = combinations($files_array, $idx);
@@ -108,7 +167,11 @@ sub load_colors {
 	my @colors  = ();
 	local $/ = "//";
 
-	while (<DATA>) {
+	open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
+		or die "Can't open $INSTALL_PATH/data/colors.txt\n", 
+		       "Are you sure your install path is correct?\n";
+
+	while (<$fh>) {
 		chomp;
 		my ($name, @prof_colors) = split /\n/;
 		next unless $profile eq $name;
@@ -143,51 +206,6 @@ sub assign_colors {
 
 }
 
-
-#--------------------------------------------------------------------------------
-sub read_dot {
-	my $dot          = shift;
-	my $nodes        = shift;
-	my $interactions = shift;
-	my $dot_symbol   = $dot;
-	$dot_symbol =~ s/\.dot//;
-	open my $dot_fh, "<", $dot
-		or die "\n\n## ERROR\n", 
-		       "Can't open dot file $dot: $!\n";
-
-	while (<$dot_fh>) {
-		chomp;
-		next if ($_ =~ m/graph/ or $_=~ m/node/ or $_=~ m/{|}/);
-
-		if ($_ =~ m/\->/g) { # interactions "node1"->"node2"->"node3"
-			$_ =~ s/\"//g;
-			$_ =~ s/\;//g;
-			$_ =~ s/\s?//g;
-			$_ =~ s/\[.+//gi;
-
-			my @genes = split /\->/, $_;
-
-			add_nodes(\@genes, $nodes, $dot_symbol);
-			add_interactions(\@genes,$interactions,$dot_symbol);
-			
-		} else { # just defined nodes
-			
-			if ($_ =~ m/\"(\w+)\"/) {
-				my @genes = ($1);
-				add_nodes(
-					\@genes, 
-					$nodes, 
-					$dot_symbol
-				);
-			} # if match
-		
-		} # if node or interaction
-
-	} # while file
-
-	return;
-}
-
 #--------------------------------------------------------------------------------
 sub add_nodes {
 	my $gene_list  = shift;
@@ -204,7 +222,6 @@ sub add_nodes {
 	}
 
 	return;
-
 }
 
 #--------------------------------------------------------------------------------
@@ -290,39 +307,3 @@ EOF
 
 
 
-
-
-
-__DATA__
-SOFT
-#9196BF
-#9ECC4F
-#CA6347
-#666A3B
-#B559B8
-#5E384C
-#95CBAB
-//HARD
-#95E2FA
-#FC1EE2
-#FCA641
-#111D19
-#477205
-#4EF6BC
-#3CC1B1
-//LARGE
-#9766D6
-#71CE48
-#CD4D33
-#7DB4C0
-#4E3959
-#4A653A
-#71D39C
-#CB95B4
-#C38C3D
-#673829
-#C64B6F
-#C4BB97
-#C6CA4F
-#6D7CC2
-#CA4AB5
