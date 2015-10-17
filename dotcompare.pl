@@ -138,22 +138,20 @@ sub clean_name {
 	$cleaned =~ s/.+\///; 
 
 	return($cleaned);
-}
+} 
 
 #--------------------------------------------------------------------------------
 sub initialize_groups {
-	
 	my $files_array = shift;
 	my %count_hash  = ();
-	my @g_list = ();
 
 	@{$files_array} = map {clean_name($_)} @{$files_array};
 
 	foreach my $idx (1..@{$files_array} ) {
 		my $iter = combinations($files_array, $idx);
 
-		while (my $c = $iter->next) {
-			my @sorted = sort @$c;
+		while (my $combi = $iter->next) {
+			my @sorted = sort @$combi;
 			$count_hash{join ":",@sorted}->{nodes} = 0;
 			$count_hash{join ":",@sorted}->{ints} = 0;
 		} # while
@@ -162,7 +160,7 @@ sub initialize_groups {
 
 	return (%count_hash);
 
-} # sub initialize_hash
+} 
 
 
 #--------------------------------------------------------------------------------
@@ -207,7 +205,6 @@ sub assign_colors {
 	}
 
 	return(\%g_to_c);
-
 }
 
 #--------------------------------------------------------------------------------
@@ -379,7 +376,7 @@ EOF
 
 	print "\n\n### ERROR\n", $err, "\n\n" if $err;
 	exit(0);
-} # sub help
+}
 
 
 
