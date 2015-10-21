@@ -16,8 +16,10 @@ use Algorithm::Combinatorics qw(combinations);
 #===============================================================================
 # VARIABLES 
 #===============================================================================
-our $INSTALL_PATH  = "./"; # SET THIS TO YOUR INSTALLPATH
+our $INSTALL_PATH  = get_installpath(); 
 
+die "Install Path is not defined! Add it under __DATA__ in the file dotcompare.pl\n\n"
+	unless $INSTALL_PATH;
 
 my $dot_files     = "";
 my $color_profile = "SOFT";
@@ -313,6 +315,20 @@ sub print_status {
 }
 
 #--------------------------------------------------------------------------------
+sub get_installpath {
+	my $path = "";
+
+	while (<DATA>) {
+		chomp;
+		next unless /[^\s]/;
+		$path = $_;
+		print "$path\n";
+	}
+
+	return($path);
+}
+
+#--------------------------------------------------------------------------------
 sub help {
 	my $err = shift;
 	print STDERR << 'EOF';
@@ -380,3 +396,4 @@ EOF
 
 
 
+__DATA__
