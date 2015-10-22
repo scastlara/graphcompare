@@ -25,6 +25,7 @@ my $dot_files     = "";
 my $color_profile = "SOFT";
 my $help          = "";
 my $debug         = "";
+my $out_name      = "STDOUT";
 my %nodes         = ();
 my %interactions  = ();
 
@@ -32,6 +33,7 @@ my $options = GetOptions (
 	'help'     => \$help,
 	"files=s"  => \$dot_files,    
 	"colors=s" => \$color_profile,
+	"out=s"    => \$out_name,
 	"debug"    => \$debug
 );
 
@@ -74,10 +76,19 @@ count_nodeints(\%interactions, $groups, "ints");
 results_table($groups);
 
 # WRITE DOT FILE
-print "digraph ALL {\n";
-write_dot(\%nodes, $groups_to_colors, "NODES");
-write_dot(\%interactions, $groups_to_colors, "INTERACTIONS");
-print "}";
+my $out_fh;
+
+if ($out_name eq "STDOUT") {
+	$out_fh =\*STDOUT
+} else {
+	open $out_fh, ">", $out_name
+		or die "Can't write to $out_name : $!\n";
+}
+
+print $out_fh "digraph ALL {\n";
+write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $out_fh "}";
 
 
 # END TIME
@@ -289,16 +300,17 @@ sub results_table {
 
 #--------------------------------------------------------------------------------
 sub write_dot {
+	my $fhandle = shift;
 	my $in_data = shift;
 	my $g_to_c  = shift;
 	my $string  = shift;
 
-	print "// $string\n";
+	print $fhandle "// $string\n";
 
 	foreach my $datum (keys %{ $in_data }) {
-		print "\t", $datum, "\t", 
-		      "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t", 
-		      "// $in_data->{$datum}", "\n";
+		print $fhandle "\t", $datum, "\t", 
+		               "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t", 
+		               "// $in_data->{$datum}", "\n";
 	}
 
 	return;
