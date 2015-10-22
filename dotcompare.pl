@@ -24,6 +24,7 @@ die "Install Path is not defined! Add it under __DATA__ in the file dotcompare.p
 my $dot_files     = "";
 my $color_profile = "SOFT";
 my $help          = "";
+my $debug         = "";
 my %nodes         = ();
 my %interactions  = ();
 
@@ -31,6 +32,7 @@ my $options = GetOptions (
 	'help'     => \$help,
 	"files=s"  => \$dot_files,    
 	"colors=s" => \$color_profile,
+	"debug"    => \$debug
 );
 
 my @files = split /,/, $dot_files;
@@ -53,7 +55,6 @@ print_status(0, "PROGRAM STARTED");
 #--
 
 
-
 # READ DOT FILES
 @files = sort @files;
 foreach my $file (@files) {
@@ -61,16 +62,16 @@ foreach my $file (@files) {
 }
 
 # COLORS AND COUNTS
-my %groups           = initialize_groups(\@files);
+my $groups           = initialize_groups(\@files);
 my $colors           = load_colors($color_profile);
-my $groups_to_colors = assign_colors($colors,\%groups);
+my $groups_to_colors = assign_colors($colors,$groups);
 
 # COUNT NODES AND INTERACTIONS IN GROUPS
-count_nodeints(\%nodes, \%groups, "nodes");
-count_nodeints(\%interactions, \%groups, "ints");
+count_nodeints(\%nodes, $groups, "nodes");
+count_nodeints(\%interactions, $groups, "ints");
 
 # RESULTS TO TERMINAL
-results_table(\%groups);
+results_table($groups);
 
 # WRITE DOT FILE
 print "digraph ALL {\n";
@@ -79,12 +80,18 @@ write_dot(\%interactions, $groups_to_colors, "INTERACTIONS");
 print "}";
 
 
-
 # END TIME
 my $end_time  = time();
 my $run_time = sprintf("%.2f", (($end_time - $start_time) / 3600));
 print_status($run_time, "PROGRAM FINISHED");
 #--
+
+if ($debug) {
+	use Data::Dumper;
+	print STDERR "GROUPS:  ", Dumper($groups);
+	print STDERR "COLORS:  ", Dumper($colors);
+	print STDERR "GROUPS-COLORS:  ", Dumper($groups_to_colors);
+}
 
 
 #===============================================================================
@@ -160,7 +167,7 @@ sub initialize_groups {
 
 	} # foreach
 
-	return (%count_hash);
+	return (\%count_hash);
 
 } 
 
@@ -273,8 +280,8 @@ sub results_table {
 	print $fh "GROUP\tNODES\tINTERACTIONS\n";
 	foreach my $group (keys %{$groups}) {
 		print $fh    $group, "\t", 
-	                 $groups{$group}->{nodes}, "\t", 
-	                 $groups{$group}->{ints}, "\n";
+	                 $groups->{$group}->{nodes}, "\t", 
+	                 $groups->{$group}->{ints}, "\n";
 	}
 
 	return;
@@ -322,7 +329,6 @@ sub get_installpath {
 		chomp;
 		next unless /[^\s]/;
 		$path = $_;
-		print "$path\n";
 	}
 
 	return($path);
@@ -397,3 +403,4 @@ EOF
 
 
 __DATA__
+./
