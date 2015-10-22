@@ -18,7 +18,7 @@ use Cwd 'abs_path';
 #===============================================================================
 our $INSTALL_PATH  = get_installpath(); 
 
-die "Error trying to find Installpath through \$0\n\n"
+error("Error trying to find Installpath through \$0")
 	unless $INSTALL_PATH;
 
 my $dot_files     = "";
@@ -43,7 +43,7 @@ my @files = split /,/, $dot_files;
 
 help() if $help;
 
-help(
+error(
 	"\nYou have to introduce at least 2 dot files separated by commas \",\"\n\n". 
     "\tperl DOTCompare.pl -f file1,file2,file3..."
     ) unless @files >= 2;
@@ -116,8 +116,8 @@ sub read_dot {
 	my $dot_symbol   = clean_name($dot);
 
 	open my $dot_fh, "<", $dot
-		or die "\n\n## ERROR\n", 
-		       "Can't open dot file $dot: $!\n";
+		or error("\n\n## ERROR\n". 
+		       "Can't open dot file $dot: $!");
 
 	while (<$dot_fh>) {
 		chomp;
@@ -190,8 +190,8 @@ sub load_colors {
 	local $/ = "//";
 
 	open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
-		or die "Can't open $INSTALL_PATH/data/colors.txt\n", 
-		       "Are you sure your install path is correct?\n";
+		or error("Can't open $INSTALL_PATH/data/colors.txt\n". 
+		       "Are you sure your install path is correct?");
 
 	while (<$fh>) {
 		chomp;
@@ -200,11 +200,11 @@ sub load_colors {
 		@colors = @prof_colors;
 	}
 
-	help(
+	error(
 		"\nYour profile \"$profile\" doesn't exist!\n".
 		"Choose one of the following:\n\n". 
    		"\t- SOFT\n".
-   		"\t- HARD\n\n"
+   		"\t- HARD\n"
     ) unless @colors;
 
    	return \@colors;
@@ -216,7 +216,7 @@ sub assign_colors {
 	my $groups = shift;
 	my %g_to_c = ();
 
-	help("There are more groups than colors!")
+	error("There are more groups than colors!")
 		if (keys %{$groups} > @{$colors});
 
 	
@@ -286,7 +286,7 @@ sub results_table {
 	# DO NOT FORGET IT!
 
 	open my $fh, '>', "results.tbl"
-		or die "Can't create results.tbl\n";
+		or error("Can't create results.tbl : $!");
 
 	print $fh "GROUP\tNODES\tINTERACTIONS\n";
 	foreach my $group (keys %{$groups}) {
@@ -349,7 +349,7 @@ sub get_fh {
 		$out_fh =\*STDOUT
 	} else {
 		open $out_fh, ">", $filename
-			or die "Can't write to $filename : $!\n";
+			or error("Can't write to $filename : $!");
 	}
 
 	return($out_fh);
@@ -380,9 +380,17 @@ sub print_venn {
 	}
 	print Dumper(\@keywords);
 }
+
+#--------------------------------------------------------------------------------
+sub error {
+	my $string = shift;
+
+	die "$string\n",
+	    "\nUse dotcompare -h to get help.\n\n";
+}
+
 #--------------------------------------------------------------------------------
 sub help {
-	my $err = shift;
 	print STDERR << 'EOF';
 
 
@@ -443,7 +451,6 @@ sub help {
 EOF
 ;
 
-	print "\n\n### ERROR\n", $err, "\n\n" if $err;
 	exit(0);
 }
 
