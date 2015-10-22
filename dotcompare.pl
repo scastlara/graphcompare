@@ -11,20 +11,21 @@ use warnings;
 use strict;
 use Getopt::Long;
 use Algorithm::Combinatorics qw(combinations);
-
+use Cwd 'abs_path';
 
 #===============================================================================
 # VARIABLES 
 #===============================================================================
 our $INSTALL_PATH  = get_installpath(); 
 
-die "Install Path is not defined! Add it under __DATA__ in the file dotcompare.pl\n\n"
+die "Error trying to find Installpath through \$0\n\n"
 	unless $INSTALL_PATH;
 
 my $dot_files     = "";
 my $color_profile = "SOFT";
 my $help          = "";
 my $debug         = "";
+my $venn          = "";
 my $out_name      = "STDOUT";
 my %nodes         = ();
 my %interactions  = ();
@@ -34,6 +35,7 @@ my $options = GetOptions (
 	"files=s"  => \$dot_files,    
 	"colors=s" => \$color_profile,
 	"out=s"    => \$out_name,
+	"venn=s"   => \$venn,
 	"debug"    => \$debug
 );
 
@@ -50,6 +52,7 @@ help(
 #===============================================================================
 # MAIN
 #===============================================================================
+
 
 # START TIME
 my $start_time = time();
@@ -78,11 +81,15 @@ results_table($groups);
 # WRITE DOT FILE
 my $out_fh = get_fh($out_name);
 
-print $out_fh "digraph ALL {\n";
-write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
-write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-print $out_fh "}";
+#print $out_fh "digraph ALL {\n";
+#write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
+#write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+#print $out_fh "}";
 
+
+if ($venn) {
+	print_venn($venn, $groups);
+}
 
 # END TIME
 my $end_time  = time();
@@ -328,14 +335,8 @@ sub print_status {
 
 #--------------------------------------------------------------------------------
 sub get_installpath {
-	my $path = "";
-
-	while (<DATA>) {
-		chomp;
-		next unless /[^\s]/;
-		$path = $_;
-	}
-
+	my $path = abs_path($0);
+	$path =~ s/\/dotcompare\.pl$/\//;
 	return($path);
 }
 
@@ -354,6 +355,31 @@ sub get_fh {
 	return($out_fh);
 }
 
+#--------------------------------------------------------------------------------
+sub print_venn {
+	my $out_file      = shift;
+	my $groups        = shift;
+	my $venn_template = "";
+	my @keywords      = ();
+	my @group_keys    = keys %{$groups}; 
+	use Data::Dumper;
+
+	if (@group_keys == 3) {
+		# We have 2 dotfiles -> venn with 2 circles
+		$venn_template = "$INSTALL_PATH/data/v2_template.svg";
+		push @keywords, "G11n", "G11i", "G12n", "G12i", "G22n", "G22i";
+	} elsif (@group_keys == 6) {
+		# We have 3 dotfiles -> venn with 3 circles
+		$venn_template = "$INSTALL_PATH/data/v3_template.svg";
+	} else {
+		print STDERR "You have more than 3 dot files, ", 
+		             "I won't draw any venn diagram.\n", 
+		             "I suggest you to use the option -t to print a ",
+		             "table with the results\n";
+		return;
+	}
+	print Dumper(\@keywords);
+}
 #--------------------------------------------------------------------------------
 sub help {
 	my $err = shift;
