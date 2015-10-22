@@ -76,14 +76,7 @@ count_nodeints(\%interactions, $groups, "ints");
 results_table($groups);
 
 # WRITE DOT FILE
-my $out_fh;
-
-if ($out_name eq "STDOUT") {
-	$out_fh =\*STDOUT
-} else {
-	open $out_fh, ">", $out_name
-		or die "Can't write to $out_name : $!\n";
-}
+my $out_fh = get_fh($out_name);
 
 print $out_fh "digraph ALL {\n";
 write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
@@ -347,6 +340,21 @@ sub get_installpath {
 }
 
 #--------------------------------------------------------------------------------
+sub get_fh {
+	my $filename = shift;
+	my $out_fh;
+
+	if ($filename eq "STDOUT") {
+		$out_fh =\*STDOUT
+	} else {
+		open $out_fh, ">", $filename
+			or die "Can't write to $filename : $!\n";
+	}
+
+	return($out_fh);
+}
+
+#--------------------------------------------------------------------------------
 sub help {
 	my $err = shift;
 	print STDERR << 'EOF';
@@ -373,6 +381,7 @@ sub help {
 ||                                                ||
 ||      --dot filename.dot                        ||
 ||              Path and name of the output DOT.  ||
+||              Default: STDOUT                   ||
 ||                                                ||
 ||  	OPTIONAL:                                 ||
 ||      --help                                    ||
