@@ -14,7 +14,7 @@ use Algorithm::Combinatorics qw(combinations);
 use Cwd 'abs_path';
 
 #===============================================================================
-# VARIABLES 
+# VARIABLES AND OPTIONS
 #===============================================================================
 our $INSTALL_PATH  = get_installpath(); 
 
@@ -22,10 +22,10 @@ error("Error trying to find Installpath through \$0")
 	unless $INSTALL_PATH;
 
 my $dot_files     = "";
-my $color_profile = "SOFT";
 my $help          = "";
 my $debug         = "";
 my $venn          = "";
+my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
 my %interactions  = ();
@@ -43,10 +43,13 @@ my @files = split /,/, $dot_files;
 
 help() if $help;
 
-error(
-	"\nYou have to introduce at least 2 dot files separated by commas \",\"\n\n". 
-    "\tperl DOTCompare.pl -f file1,file2,file3..."
-    ) unless @files >= 2;
+unless (@files >= 2) {
+	error("\n" .
+		  'You have to introduce at least 2 dot files ' .
+		  'separated by commas.' . "\n\n\t" . 
+          'perl DOTCompare.pl -f file1,file2,file3...'
+          );
+}
 
 
 #===============================================================================
@@ -360,8 +363,8 @@ sub print_venn {
 	my $out_file      = shift;
 	my $groups        = shift;
 	my $filenames     = shift;
-	my $venn_template = "";
 	my @group_keys    = keys %{$groups}; 
+	my $venn_template = "";
 
 	my ($grp_to_alias,
 	    $alias_to_grp) = assign_aliases($filenames, \@group_keys);
@@ -369,7 +372,7 @@ sub print_venn {
 	if (@group_keys == 3) {
 		# We have 2 dotfiles -> venn with 2 circles
 		$venn_template = "$INSTALL_PATH/data/v2_template.svg";
-	} elsif (@group_keys == 6) {
+	} elsif (@group_keys == 7) {
 		# We have 3 dotfiles -> venn with 3 circles
 		$venn_template = "$INSTALL_PATH/data/v3_template.svg";
 	} else {
@@ -399,9 +402,9 @@ sub assign_aliases {
 
 	foreach my $group (@{ $group_names }) {
 		next unless $group =~ /\:/;
-		my @grp_parts = split /\:/, $group;
-		my @aliases = map { $grp_to_alias{$_} } @grp_parts;
-		my $alias = join(":", @aliases);
+		my @grp_parts      = split /\:/, $group;
+		my @aliases        = map { $grp_to_alias{$_} } @grp_parts;
+		my $alias          = join(":", @aliases);
 		
 		$grp_to_alias{$group} = $alias;
 		$alias_to_grp{$alias} = $group;
