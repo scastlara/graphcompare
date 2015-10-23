@@ -336,7 +336,7 @@ sub print_status {
 #--------------------------------------------------------------------------------
 sub get_installpath {
 	my $path = abs_path($0);
-	$path =~ s/\/dotcompare\.pl$/\//;
+	$path =~ s/(.+)\/.*?$/$1\//;
 	return($path);
 }
 
@@ -362,9 +362,9 @@ sub print_venn {
 	my $filenames     = shift;
 	my $venn_template = "";
 	my @group_keys    = keys %{$groups}; 
-	
 
-	my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
+	my ($grp_to_alias,
+	    $alias_to_grp) = assign_aliases($filenames, \@group_keys);
 
 	if (@group_keys == 3) {
 		# We have 2 dotfiles -> venn with 2 circles
