@@ -88,7 +88,7 @@ my $out_fh = get_fh($out_name);
 
 
 if ($venn) {
-	print_venn($venn, $groups);
+	print_venn($venn, $groups, \@files);
 }
 
 # END TIME
@@ -359,15 +359,16 @@ sub get_fh {
 sub print_venn {
 	my $out_file      = shift;
 	my $groups        = shift;
+	my $filenames     = shift;
 	my $venn_template = "";
-	my @keywords      = ();
 	my @group_keys    = keys %{$groups}; 
-	use Data::Dumper;
+	
+
+	my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
 
 	if (@group_keys == 3) {
 		# We have 2 dotfiles -> venn with 2 circles
 		$venn_template = "$INSTALL_PATH/data/v2_template.svg";
-		push @keywords, "G11n", "G11i", "G12n", "G12i", "G22n", "G22i";
 	} elsif (@group_keys == 6) {
 		# We have 3 dotfiles -> venn with 3 circles
 		$venn_template = "$INSTALL_PATH/data/v3_template.svg";
@@ -378,7 +379,35 @@ sub print_venn {
 		             "table with the results\n";
 		return;
 	}
-	print Dumper(\@keywords);
+	
+
+}
+
+#--------------------------------------------------------------------------------
+sub assign_aliases {
+	my $principal_grps = shift;
+	my $group_names    = shift;
+	my @group_aliases  = qw(GR1 GR2 GR3);
+	my %grp_to_alias   = ();
+	my %alias_to_grp   = ();
+
+	foreach my $i (0..$#{$principal_grps}) {
+		$grp_to_alias{$principal_grps->[$i]} = $group_aliases[$i];
+		$alias_to_grp{$group_aliases[$i]}    = $principal_grps->[$i];
+
+	}
+
+	foreach my $group (@{ $group_names }) {
+		next unless $group =~ /\:/;
+		my @grp_parts = split /\:/, $group;
+		my @aliases = map { $grp_to_alias{$_} } @grp_parts;
+		my $alias = join(":", @aliases);
+		
+		$grp_to_alias{$group} = $alias;
+		$alias_to_grp{$alias} = $group;
+	}
+
+	return(\%grp_to_alias, \%alias_to_grp);
 }
 
 #--------------------------------------------------------------------------------
