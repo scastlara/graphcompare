@@ -79,14 +79,15 @@ unless (@files >= 2) {
 #===============================================================================
 
 
-# START TIME
-my $start_time = time();
+# START REPORT
+my $start_time   = time();
+my $current_time = localtime();
 print STDERR "\nPROGRAM STARTED\n",
              "\tVersion:        $VERSION\n",
              "\tInstallpath:    $INSTALL_PATH\n",
              "\tColor Profile:  $color_profile\n",
-             "\tFiles:          ", join("\n\t\t\t", @files), "\n\n";
-print_status(0, "PROGRAM STARTED", 0);
+             "\tFiles:          ", join("\n\t\t\t", @files), "\n\n",
+             "\tStart time:     $current_time\n\n";
 #--
 
 # READ DOT FILES
@@ -120,12 +121,15 @@ if ($venn) {
     print_venn($venn, $groups, \@files);
 }
 
-# END TIME
+# END REPORT
 my $end_time  = time();
+$current_time = localtime();
 my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 3600));
 my @out_files = grep {$_} ($out_name, $table, $venn, $cytoscape);
-print STDERR "PROGRAM FINISHED\n";
-print_status($run_time, "PROGRAM FINISHED", \@out_files);
+print STDERR "PROGRAM FINISHED\n",
+             "\tOutput files:\t", join("\n\t\t\t", @out_files), "\n\n",
+             "\tEnd time:\t$current_time\n\n",
+             "\tJob took ~ $run_time hours\n\n"; 
 #--
 
 if ($debug) {
@@ -360,8 +364,7 @@ sub print_status {
     print STDERR "\tLocal time:     $current_time\n\n";
 
     if ($string eq "PROGRAM FINISHED") {
-        print STDERR "\tOutput files:\t", join("\n\t\t\t", @{$outfiles}), "\n\n",
-                     "\tJob took ~ $run_time hours\n\n";
+        
                      
     }
 
