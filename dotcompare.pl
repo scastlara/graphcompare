@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #################################################################################
-#                               dotcompare.pl                                   #
+#                               dotcompare                                      #
 #################################################################################
 # Copyright (C) 2015 - Sergio CASTILLO LARA
 #
@@ -65,10 +65,9 @@ my @files = split /,/, $dot_files;
 
 help() if $help;
 
-unless (@files >= 2) {
+unless (@files > 0) {
     error("\n" .
-          'You have to introduce at least 2 dot files ' .
-          'separated by commas.' . "\n\n\t" . 
+          "You have to introduce at least 1 dot file \n\n\t" . 
           'perl DOTCompare.pl -f file1,file2,file3...'
           );
 }
@@ -82,11 +81,11 @@ unless (@files >= 2) {
 my $start_time   = time();
 my $current_time = localtime();
 print STDERR "\nPROGRAM STARTED\n",
-             "\tVersion:        $VERSION\n",
-             "\tInstallpath:    $INSTALL_PATH\n",
-             "\tColor Profile:  $color_profile\n",
-             "\tFiles:          ", join("\n\t\t\t", @files), "\n\n",
-             "\tStart time:     $current_time\n\n";
+             "\tVersion         $VERSION\n",
+             "\tInstallpath     $INSTALL_PATH\n",
+             "\tColor Profile   $color_profile\n",
+             "\tFiles           ", join("\n\t\t\t", @files), "\n\n",
+             "\tStart time      $current_time\n\n";
 #--
 
 # READ DOT FILES
@@ -106,10 +105,10 @@ count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
 my $out_fh = get_fh($out_name);
-#print $out_fh "digraph ALL {\n";
-#write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
-#write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-#print $out_fh "}";
+print $out_fh "digraph ALL {\n";
+write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $out_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -133,8 +132,8 @@ $current_time = localtime();
 my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 3600));
 my @out_files = grep {$_} ($out_name, $table, $venn, $cytoscape);
 print STDERR "PROGRAM FINISHED\n",
-             "\tOutput files:\t", join("\n\t\t\t", @out_files), "\n\n",
-             "\tEnd time:\t$current_time\n\n",
+             "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
+             "\tEnd time \t$current_time\n\n",
              "\tJob took ~ $run_time hours\n\n"; 
 #--
 
@@ -453,11 +452,11 @@ sub create_json {
     my $json = "nodes: [\n";
 
     foreach my $node (keys %{$nodes}) {
-        $json .= "\t{ data: { id: '$node', name: '$node', colorExp: \'$grps_to_colors->{ $nodes->{$node} }\'}},\n";
+        $json .= "\t{ data: { id: '$node', name: '$node', colorExp: " . 
+                 "\'$grps_to_colors->{ $nodes->{$node} }\'}},\n";
     }
 
-    $json .= "],\n".
-             "edges: [\n";
+    $json .= "],\n edges: [\n";
 
     foreach my $int (keys %{$interactions}) {
         my ($source, $target) = split /\->/, $int;
@@ -532,20 +531,20 @@ DESCRIPTION     This script compares two or more DOT files
                                    
 OPTIONS
 
-    --help          Shows this help.                       
-    --files         <file#,file#> REQUIRED. Input DOT files, separated by commas.            
-    --dot           <filename.dot> Creates a merged dot file. Default to STDOUT.
-    --colors        <profile> Color profile to use: SOFT (default), HARD or LARGE.
-    --venn          <filename.svg> Creates venn diagram with the results. 
-    --cyt           <filename.html> Writes html file with the graph using cytoscape.js
+    --help      Shows this help.                       
+    --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
+    --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
+    --colors    <profile> Color profile to use: SOFT (default), HARD or LARGE.
+    --venn      <filename.svg> Creates venn diagram with the results. 
+    --cyt       <filename.html> Writes html file with the graph using cytoscape.js
 
 EXAMPLE                                      
                                                 
-    dotcompare --files file1.dot,file2.dot \\  
-               --colors HARD               \\   
-               --dot output.dot            \\               
-               --venn venn.svg             \\  
-               --cyt graph.html               
+    dotcompare  --files file1.dot,file2.dot \\  
+                --colors HARD               \\   
+                --dot output.dot            \\               
+                --venn venn.svg             \\  
+                --cyt graph.html               
                                               
 BUGS
     Report bugs to Sergio CASTILLO LARA: $MAIL

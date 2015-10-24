@@ -1,0 +1,4 @@
+GROUP	NODES	INTERACTIONS
+RPgenes-x-alldbs_graph_skeleton	469	1254
+RPgenes-x-alldbs_graph_skeleton:RPgenes-x-sparser_all_graph_skeleton	69	23
+RPgenes-x-sparser_all_graph_skeleton	4	10

@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+    
+<head>
+    <title>GRAPH</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/cytoscape.min.js"></script>
+
+     <script type="text/javascript">
+        $(document).ready(function(){
+            'use strict';
+        
+            var graphelements = {
+nodes: [
+	{ data: { id: 'ROM1', name: 'ROM1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RPE65', name: 'RPE65', colorExp: '#9ECC4F'}},
+	{ data: { id: 'ATF4', name: 'ATF4', colorExp: '#9196BF'}},
+	{ data: { id: 'EMC1', name: 'EMC1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'TULP1', name: 'TULP1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'MAK', name: 'MAK', colorExp: '#9ECC4F'}},
+	{ data: { id: 'DHDDS', name: 'DHDDS', colorExp: '#9ECC4F'}},
+	{ data: { id: 'C2ORF71', name: 'C2ORF71', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RBP3', name: 'RBP3', colorExp: '#9ECC4F'}},
+	{ data: { id: 'USH2A', name: 'USH2A', colorExp: '#9ECC4F'}},
+	{ data: { id: 'NRL', name: 'NRL', colorExp: '#9ECC4F'}},
+	{ data: { id: 'C8ORF37', name: 'C8ORF37', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RP2', name: 'RP2', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PDE6B', name: 'PDE6B', colorExp: '#9ECC4F'}},
+	{ data: { id: 'ZNF513', name: 'ZNF513', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PRPF6', name: 'PRPF6', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RHO', name: 'RHO', colorExp: '#9ECC4F'}},
+	{ data: { id: 'LRAT', name: 'LRAT', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CA4', name: 'CA4', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RP9', name: 'RP9', colorExp: '#9ECC4F'}},
+	{ data: { id: 'ABCA4', name: 'ABCA4', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CRB1', name: 'CRB1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'SP4', name: 'SP4', colorExp: '#9196BF'}},
+	{ data: { id: 'PRPH2', name: 'PRPH2', colorExp: '#9ECC4F'}},
+	{ data: { id: 'BEST1', name: 'BEST1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'SEMA4A', name: 'SEMA4A', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CEP290', name: 'CEP290', colorExp: '#9196BF'}},
+	{ data: { id: 'RLBP1', name: 'RLBP1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'MERTK', name: 'MERTK', colorExp: '#9ECC4F'}},
+	{ data: { id: 'GUCA1B', name: 'GUCA1B', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RAB8A', name: 'RAB8A', colorExp: '#9196BF'}},
+	{ data: { id: 'PDE6G', name: 'PDE6G', colorExp: '#9ECC4F'}},
+	{ data: { id: 'BCL2L11', name: 'BCL2L11', colorExp: '#9196BF'}},
+	{ data: { id: 'PRPF8', name: 'PRPF8', colorExp: '#9ECC4F'}},
+	{ data: { id: 'KIAA1549', name: 'KIAA1549', colorExp: '#9ECC4F'}},
+	{ data: { id: 'H3F3AP3', name: 'H3F3AP3', colorExp: '#9196BF'}},
+	{ data: { id: 'RGR', name: 'RGR', colorExp: '#9ECC4F'}},
+	{ data: { id: 'EYS', name: 'EYS', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RPE', name: 'RPE', colorExp: '#9196BF'}},
+	{ data: { id: 'IMPDH1', name: 'IMPDH1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RP1', name: 'RP1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PRCD', name: 'PRCD', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PROM1', name: 'PROM1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'TNF', name: 'TNF', colorExp: '#9196BF'}},
+	{ data: { id: 'GPR125', name: 'GPR125', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RPGR', name: 'RPGR', colorExp: '#9ECC4F'}},
+	{ data: { id: 'TTC8', name: 'TTC8', colorExp: '#9ECC4F'}},
+	{ data: { id: 'FSCN2', name: 'FSCN2', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CRX', name: 'CRX', colorExp: '#9ECC4F'}},
+	{ data: { id: 'FAM161A', name: 'FAM161A', colorExp: '#9ECC4F'}},
+	{ data: { id: 'SPATA7', name: 'SPATA7', colorExp: '#9ECC4F'}},
+	{ data: { id: 'MVK', name: 'MVK', colorExp: '#9ECC4F'}},
+	{ data: { id: 'NR2E3', name: 'NR2E3', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PDE6A', name: 'PDE6A', colorExp: '#9ECC4F'}},
+	{ data: { id: 'SNRNP200', name: 'SNRNP200', colorExp: '#9ECC4F'}},
+	{ data: { id: 'IDH3B', name: 'IDH3B', colorExp: '#9ECC4F'}},
+	{ data: { id: 'SAG', name: 'SAG', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CNGA1', name: 'CNGA1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'OFD1', name: 'OFD1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CERKL', name: 'CERKL', colorExp: '#9ECC4F'}},
+	{ data: { id: 'DUOXA1', name: 'DUOXA1', colorExp: '#9196BF'}},
+	{ data: { id: 'CNGB1', name: 'CNGB1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'TOPORS', name: 'TOPORS', colorExp: '#9ECC4F'}},
+	{ data: { id: 'ARL2BP', name: 'ARL2BP', colorExp: '#9ECC4F'}},
+	{ data: { id: 'CLRN1', name: 'CLRN1', colorExp: '#9ECC4F'}},
+	{ data: { id: 'RDH12', name: 'RDH12', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PRPF31', name: 'PRPF31', colorExp: '#9ECC4F'}},
+	{ data: { id: 'PRPF3', name: 'PRPF3', colorExp: '#9ECC4F'}},
+	{ data: { id: 'IMPG2', name: 'IMPG2', colorExp: '#9ECC4F'}},
+	{ data: { id: 'NEK2', name: 'NEK2', colorExp: '#9ECC4F'}},
+	{ data: { id: 'DDIT3', name: 'DDIT3', colorExp: '#9196BF'}},
+	{ data: { id: 'RAC1', name: 'RAC1', colorExp: '#9196BF'}},
+	{ data: { id: 'KLHL7', name: 'KLHL7', colorExp: '#9ECC4F'}},
+],
+ edges: [
+	{ data: { id: 'CRX-SAG', source: 'CRX', target: 'SAG' }},
+	{ data: { id: 'MERTK-TNF', source: 'MERTK', target: 'TNF' }},
+	{ data: { id: 'ZNF513-SP4', source: 'ZNF513', target: 'SP4' }},
+	{ data: { id: 'RPGR-RAB8A', source: 'RPGR', target: 'RAB8A' }},
+	{ data: { id: 'CEP290-ATF4', source: 'CEP290', target: 'ATF4' }},
+	{ data: { id: 'CRX-NR2E3', source: 'CRX', target: 'NR2E3' }},
+	{ data: { id: 'NRL-CRX', source: 'NRL', target: 'CRX' }},
+	{ data: { id: 'CRX-NRL', source: 'CRX', target: 'NRL' }},
+	{ data: { id: 'RHO-SAG', source: 'RHO', target: 'SAG' }},
+	{ data: { id: 'NRL-PDE6B', source: 'NRL', target: 'PDE6B' }},
+	{ data: { id: 'RPGR-DUOXA1', source: 'RPGR', target: 'DUOXA1' }},
+	{ data: { id: 'ATF4-DDIT3', source: 'ATF4', target: 'DDIT3' }},
+	{ data: { id: 'PRPH2-CNGB1', source: 'PRPH2', target: 'CNGB1' }},
+	{ data: { id: 'RHO-DDIT3', source: 'RHO', target: 'DDIT3' }},
+	{ data: { id: 'MERTK-RAC1', source: 'MERTK', target: 'RAC1' }},
+	{ data: { id: 'NRL-NR2E3', source: 'NRL', target: 'NR2E3' }},
+	{ data: { id: 'RHO-PRPF31', source: 'RHO', target: 'PRPF31' }},
+	{ data: { id: 'SP4-CRX', source: 'SP4', target: 'CRX' }},
+	{ data: { id: 'PRPF31-RHO', source: 'PRPF31', target: 'RHO' }},
+	{ data: { id: 'NRL-RHO', source: 'NRL', target: 'RHO' }},
+	{ data: { id: 'RAC1-RHO', source: 'RAC1', target: 'RHO' }},
+	{ data: { id: 'DDIT3-BCL2L11', source: 'DDIT3', target: 'BCL2L11' }},
+	{ data: { id: 'RPGR-NEK2', source: 'RPGR', target: 'NEK2' }},
+	{ data: { id: 'TNF-RPE', source: 'TNF', target: 'RPE' }},
+	{ data: { id: 'ZNF513-RHO', source: 'ZNF513', target: 'RHO' }},
+	{ data: { id: 'RPE-RPE65', source: 'RPE', target: 'RPE65' }},
+	{ data: { id: 'DUOXA1-CRX', source: 'DUOXA1', target: 'CRX' }},
+	{ data: { id: 'PRPF31-FSCN2', source: 'PRPF31', target: 'FSCN2' }},
+	{ data: { id: 'PRPF31-ROM1', source: 'PRPF31', target: 'ROM1' }},
+	{ data: { id: 'H3F3AP3-PDE6B', source: 'H3F3AP3', target: 'PDE6B' }},
+	{ data: { id: 'OFD1-CEP290', source: 'OFD1', target: 'CEP290' }},
+	{ data: { id: 'NRL-H3F3AP3', source: 'NRL', target: 'H3F3AP3' }},
+	{ data: { id: 'ATF4-RHO', source: 'ATF4', target: 'RHO' }},
+	{ data: { id: 'RAB8A-RHO', source: 'RAB8A', target: 'RHO' }},
+	{ data: { id: 'BCL2L11-H3F3AP3', source: 'BCL2L11', target: 'H3F3AP3' }},
+	{ data: { id: 'CRX-RBP3', source: 'CRX', target: 'RBP3' }},
+]
+         
+            };
+
+            var stylesheet = cytoscape.stylesheet()
+            .selector('node')
+                .css({
+                    'content': 'data(name)',
+                    'text-valign': 'center',
+                    'color': 'white',
+                    'background-color': 'data(colorExp)',
+                    'text-outline-width': 2,
+                    'text-outline-color': 'data(colorExp)'
+                })
+            .selector('edge')
+                .css({
+                    'target-arrow-shape': 'triangle',
+                    'width': 1,
+                    'line-color': '#61bffc',
+                    'target-arrow-color': '#61bffc'
+                });
+
+            var cy = cytoscape({
+                style: stylesheet,
+                layout: { name: 'cose'},
+                container: document.getElementById('cy'),
+                ready: function() {}
+            });
+
+
+            
+            cy.load(graphelements);
+
+        });
+    </script>
+        
+        <style>
+            /* The Cytoscape Web container must have its dimensions set. */
+            html, body { height: 100%; width: 100%; padding: 0; margin: 0; }
+            #cytoscapeweb { width: 100%; height: 100; }
+        </style>
+</head>
+
+
+<body>
+    <div id="cy" style="height:90%;width:80%;position:absolute;left:0;top:0;"></div>
+
+
+    <div align="right"> 
+        <table border = "1" cellspacing="0" >'
+	<tr><td bgcolor="#9196BF">Sparser</td></tr>
+	<tr><td bgcolor="#9ECC4F">Sparser:iHOP</td></tr>
+	<tr><td bgcolor="#CA6347">iHOP</td></tr>
+
+        </table> 
+    </div>
+    
+
+</table> 
+</body>
