@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+    
+<head>
+    <title>GRAPH</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/cytoscape.min.js"></script>
+    <script src="js/arbor.js"></script>
+
+     <script type="text/javascript">
+        $(document).ready(function(){
+            'use strict';
+        
+            var graphelements = {
+                >DATAHERE         
+            };
+
+            var stylesheet = cytoscape.stylesheet()
+            .selector('node')
+                .css({
+                    'content': 'data(name)',
+                    'text-valign': 'center',
+                    'color': 'white',
+                    'background-color': 'data(colorExp)',
+                    'text-outline-width': 2,
+                    'text-outline-color': 'data(colorExp)'
+                })
+            .selector('edge')
+                .css({
+                    'target-arrow-shape': 'triangle',
+                    'width': 1,
+                    'line-color': '#61bffc',
+                    'target-arrow-color': '#61bffc'
+                });
+
+            var cy = cytoscape({
+                style: stylesheet,
+                layout: { name: 'cose'},
+                container: document.getElementById('cy'),
+                ready: function() {}
+            });
+
+
+            
+            cy.load(graphelements);
+
+        });
+    </script>
+        
+        <style>
+            /* The Cytoscape Web container must have its dimensions set. */
+            html, body { height: 100%; width: 100%; padding: 0; margin: 0; }
+            #cytoscapeweb { width: 100%; height: 100; }
+        </style>
+</head>
+
+
+<body>
+    <div id="cy" style="height:90%;width:80%;position:absolute;left:0;top:0;"></div>
+
+
+    <div align="right"> 
+        <table border = "1" cellspacing="0" >';
+>DATAHERE
+        </table> 
+    </div>
+    
+
+</table> 
+</body>
