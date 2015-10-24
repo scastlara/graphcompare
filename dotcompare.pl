@@ -1,30 +1,49 @@
 #!/usr/bin/perl
-#
 #################################################################################
-#                               dotcompare.pl									#
+#                               dotcompare.pl                                   #
 #################################################################################
+# Copyright (C) 2015 - Sergio CASTILLO LARA
 #
-# This script compares interactions in different dot files.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+
+#===============================================================================
+# MODULES
+#===============================================================================
 use warnings;
 use strict;
 use Getopt::Long;
 use Algorithm::Combinatorics qw(combinations);
 use Cwd 'abs_path';
 
+
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $INSTALL_PATH  = get_installpath(); 
+our $VERSION       = 'v0.1.0';
+our $MAIL          = 's.cast.lara@gmail.com';
 
-error("Error trying to find Installpath through \$0")
+error("Error trying to find Installation path through \$0 : $INSTALL_PATH")
 	unless $INSTALL_PATH;
 
 my $dot_files     = "";
 my $help          = "";
-my $debug         = "";
 my $venn          = "";
+my $table         = "";
+my $debug         = "";
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -35,6 +54,7 @@ my $options = GetOptions (
 	"files=s"  => \$dot_files,    
 	"colors=s" => \$color_profile,
 	"out=s"    => \$out_name,
+	"table=s"  => \$table,
 	"venn=s"   => \$venn,
 	"debug"    => \$debug
 );
@@ -62,7 +82,6 @@ my $start_time = time();
 print_status(0, "PROGRAM STARTED");
 #--
 
-
 # READ DOT FILES
 @files = sort @files;
 foreach my $file (@files) {
@@ -78,17 +97,17 @@ my $groups_to_colors = assign_colors($colors,$groups);
 count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
-# RESULTS TO TERMINAL
-results_table($groups);
-
 # WRITE DOT FILE
 my $out_fh = get_fh($out_name);
-
 #print $out_fh "digraph ALL {\n";
 #write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
 #write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
 #print $out_fh "}";
 
+# OPTIONAL OUTPUTS
+if ($table) {
+	results_table($groups);
+}
 
 if ($venn) {
 	print_venn($venn, $groups, \@files);
@@ -102,8 +121,8 @@ print_status($run_time, "PROGRAM FINISHED");
 
 if ($debug) {
 	use Data::Dumper;
-	print STDERR "GROUPS:  ", Dumper($groups);
-	print STDERR "COLORS:  ", Dumper($colors);
+	print STDERR "GROUPS:  ",        Dumper($groups);
+	print STDERR "COLORS:  ",        Dumper($colors);
 	print STDERR "GROUPS-COLORS:  ", Dumper($groups_to_colors);
 }
 
@@ -259,6 +278,11 @@ sub add_interactions {
 		if (exists $interactions->{$string}) {
 			$interactions->{$string} .= ":$dot_symbol"
 				unless $interactions->{$string} =~ m/$dot_symbol/;
+				 # What will happen if one name is inside the other?
+				 # Maybe I should use \b$dotsymbol\b. If I compare
+				 # a file name FILE1ASDF with a file named FILE1
+				 # this program will not work properly.
+
 		} else {
 			$interactions->{$string} = $dot_symbol;
 		}
@@ -366,8 +390,7 @@ sub print_venn {
 	my @group_keys    = keys %{$groups}; 
 	my $venn_template = "";
 
-	my ($grp_to_alias,
-	    $alias_to_grp) = assign_aliases($filenames, \@group_keys);
+	my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
 
 	if (@group_keys == 3) {
 		# We have 2 dotfiles -> venn with 2 circles
@@ -382,7 +405,14 @@ sub print_venn {
 		             "table with the results\n";
 		return;
 	}
-	
+
+	parse_svg($venn_template, $grp_to_alias, $alias_to_grp);
+	return;
+}
+
+#--------------------------------------------------------------------------------
+sub parse_svg {
+	# UNDER CONSTRUCTION
 
 }
 
@@ -394,12 +424,14 @@ sub assign_aliases {
 	my %grp_to_alias   = ();
 	my %alias_to_grp   = ();
 
+	# Initialie groups
 	foreach my $i (0..$#{$principal_grps}) {
 		$grp_to_alias{$principal_grps->[$i]} = $group_aliases[$i];
 		$alias_to_grp{$group_aliases[$i]}    = $principal_grps->[$i];
 
 	}
 
+	# Get group combinations
 	foreach my $group (@{ $group_names }) {
 		next unless $group =~ /\:/;
 		my @grp_parts      = split /\:/, $group;
@@ -423,62 +455,40 @@ sub error {
 
 #--------------------------------------------------------------------------------
 sub help {
-	print STDERR << 'EOF';
+	print STDERR << "EOF";
 
 
+NAME            dotcompare
 
-||                  dotcompare                    ||
-||------------------------------------------------||
-||  This script compares two or more DOT files    ||
-||  and prints the resulting merged DOT file      ||
-||  with different colors.                        ||
-||                                                ||
-||                                                ||
-||  Usage:                                        ||
-||  	dotcompare <options>                      ||
-||                                                ||
-||                                                ||
-||  Options:                                      ||
-||                                                ||
-||  	REQUIRED:                                 ||
-||  	--files file1,file2...                    ||
-||              Graph files in DOT format, sepa-  ||
-||              rated by commas (no spaces).      ||
-||                                                ||
-||      --dot filename.dot                        ||
-||              Path and name of the output DOT.  ||
-||              Default: STDOUT                   ||
-||                                                ||
-||  	OPTIONAL:                                 ||
-||      --help                                    ||
-||                                                ||
-||  	--colors <string>                         ||
-||              Color profile: SOFT (default),    ||
-||              HARD or LARGE.                    ||
-||                                                ||
-||      --venn filename.svg                       ||
-||              Path and name of the output venn  ||
-||              diagram image (svg format).       ||
-||                                                ||
-||      --cyt filename.html                       ||
-||              Path and name of the graph web-   || 
-||              page. It uses cytoscape.js to     ||
-||              draw the graph. You can include   ||
-||              it on your website by copying the ||
-||              files inside js/ on your server   ||
-||              and changing the path on the html ||
-||              file generated by dotcompare.     ||
-||                                                ||
-||                                                ||   
-||  Example:                                      ||
-||                                                ||
-||      dotcompare --files file1.dot,file2.dot \  ||
-||                 --colors HARD               \  || 
-||                 --dot output.dot            \  ||             
-||                 --venn venn.svg             \  ||
-||                 --cyt graph.html               ||
-||                                                ||
-||------------------------------------------------||
+VERSION         $VERSION
+
+SYNOPSIS        dotcompare [options]
+
+DESCRIPTION     This script compares two or more DOT files    
+                and prints the resulting merged DOT file      
+                with different colors.        
+                                   
+OPTIONS
+
+    --help          Shows this help.                       
+    --files         <file#,file#> REQUIRED. Input DOT files, separated by commas.            
+    --dot           <filename.dot> Creates a merged dot file. Default to STDOUT.
+    --colors        <profile> Color profile to use: SOFT (default), HARD or LARGE.
+    --venn          <filename.svg> Creates venn diagram with the results. 
+    --cyt           <filename.html> Writes html file with the graph using cytoscape.js
+
+EXAMPLE                                      
+                                                
+    dotcompare --files file1.dot,file2.dot \\  
+               --colors HARD               \\   
+               --dot output.dot            \\               
+               --venn venn.svg             \\  
+               --cyt graph.html               
+                                              
+BUGS
+    Report bugs to Sergio CASTILLO LARA: $MAIL
+
+    Copyright (C) 2015 - S. CASTILLO LARA
 
 EOF
 ;
