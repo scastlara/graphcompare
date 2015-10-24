@@ -78,7 +78,6 @@ unless (@files >= 2) {
 # MAIN
 #===============================================================================
 
-
 # START REPORT
 my $start_time   = time();
 my $current_time = localtime();
@@ -121,6 +120,13 @@ if ($venn) {
     print_venn($venn, $groups, \@files);
 }
 
+if ($cytoscape) {
+    my $json        = create_json(\%nodes, \%interactions, $groups_to_colors); 
+    my $color_table = create_ctable($groups_to_colors);
+        # json is a reference
+    print_html($cytoscape, $json, $color_table);
+}
+
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
@@ -134,8 +140,8 @@ print STDERR "PROGRAM FINISHED\n",
 
 if ($debug) {
     use Data::Dumper;
-    print STDERR Data::Dumper->Dump([$groups, $groups_to_colors], 
-                                    [qw(GROUPS GROUPS_2_COLORS)]), "\n";
+    print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors], 
+                                    [("GROUPS", "GROUPS_2_COLORS") ]), "\n";
 }
 
 
@@ -257,7 +263,7 @@ sub assign_colors {
         if (keys %{$groups} > @{$colors});
 
     
-    foreach my $group (keys %{ $groups }) {
+    foreach my $group (sort keys %{ $groups }) {
         $g_to_c{$group} = shift @{$colors};
     }
 
@@ -440,6 +446,68 @@ sub assign_aliases {
 }
 
 #--------------------------------------------------------------------------------
+sub create_json {
+    my $nodes        = shift;
+    my $interactions = shift;
+    my $grps_to_colors = shift;
+    my $json = "nodes: [\n";
+
+    foreach my $node (keys %{$nodes}) {
+        $json .= "\t{ data: { id: '$node', name: '$node', colorExp: \'$grps_to_colors->{ $nodes->{$node} }\'}},\n";
+    }
+
+    $json .= "],\n".
+             "edges: [\n";
+
+    foreach my $int (keys %{$interactions}) {
+        my ($source, $target) = split /\->/, $int;
+        $json .= "\t{ data: { id: '$source-$target', source: '$source', target: '$target' }},\n";
+    }
+
+    $json .= "]\n";
+
+    return(\$json);
+}
+
+#--------------------------------------------------------------------------------
+sub create_ctable {
+    my $grps_to_colors = shift;
+    my $table          = "";
+
+    foreach my $group (sort keys %{$grps_to_colors}) {
+
+        $table .= "\t<tr><td bgcolor=\"$grps_to_colors->{$group}\">" .
+                  "$group</td></tr>\n";
+    }
+
+    return($table);
+}
+
+#--------------------------------------------------------------------------------
+sub print_html {
+    my $filename       = shift;
+    my $json           = shift;
+    my $color_table    = shift;
+    my $template       = "$INSTALL_PATH/data/cyt.template";
+
+    local $/ = ">DATAHERE";
+
+    open my $tt_fh, "<", $template
+        or error("Can't open $template, is your installpath correct? :$!");
+
+    open my $out_fh, ">", $filename
+        or error("Can't create $filename : $!");
+
+    foreach my $element ("", $$json, $color_table) {
+        my $html = <$tt_fh>;
+        chomp $html;
+        print $out_fh $element, $html;
+    }
+    
+    return;
+}
+
+#--------------------------------------------------------------------------------
 sub error {
     my $string = shift;
 
@@ -489,8 +557,3 @@ EOF
 
     exit(0);
 }
-
-
-
-__DATA__
-./
