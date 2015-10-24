@@ -355,23 +355,6 @@ sub write_dot {
 }
 
 #--------------------------------------------------------------------------------
-sub print_status {
-    my $run_time      = shift;
-    my $string        = shift;
-    my $outfiles      = shift;
-    my $current_time  = localtime();
-
-    print STDERR "\tLocal time:     $current_time\n\n";
-
-    if ($string eq "PROGRAM FINISHED") {
-        
-                     
-    }
-
-    return;
-}
-
-#--------------------------------------------------------------------------------
 sub get_installpath {
     my $path = abs_path($0);
     $path =~ s/(.+)\/.*?$/$1\//;
