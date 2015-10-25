@@ -37,16 +37,16 @@ if(k&&j[k]&&(e||j[k].data)||void 0!==d||"string"!=typeof b)return k||(k=i?a[h]=c
                     'content': 'data(name)',
                     'text-valign': 'center',
                     'color': 'white',
-                    'background-color': 'data(colorExp)',
+                    'background-color': 'data(colorNODE)',
                     'text-outline-width': 2,
-                    'text-outline-color': 'data(colorExp)'
+                    'text-outline-color': 'data(colorNODE)'
                 })
             .selector('edge')
                 .css({
                     'target-arrow-shape': 'triangle',
                     'width': 1,
-                    'line-color': '#61bffc',
-                    'target-arrow-color': '#61bffc'
+                    'line-color': 'data(colorEDGE)',
+                    'target-arrow-color': 'data(colorEDGE)'
                 });
 
             var cy = cytoscape({
