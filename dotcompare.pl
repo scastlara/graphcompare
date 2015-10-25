@@ -32,8 +32,10 @@ use Cwd 'abs_path';
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
-our $INSTALL_PATH  = get_installpath(); 
+our $PROGRAM       = "dotcompare";
 our $VERSION       = 'v0.1.0';
+our $USER          = $ENV{ USER };
+our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
 
 error("Error trying to find Installation path through \$0 : $INSTALL_PATH")
@@ -44,7 +46,7 @@ my $help          = "";
 my $venn          = "";
 my $table         = "";
 my $debug         = "";
-my $cytoscape     = "";
+my $cyto          = "";
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -57,7 +59,7 @@ my $options = GetOptions (
     "out=s"    => \$out_name,
     "table=s"  => \$table,
     "venn=s"   => \$venn,
-    "cyto=s"   => \$cytoscape,
+    "cyt=s"   => \$cyto,
     "debug"    => \$debug
 );
 
@@ -66,10 +68,9 @@ my @files = split /,/, $dot_files;
 help() if $help;
 
 unless (@files > 0) {
-    error("\n" .
-          "You have to introduce at least 1 dot file \n\n\t" . 
+    error("You have to introduce at least 1 dot file \n\n\t" . 
           'perl DOTCompare.pl -f file1,file2,file3...'
-          );
+         );
 }
 
 
@@ -81,10 +82,12 @@ unless (@files > 0) {
 my $start_time   = time();
 my $current_time = localtime();
 print STDERR "\nPROGRAM STARTED\n",
+             "\tProgram         $PROGRAM\n",
              "\tVersion         $VERSION\n",
+             "\tUser            $USER\n",
              "\tInstallpath     $INSTALL_PATH\n",
              "\tColor Profile   $color_profile\n",
-             "\tFiles           ", join("\n\t\t\t", @files), "\n\n",
+             "\tInput files     ", join("\n\t\t\t", @files), "\n\n",
              "\tStart time      $current_time\n\n";
 #--
 
@@ -119,24 +122,24 @@ if ($venn) {
     print_venn($venn, $groups, \@files);
 }
 
-if ($cytoscape) {
+if ($cyto) {
     my $json        = create_json(\%nodes, \%interactions, $groups_to_colors); 
     my $color_table = create_ctable($groups_to_colors);
-        # json is a reference
-    print_html($cytoscape, $json, $color_table);
+    print_html($cyto, $json, $color_table);
 }
 
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
 my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 3600));
-my @out_files = grep {$_} ($out_name, $table, $venn, $cytoscape);
+my @out_files = grep {$_} ($out_name, $table, $venn, $cyto);
 print STDERR "PROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
              "\tJob took ~ $run_time hours\n\n"; 
 #--
 
+# DEBUGGING
 if ($debug) {
     use Data::Dumper;
     print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors], 
@@ -155,8 +158,7 @@ sub read_dot {
     my $dot_symbol   = clean_name($dot);
 
     open my $dot_fh, "<", $dot
-        or error("\n\n## ERROR\n". 
-               "Can't open dot file $dot: $!");
+        or error("Can't open dot file $dot: $!");
 
     while (<$dot_fh>) {
         chomp;
@@ -278,7 +280,7 @@ sub add_nodes {
     foreach my $gene (@{$gene_list}) {
         if (exists $nodes->{$gene}) {
             $nodes->{$gene} .= ":$dot_symbol"
-                unless $nodes->{$gene} =~ m/$dot_symbol/;
+                unless $nodes->{$gene} =~ m/\b$dot_symbol\b/;
         } else {
             $nodes->{$gene} = $dot_symbol;
         }
@@ -389,8 +391,6 @@ sub print_venn {
     my @group_keys    = keys %{$groups}; 
     my $venn_template = "";
 
-    my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
-
     if (@group_keys == 3) {
         # We have 2 dotfiles -> venn with 2 circles
         $venn_template = "$INSTALL_PATH/data/v2_template.svg";
@@ -405,6 +405,7 @@ sub print_venn {
         return;
     }
 
+    my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
     parse_svg($venn_template, $grp_to_alias, $alias_to_grp);
     return;
 }
@@ -423,7 +424,7 @@ sub assign_aliases {
     my %grp_to_alias   = ();
     my %alias_to_grp   = ();
 
-    # Initialie groups
+    # Initialize groups
     foreach my $i (0..$#{$principal_grps}) {
         $grp_to_alias{$principal_grps->[$i]} = $group_aliases[$i];
         $alias_to_grp{$group_aliases[$i]}    = $principal_grps->[$i];
@@ -452,7 +453,7 @@ sub create_json {
     my $json = "nodes: [\n";
 
     foreach my $node (keys %{$nodes}) {
-        $json .= "\t{ data: { id: '$node', name: '$node', colorExp: " . 
+        $json .= "\t{ data: { id: '$node', name: '$node', colorNODE: " . 
                  "\'$grps_to_colors->{ $nodes->{$node} }\'}},\n";
     }
 
@@ -460,7 +461,8 @@ sub create_json {
 
     foreach my $int (keys %{$interactions}) {
         my ($source, $target) = split /\->/, $int;
-        $json .= "\t{ data: { id: '$source-$target', source: '$source', target: '$target' }},\n";
+        $json .= "\t{ data: { id: '$source-$target', " . 
+                 "source: '$source', target: '$target', colorEDGE: \'$grps_to_colors->{ $interactions->{$int} }\' }},\n";
     }
 
     $json .= "]\n";
@@ -510,7 +512,7 @@ sub print_html {
 sub error {
     my $string = shift;
 
-    die "$string\n",
+    die "\n[ERROR] $string\n",
         "\nUse dotcompare -h to get help.\n\n";
 }
 
