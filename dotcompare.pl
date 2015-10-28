@@ -246,7 +246,8 @@ sub load_colors {
               "\nYour profile \"$profile\" doesn't exist!\n".
               "Choose one of the following:\n\n". 
               "\t- SOFT\n".
-              "\t- HARD\n"
+              "\t- HARD\n" ,
+              "\t- LARGE\n"
               );
     }
 
@@ -432,15 +433,17 @@ sub parse_svg {
         my $grp_name = $alias_to_grp->{$code};
 
         if ($element eq "NODES") {
-            print "$grp_numbers->{$grp_name}->{nodes}$rest";
+            print "$grp_numbers->{$grp_name}->{nodes} $rest";
         } elsif ($element eq "INTERACTIONS") {
-            print "$grp_numbers->{$grp_name}->{ints}$rest";
+            print "$grp_numbers->{$grp_name}->{ints} $rest";
+        } elsif ($element eq "NAME") {
+            print "$alias_to_grp->{$code} $rest";           
         } else {
             print "$grp_to_colors->{$grp_name}$rest";
         }
     }
 
-    return:
+    return;
 }
 
 #--------------------------------------------------------------------------------
