@@ -417,7 +417,7 @@ sub parse_svg {
     my $grp_to_alias   = shift;
     my $alias_to_grp   = shift;
     my $grp_numbers    = shift;
-    my $grp_to_colors = shift;
+    my $grp_to_colors  = shift;
 
     open my $t_fh, "<", "$template"
         or error ("Can't open $template. Are you sure your installpath is correct?");
