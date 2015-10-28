@@ -107,15 +107,15 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-#my $out_fh = get_fh($out_name);
-#print $out_fh "digraph ALL {\n";
-#write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
-#write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-#print $out_fh "}";
+my $out_fh = get_fh($out_name);
+print $out_fh "digraph ALL {\n";
+write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $out_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
-    results_table($groups);
+    results_table($table, $groups);
 }
 
 if ($venn) {
@@ -246,7 +246,7 @@ sub load_colors {
               "\nYour profile \"$profile\" doesn't exist!\n".
               "Choose one of the following:\n\n". 
               "\t- SOFT\n".
-              "\t- HARD\n" ,
+              "\t- HARD\n" .
               "\t- LARGE\n"
               );
     }
@@ -325,12 +325,10 @@ sub count_nodeints {
 
 #--------------------------------------------------------------------------------
 sub results_table {
-    my $groups = shift;
+    my $out_file = shift;
+    my $groups   = shift;
 
-    # REMEMBER: THIS FILENAME HAS TO CHANGE TO results_dotfilename.tbl
-    # DO NOT FORGET IT!
-
-    open my $fh, '>', "results.tbl"
+    open my $fh, '>', "$out_file"
         or error("Can't create results.tbl : $!");
 
     print $fh "GROUP\tNODES\tINTERACTIONS\n";
@@ -392,6 +390,9 @@ sub print_venn {
     my @group_keys    = keys %{$groups}; 
     my $venn_template = "";
 
+    open my $out, ">", $out_file
+        or error("Can't create $out_file :$!");
+
     if (@group_keys == 3) {
         # We have 2 dotfiles -> venn with 2 circles
         $venn_template = "$INSTALL_PATH/data/v2_template.svg";
@@ -399,7 +400,7 @@ sub print_venn {
         # We have 3 dotfiles -> venn with 3 circles
         $venn_template = "$INSTALL_PATH/data/v3_template.svg";
     } else {
-        print STDERR "You have more than 3 dot files, ", 
+        print STDERR "You have more than 3 dot files (or less than 2), ", 
                      "I won't draw any venn diagram.\n", 
                      "I suggest you to use the option -t to print a ",
                      "table with the results\n";
@@ -407,12 +408,13 @@ sub print_venn {
     }
 
     my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
-    parse_svg($venn_template, $grp_to_alias, $alias_to_grp, $groups, $grp_to_colors);
+    parse_svg($out, $venn_template, $grp_to_alias, $alias_to_grp, $groups, $grp_to_colors);
     return;
 }
 
 #--------------------------------------------------------------------------------
 sub parse_svg {
+    my $out_filehandle = shift;
     my $template       = shift;
     my $grp_to_alias   = shift;
     my $alias_to_grp   = shift;
@@ -425,7 +427,7 @@ sub parse_svg {
     local $/ = ">DATAHERE";
     my $first = <$t_fh>;
     chomp $first;
-    print $first, "\n";
+    print $out_filehandle "$first\n";
 
     while (<$t_fh>) {
         chomp;
@@ -433,13 +435,13 @@ sub parse_svg {
         my $grp_name = $alias_to_grp->{$code};
 
         if ($element eq "NODES") {
-            print "$grp_numbers->{$grp_name}->{nodes} $rest";
+            print $out_filehandle "$grp_numbers->{$grp_name}->{nodes} $rest";
         } elsif ($element eq "INTERACTIONS") {
-            print "$grp_numbers->{$grp_name}->{ints} $rest";
+            print $out_filehandle "$grp_numbers->{$grp_name}->{ints} $rest";
         } elsif ($element eq "NAME") {
-            print "$alias_to_grp->{$code} $rest";           
+            print $out_filehandle "$alias_to_grp->{$code} $rest";           
         } else {
-            print "$grp_to_colors->{$grp_name}$rest";
+            print $out_filehandle "$grp_to_colors->{$grp_name}$rest";
         }
     }
 
