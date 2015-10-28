@@ -150,6 +150,8 @@ if ($debug) {
 #===============================================================================
 # FUNCTIONS 
 #===============================================================================
+
+# READING DOT FILES
 #--------------------------------------------------------------------------------
 sub read_dot {
     my $dot          = shift;
@@ -202,76 +204,6 @@ sub clean_name {
 } 
 
 #--------------------------------------------------------------------------------
-sub initialize_groups {
-    my $files_array = shift;
-    my %count_hash  = ();
-
-    @{$files_array} = map {clean_name($_)} @{$files_array};
-
-    foreach my $idx (1..@{$files_array} ) {
-        my $iter = combinations($files_array, $idx);
-
-        while (my $combi = $iter->next) {
-            my @sorted = sort @$combi;
-            $count_hash{join ":",@sorted}->{nodes} = 0;
-            $count_hash{join ":",@sorted}->{ints} = 0;
-        } # while
-
-    } # foreach
-
-    return (\%count_hash);
-
-} 
-
-
-#--------------------------------------------------------------------------------
-sub load_colors {
-    my $profile = shift;
-    my @colors  = ();
-    local $/ = "//";
-
-    open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
-        or error("Can't open $INSTALL_PATH/data/colors.txt\n". 
-                 "Are you sure your install path is correct?");
-
-    while (<$fh>) {
-        chomp;
-        my ($name, @prof_colors) = split /\n/;
-        next unless $profile eq $name;
-        @colors = @prof_colors;
-    }
-
-    unless (@colors) {
-        error(
-              "\nYour profile \"$profile\" doesn't exist!\n".
-              "Choose one of the following:\n\n". 
-              "\t- SOFT\n".
-              "\t- HARD\n" .
-              "\t- LARGE\n"
-              );
-    }
-
-    return \@colors;
-}
-
-#--------------------------------------------------------------------------------
-sub assign_colors {
-    my $colors = shift;
-    my $groups = shift;
-    my %g_to_c = ();
-
-    error("There are more groups than colors!")
-        if (keys %{$groups} > @{$colors});
-
-    
-    foreach my $group (sort keys %{ $groups }) {
-        $g_to_c{$group} = shift @{$colors};
-    }
-
-    return(\%g_to_c);
-}
-
-#--------------------------------------------------------------------------------
 sub add_nodes {
     my $gene_list  = shift;
     my $nodes      = shift;
@@ -310,6 +242,79 @@ sub add_interactions {
     return;
 }
 
+
+# COLORS AND GROUPS
+#--------------------------------------------------------------------------------
+sub initialize_groups {
+    my $files_array = shift;
+    my %count_hash  = ();
+
+    @{$files_array} = map {clean_name($_)} @{$files_array};
+
+    foreach my $idx (1..@{$files_array} ) {
+        my $iter = combinations($files_array, $idx);
+
+        while (my $combi = $iter->next) {
+            my @sorted = sort @$combi;
+            $count_hash{join ":",@sorted}->{nodes} = 0;
+            $count_hash{join ":",@sorted}->{ints} = 0;
+        } # while
+
+    } # foreach
+
+    return (\%count_hash);
+
+} 
+
+#--------------------------------------------------------------------------------
+sub load_colors {
+    my $profile = shift;
+    my @colors  = ();
+    local $/ = "//";
+
+    open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
+        or error("Can't open $INSTALL_PATH/data/colors.txt,". 
+                 " is your installpath correct? :$!");
+
+    while (<$fh>) {
+        chomp;
+        my ($name, @prof_colors) = split /\n/;
+        next unless $profile eq $name;
+        @colors = @prof_colors;
+    }
+
+    unless (@colors) {
+        error(
+              "\nYour profile \"$profile\" doesn't exist!\n".
+              "Choose one of the following:\n\n". 
+              "\t- SOFT\n".
+              "\t- HARD\n" .
+              "\t- LARGE\n"
+              );
+    }
+
+    return \@colors;
+}
+
+#--------------------------------------------------------------------------------
+sub assign_colors {
+    my $colors = shift;
+    my $groups = shift;
+    my %g_to_c = ();
+
+    error("There are more groups than colors!")
+        if (keys %{$groups} > @{$colors});
+
+    
+    foreach my $group (sort keys %{ $groups }) {
+        $g_to_c{$group} = shift @{$colors};
+    }
+
+    return(\%g_to_c);
+}
+
+
+# COUNTING
 #--------------------------------------------------------------------------------
 sub count_nodeints {
     my $in_hash = shift;
@@ -323,22 +328,21 @@ sub count_nodeints {
     return;
 }
 
+
+# DOT OUTPUT
 #--------------------------------------------------------------------------------
-sub results_table {
-    my $out_file = shift;
-    my $groups   = shift;
+sub get_fh {
+    my $filename = shift;
+    my $out_fh;
 
-    open my $fh, '>', "$out_file"
-        or error("Can't create results.tbl : $!");
-
-    print $fh "GROUP\tNODES\tINTERACTIONS\n";
-    foreach my $group (keys %{$groups}) {
-        print $fh    $group, "\t", 
-                     $groups->{$group}->{nodes}, "\t", 
-                     $groups->{$group}->{ints}, "\n";
+    if ($filename eq "STDOUT") {
+        $out_fh =\*STDOUT
+    } else {
+        open $out_fh, ">", $filename
+            or error("Can't write to $filename : $!");
     }
 
-    return;
+    return($out_fh);
 }
 
 #--------------------------------------------------------------------------------
@@ -359,28 +363,28 @@ sub write_dot {
     return;
 }
 
-#--------------------------------------------------------------------------------
-sub get_installpath {
-    my $path = abs_path($0);
-    $path =~ s/(.+)\/.*?$/$1\//;
-    return($path);
-}
 
+# TABLE OUTPUT
 #--------------------------------------------------------------------------------
-sub get_fh {
-    my $filename = shift;
-    my $out_fh;
+sub results_table {
+    my $out_file = shift;
+    my $groups   = shift;
 
-    if ($filename eq "STDOUT") {
-        $out_fh =\*STDOUT
-    } else {
-        open $out_fh, ">", $filename
-            or error("Can't write to $filename : $!");
+    open my $fh, '>', "$out_file"
+        or error("Can't create results.tbl : $!");
+
+    print $fh "GROUP\tNODES\tINTERACTIONS\n";
+    foreach my $group (keys %{$groups}) {
+        print $fh    $group, "\t", 
+                     $groups->{$group}->{nodes}, "\t", 
+                     $groups->{$group}->{ints}, "\n";
     }
 
-    return($out_fh);
+    return;
 }
 
+
+# VENN OUTPUT
 #--------------------------------------------------------------------------------
 sub print_venn {
     my $out_file      = shift;
@@ -413,42 +417,6 @@ sub print_venn {
 }
 
 #--------------------------------------------------------------------------------
-sub parse_svg {
-    my $out_filehandle = shift;
-    my $template       = shift;
-    my $grp_to_alias   = shift;
-    my $alias_to_grp   = shift;
-    my $grp_numbers    = shift;
-    my $grp_to_colors  = shift;
-
-    open my $t_fh, "<", "$template"
-        or error ("Can't open $template. Are you sure your installpath is correct?");
-
-    local $/ = ">DATAHERE";
-    my $first = <$t_fh>;
-    chomp $first;
-    print $out_filehandle "$first\n";
-
-    while (<$t_fh>) {
-        chomp;
-        my ($element, $code, $rest) = split /&&/;
-        my $grp_name = $alias_to_grp->{$code};
-
-        if ($element eq "NODES") {
-            print $out_filehandle "$grp_numbers->{$grp_name}->{nodes} $rest";
-        } elsif ($element eq "INTERACTIONS") {
-            print $out_filehandle "$grp_numbers->{$grp_name}->{ints} $rest";
-        } elsif ($element eq "NAME") {
-            print $out_filehandle "$alias_to_grp->{$code} $rest";           
-        } else {
-            print $out_filehandle "$grp_to_colors->{$grp_name}$rest";
-        }
-    }
-
-    return;
-}
-
-#--------------------------------------------------------------------------------
 sub assign_aliases {
     my $principal_grps = shift;
     my $group_names    = shift;
@@ -477,6 +445,44 @@ sub assign_aliases {
     return(\%grp_to_alias, \%alias_to_grp);
 }
 
+#--------------------------------------------------------------------------------
+sub parse_svg {
+    my $out_filehandle = shift;
+    my $template       = shift;
+    my $grp_to_alias   = shift;
+    my $alias_to_grp   = shift;
+    my $grp_numbers    = shift;
+    my $grp_to_colors  = shift;
+
+    open my $t_fh, "<", "$template"
+        or error ("Can't open $template, is your installpath correct? :$!");
+
+    local $/ = ">DATAHERE";
+    my $first = <$t_fh>;
+    chomp $first;
+    print $out_filehandle "$first\n";
+
+    while (<$t_fh>) {
+        chomp;
+        my ($element, $code, $rest) = split /&&/;
+        my $grp_name = $alias_to_grp->{$code};
+
+        if ($element eq "NODES") {
+            print $out_filehandle "$grp_numbers->{$grp_name}->{nodes} $rest";
+        } elsif ($element eq "INTERACTIONS") {
+            print $out_filehandle "$grp_numbers->{$grp_name}->{ints} $rest";
+        } elsif ($element eq "NAME") {
+            print $out_filehandle "$alias_to_grp->{$code} $rest";           
+        } else {
+            print $out_filehandle "$grp_to_colors->{$grp_name}$rest";
+        }
+    }
+
+    return;
+}
+
+
+# WEB OUTPUT
 #--------------------------------------------------------------------------------
 sub create_json {
     my $nodes        = shift;
@@ -538,18 +544,24 @@ sub print_html {
         print $out_fh $element, $html;
     }
 
-    close($tt_fh);
-    close($out_fh);
-    
     return;
 }
 
+
+# SCRIPT FUNCTIONS
 #--------------------------------------------------------------------------------
 sub error {
     my $string = shift;
 
     die "\n[ERROR] $string\n",
         "\nUse dotcompare -h to get help.\n\n";
+}
+
+#--------------------------------------------------------------------------------
+sub get_installpath {
+    my $path = abs_path($0);
+    $path =~ s/(.+)\/.*?$/$1\//;
+    return($path);
 }
 
 #--------------------------------------------------------------------------------
