@@ -173,16 +173,16 @@ sub read_dot {
             $_ =~ s/\s?//g;
             $_ =~ s/\[.+//gi;
 
-            my @genes = split /\->/, $_;
+            my @node_names = split /\->/, $_;
 
-            add_nodes(\@genes, $nodes, $dot_symbol);
-            add_interactions(\@genes,$interactions,$dot_symbol);
+            add_nodes(\@node_names, $nodes, $dot_symbol);
+            add_interactions(\@node_names,$interactions,$dot_symbol);
             
         } else { 
         # just defined nodes
             if ($_ =~ m/\"(\w+)\"/) {
-                my @genes = ($1);
-                add_nodes(\@genes, $nodes, $dot_symbol);
+                my @node_names = ($1);
+                add_nodes(\@node_names, $nodes, $dot_symbol);
             } # if match
         
         } # if node or interaction
@@ -205,16 +205,16 @@ sub clean_name {
 
 #--------------------------------------------------------------------------------
 sub add_nodes {
-    my $gene_list  = shift;
+    my $node_names  = shift;
     my $nodes      = shift;
     my $dot_symbol = shift;
 
-    foreach my $gene (@{$gene_list}) {
-        if (exists $nodes->{$gene}) {
-            $nodes->{$gene} .= ":$dot_symbol"
-                unless $nodes->{$gene} =~ m/\b$dot_symbol\b/;
+    foreach my $node (@{$node_names}) {
+        if (exists $nodes->{$node}) {
+            $nodes->{$node} .= ":$dot_symbol"
+                unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
         } else {
-            $nodes->{$gene} = $dot_symbol;
+            $nodes->{$node} = $dot_symbol;
         }
     }
 
@@ -223,12 +223,12 @@ sub add_nodes {
 
 #--------------------------------------------------------------------------------
 sub add_interactions {
-    my $gene_list    = shift;
+    my $node_list    = shift;
     my $interactions = shift;
     my $dot_symbol   = shift;
 
-    foreach my $i (0..$#{$gene_list} - 1) {
-        my $string = $gene_list->[$i]."->".$gene_list->[$i+1];
+    foreach my $i (0..$#{$node_list} - 1) {
+        my $string = $node_list->[$i]."->".$node_list->[$i+1];
 
         if (exists $interactions->{$string}) {
             $interactions->{$string} .= ":$dot_symbol"
