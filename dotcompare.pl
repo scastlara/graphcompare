@@ -46,7 +46,7 @@ my $help          = "";
 my $venn          = "";
 my $table         = "";
 my $debug         = "";
-my $cyto          = "";
+my $web           = "";
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -59,7 +59,7 @@ my $options = GetOptions (
     "out=s"    => \$out_name,
     "table=s"  => \$table,
     "venn=s"   => \$venn,
-    "cyt=s"   => \$cyto,
+    "web=s"    => \$web,
     "debug"    => \$debug
 );
 
@@ -107,11 +107,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-my $out_fh = get_fh($out_name);
-print $out_fh "digraph ALL {\n";
-write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
-write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-print $out_fh "}";
+#my $out_fh = get_fh($out_name);
+#print $out_fh "digraph ALL {\n";
+#write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
+#write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+#print $out_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -119,20 +119,20 @@ if ($table) {
 }
 
 if ($venn) {
-    print_venn($venn, $groups, \@files);
+    print_venn($venn, $groups, \@files, $groups_to_colors);
 }
 
-if ($cyto) {
+if ($web) {
     my $json        = create_json(\%nodes, \%interactions, $groups_to_colors); 
     my $color_table = create_ctable($groups_to_colors);
-    print_html($cyto, $json, $color_table);
+    print_html($web, $json, $color_table);
 }
 
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
 my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 3600));
-my @out_files = grep {$_} ($out_name, $table, $venn, $cyto);
+my @out_files = grep {$_} ($out_name, $table, $venn, $web);
 print STDERR "PROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
@@ -249,7 +249,6 @@ sub load_colors {
               "\t- HARD\n"
               );
     }
-
 
     return \@colors;
 }
@@ -388,6 +387,7 @@ sub print_venn {
     my $out_file      = shift;
     my $groups        = shift;
     my $filenames     = shift;
+    my $grp_to_colors = shift;
     my @group_keys    = keys %{$groups}; 
     my $venn_template = "";
 
@@ -406,14 +406,41 @@ sub print_venn {
     }
 
     my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
-    parse_svg($venn_template, $grp_to_alias, $alias_to_grp);
+    parse_svg($venn_template, $grp_to_alias, $alias_to_grp, $groups, $grp_to_colors);
     return;
 }
 
 #--------------------------------------------------------------------------------
 sub parse_svg {
-    # UNDER CONSTRUCTION
+    my $template       = shift;
+    my $grp_to_alias   = shift;
+    my $alias_to_grp   = shift;
+    my $grp_numbers    = shift;
+    my $grp_to_colors = shift;
 
+    open my $t_fh, "<", "$template"
+        or error ("Can't open $template. Are you sure your installpath is correct?");
+
+    local $/ = ">DATAHERE";
+    my $first = <$t_fh>;
+    chomp $first;
+    print $first, "\n";
+
+    while (<$t_fh>) {
+        chomp;
+        my ($element, $code, $rest) = split /&&/;
+        my $grp_name = $alias_to_grp->{$code};
+
+        if ($element eq "NODES") {
+            print "$grp_numbers->{$grp_name}->{nodes}$rest";
+        } elsif ($element eq "INTERACTIONS") {
+            print "$grp_numbers->{$grp_name}->{ints}$rest";
+        } else {
+            print "$grp_to_colors->{$grp_name}$rest";
+        }
+    }
+
+    return:
 }
 
 #--------------------------------------------------------------------------------
@@ -462,7 +489,8 @@ sub create_json {
     foreach my $int (keys %{$interactions}) {
         my ($source, $target) = split /\->/, $int;
         $json .= "\t{ data: { id: '$source-$target', " . 
-                 "source: '$source', target: '$target', colorEDGE: \'$grps_to_colors->{ $interactions->{$int} }\' }},\n";
+                 "source: '$source', target: '$target', ".
+                 "colorEDGE: \'$grps_to_colors->{ $interactions->{$int} }\' }},\n";
     }
 
     $json .= "]\n";
@@ -504,6 +532,9 @@ sub print_html {
         chomp $html;
         print $out_fh $element, $html;
     }
+
+    close($tt_fh);
+    close($out_fh);
     
     return;
 }
@@ -538,7 +569,7 @@ OPTIONS
     --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
     --colors    <profile> Color profile to use: SOFT (default), HARD or LARGE.
     --venn      <filename.svg> Creates venn diagram with the results. 
-    --cyt       <filename.html> Writes html file with the graph using cytoscape.js
+    --web       <filename.html> Writes html file with the graph using cytoscape.js
 
 EXAMPLE                                      
                                                 
