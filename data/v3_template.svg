@@ -62,7 +62,7 @@
     <path
        id="path3829"
        d="m 397.55787,189.15783 c -19.49568,12.51547 -42.69323,19.78116 -67.59392,19.78116 -20.86581,0 -40.5446,-5.0985 -57.85242,-14.11521 -4.80941,13.3063 -7.45522,27.62883 -7.45522,42.59411 0,69.24736 56.09959,125.39664 125.34695,125.39664 69.24733,0 125.39663,-56.14928 125.39663,-125.39664 0,-1.88152 -0.0672,-3.75507 -0.14908,-5.61625 -7.11034,1.25228 -14.39921,1.93835 -21.86863,1.93835 -38.44321,0 -72.82442,-17.34139 -95.82429,-44.58216 z"
-       style="color:#000000;fill:#95cbab;fill-opacity:0.70980392;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       style="color:#000000;fill:>DATAHERECOLOR&&GR3&&;fill-opacity:0.70980392;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        inkscape:connector-curvature="0"
        inkscape:export-filename="/home/sergio/vennmaria.png"
        inkscape:export-xdpi="300"
@@ -154,7 +154,7 @@
     <path
        id="path3806"
        d="m 490.10187,-17.00357 c -23.6641,0.59954 -45.65694,7.81735 -64.3136,19.78116 18.41361,21.82338 29.57232,50.02519 29.57232,80.81448 0,14.98492 -2.62457,29.33149 -7.4552,42.6438 38.5398,20.10391 65.36979,59.58809 67.39509,105.56577 58.77781,-10.37931 103.42862,-61.69728 103.42862,-123.45826 0,-69.24736 -56.09958,-125.34695 -125.34694,-125.34695 -1.08199,0 -2.20486,-0.0271 -3.28029,0 z"
-       style="color:#000000;fill:#b559b8;fill-opacity:1;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       style="color:#000000;fill:>DATAHERECOLOR&&GR2&&;fill-opacity:1;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        inkscape:connector-curvature="0"
        inkscape:export-filename="/home/sergio/vennmaria.png"
        inkscape:export-xdpi="300"
@@ -162,7 +162,7 @@
     <path
        id="path3778"
        d="m 329.96395,-41.80457 c -69.24733,0 -125.39664,56.1493 -125.39664,125.39664 0,48.3844 27.40485,90.3367 67.54422,111.23171 15.04463,-41.62439 51.45916,-73.01692 96.0231,-80.86415 -0.0814,-1.85469 -0.14909,-3.74148 -0.14909,-5.61625 0,-44.35678 23.04428,-83.2765 57.80273,-105.56579 -22.99994,-27.25897 -57.36622,-44.58216 -95.82429,-44.58216 z"
-       style="opacity:0.86000001;color:#000000;fill:#ca6347;fill-opacity:1;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       style="opacity:0.86000001;color:#000000;fill:>DATAHERECOLOR&&GR1&&;fill-opacity:1;stroke:none;stroke-width:0.5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        inkscape:connector-curvature="0"
        inkscape:export-filename="/home/sergio/vennmaria.png"
        inkscape:export-xdpi="300"
