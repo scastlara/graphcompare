@@ -38,7 +38,7 @@ our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
 
-error("Error trying to find Installation path through \$0 : $INSTALL_PATH")
+error("Error trying to find Installation path through \$0.")
     unless $INSTALL_PATH;
 
 my $dot_files     = "";
@@ -107,11 +107,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-my $out_fh = get_fh($out_name);
-print $out_fh "digraph ALL {\n";
-write_dot($out_fh, \%nodes, $groups_to_colors, "NODES");
-write_dot($out_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-print $out_fh "}";
+my $dot_fh = get_fh($out_name);
+print $dot_fh "digraph ALL {\n";
+write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $dot_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -131,12 +131,12 @@ if ($web) {
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
-my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 3600));
+my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 60));
 my @out_files = grep {$_} ($out_name, $table, $venn, $web);
 print STDERR "PROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
-             "\tJob took ~ $run_time hours\n\n"; 
+             "\tJob took ~ $run_time minutes\n\n"; 
 #--
 
 # DEBUGGING
@@ -174,17 +174,14 @@ sub read_dot {
             $_ =~ s/\[.+//gi;
 
             my @node_names = split /\->/, $_;
-
             add_nodes(\@node_names, $nodes, $dot_symbol);
             add_interactions(\@node_names,$interactions,$dot_symbol);
-            
         } else { 
-        # just defined nodes
+        # just defined nodes: node [foo = bar];
             if ($_ =~ m/\"(\w+)\"/) {
                 my @node_names = ($1);
                 add_nodes(\@node_names, $nodes, $dot_symbol);
             } # if match
-        
         } # if node or interaction
 
     } # while file
@@ -205,7 +202,7 @@ sub clean_name {
 
 #--------------------------------------------------------------------------------
 sub add_nodes {
-    my $node_names  = shift;
+    my $node_names = shift;
     my $nodes      = shift;
     my $dot_symbol = shift;
 
@@ -285,7 +282,7 @@ sub load_colors {
 
     unless (@colors) {
         error(
-              "\nYour profile \"$profile\" doesn't exist!\n".
+              "Your profile \"$profile\" doesn't exist!\n".
               "Choose one of the following:\n\n". 
               "\t- SOFT\n".
               "\t- HARD\n" .
@@ -485,8 +482,8 @@ sub parse_svg {
 # WEB OUTPUT
 #--------------------------------------------------------------------------------
 sub create_json {
-    my $nodes        = shift;
-    my $interactions = shift;
+    my $nodes          = shift;
+    my $interactions   = shift;
     my $grps_to_colors = shift;
     my $json = "nodes: [\n";
 
@@ -515,7 +512,6 @@ sub create_ctable {
     my $table          = "";
 
     foreach my $group (sort keys %{$grps_to_colors}) {
-
         $table .= "\t<tr><td bgcolor=\"$grps_to_colors->{$group}\">" .
                   "$group</td></tr>\n";
     }
