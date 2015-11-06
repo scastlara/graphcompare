@@ -286,7 +286,8 @@ sub load_colors {
               "Choose one of the following:\n\n". 
               "\t- SOFT\n".
               "\t- HARD\n" .
-              "\t- LARGE\n"
+              "\t- LARGE\n" .
+              "\t- CBLIND\n"
               );
     }
 
@@ -580,7 +581,7 @@ OPTIONS
     --help      Shows this help.                       
     --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
     --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
-    --colors    <profile> Color profile to use: SOFT (default), HARD or LARGE.
+    --colors    <profile> Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
     --venn      <filename.svg> Creates venn diagram with the results. 
     --web       <filename.html> Writes html file with the graph using cytoscape.js
 
