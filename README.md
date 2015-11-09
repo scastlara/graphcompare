@@ -75,7 +75,7 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 #### Reporting Bugs
 
-Report Bugs to https://github.com/scastlara/dotcompare or s.cast.lara@gmail.com
+Report Bugs to https://github.com/scastlara/dotcompare/issues
 
 ### COPYRIGHT 
 
