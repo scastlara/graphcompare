@@ -267,7 +267,12 @@ sub read_dot {
                      $stmt =~ m/^}$/);
     
             print $stmt, "\n";
-    
+            
+            if ($stmt =~ m/\-\-/) {
+                print STDERR "Your graph is undirected. Changed it to directed.\n";
+                $stmt =~ s/\-\-/\->/g
+            }
+
             if ($stmt =~ m/\->/g) { 
             # interactions "node1"->"node2"->"node3"
                 my @node_names = split /\->/, $stmt;
