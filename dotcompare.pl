@@ -31,13 +31,37 @@ about the subgraphs within each DOT file.
 
 =head1 OPTIONS
 
-    --help      Shows this help.                       
-    --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
-    --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
-    --colors    <profile> Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
-    --venn      <filename.svg> Creates a venn diagram with the results. 
-    --web       <filename.html> Writes html file with the graph using cytoscape.js
-    --sub       <filename> Creates an svg plot comparing the subgraphs in each DOT.
+=over 8
+
+=item B<-h>, B<--help>               
+
+Shows this help. 
+
+=item B<-f>, B<--files> <file1,file2,...>
+
+REQUIRED. Input DOT files, separated by commas.    
+
+=item B<-d>, B<--dot> <filename.dot>
+
+Creates a merged dot file. Default to STDOUT.
+
+=item B<-c>, B<--colors> <profile>
+
+Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
+
+=item B<-v>, B<--venn> <filename.svg>
+
+Creates a venn diagram with the results. 
+
+=item B<-w>, B<--web> <filename.html>
+
+Writes html file with the graph using cytoscape.js
+
+=item B<-s>, B<--sub> <filename>
+    
+Creates an svg plot comparing the subgraphs in each DOT.
+
+=back
 
 =head1 AUTHOR
 
@@ -121,7 +145,7 @@ pod2usage( -verbose => 1,
            -output  => \*STDERR   ) unless @ARGV;
 
 my $options = GetOptions (
-    'help'     => \$help,
+    'help|?'     => \$help,
     "files=s"  => \$dot_files,    
     "colors=s" => \$color_profile,
     "out=s"    => \$out_name,
