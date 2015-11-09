@@ -47,6 +47,7 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
+my $sub           = "";
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -60,6 +61,7 @@ my $options = GetOptions (
     "table=s"  => \$table,
     "venn=s"   => \$venn,
     "web=s"    => \$web,
+    "sub=s"    => \$sub,
     "debug"    => \$debug
 );
 
@@ -107,11 +109,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-my $dot_fh = get_fh($out_name);
-print $dot_fh "digraph ALL {\n";
-write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
-write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-print $dot_fh "}";
+#my $dot_fh = get_fh($out_name);
+#print $dot_fh "digraph ALL {\n";
+#write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
+#write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+#print $dot_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -142,6 +144,7 @@ print STDERR "PROGRAM FINISHED\n",
 # DEBUGGING
 if ($debug) {
     use Data::Dumper;
+    print STDERR Dumper(\%nodes);
     print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors], 
                                     [("GROUPS", "GROUPS_2_COLORS") ]), "\n";
 }
@@ -164,24 +167,29 @@ sub read_dot {
 
     while (<$dot_fh>) {
         chomp;
-        next if ($_ =~ m/graph/ or $_=~ m/node/ or $_=~ m/{|}/);
+        $_ =~ s/\"|\'//g;   # Remove quotes
+        $_ =~ s/\;//g;      # Remove semicolons
+        $_ =~ s/\s+//g;     # Remove spaces
+        $_ =~ s/\[.*?\]//g; # Remove attributes [foo = bar, bar = baz]
+        $_ =~ s/\/\/.+//g;  # Remove comments
+        # What about multiline comments?
+
+        next if ($_ =~ m/^digraph/ or
+                 $_ =~ m/^graph/   or 
+                 $_ =~ m/^node/    or 
+                 $_ =~ m/^}$/);
+
+        print $_, "\n";
 
         if ($_ =~ m/\->/g) { 
         # interactions "node1"->"node2"->"node3"
-            $_ =~ s/\"//g;
-            $_ =~ s/\;//g;
-            $_ =~ s/\s?//g;
-            $_ =~ s/\[.+//gi;
-
             my @node_names = split /\->/, $_;
             add_nodes(\@node_names, $nodes, $dot_symbol);
             add_interactions(\@node_names,$interactions,$dot_symbol);
         } else { 
         # just defined nodes: node [foo = bar];
-            if ($_ =~ m/\"(\w+)\"/) {
-                my @node_names = ($1);
-                add_nodes(\@node_names, $nodes, $dot_symbol);
-            } # if match
+            my @node_names = ($_);
+            add_nodes(\@node_names, $nodes, $dot_symbol);
         } # if node or interaction
 
     } # while file
@@ -582,15 +590,17 @@ OPTIONS
     --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
     --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
     --colors    <profile> Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
-    --venn      <filename.svg> Creates venn diagram with the results. 
+    --venn      <filename.svg> Creates a venn diagram with the results. 
     --web       <filename.html> Writes html file with the graph using cytoscape.js
+    --sub       <filename> Creates an svg plot comparing the subgraphs in each DOT.
 
 EXAMPLE                                      
                                                 
     dotcompare  --files file1.dot,file2.dot \\  
                 --colors HARD               \\   
                 --dot output.dot            \\               
-                --venn venn.svg             \\  
+                --venn venn.svg             \\ 
+                --sub subgraphs             \\ 
                 --cyt graph.html               
                                               
 BUGS
