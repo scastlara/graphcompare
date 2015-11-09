@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.1.2
+v0.1.3
 
 =head1 SYNOPSIS
 
@@ -247,11 +247,12 @@ sub read_dot {
         }
 
         foreach my $stmt (@statements) {
-            $stmt =~ s/\"|\'//g;   # Remove quotes
-            $stmt =~ s/\;//g;      # Remove semicolons
-            $stmt =~ s/\s+//g;     # Remove spaces
-            $stmt =~ s/\[.*?\]//g; # Remove attributes [foo = bar, bar = baz]
-            $stmt =~ s/\/\/.+//g;  # Remove comments
+            $stmt =~ s/(?<!\\)\"|(?<!\\)\'//g; # Remove unescaped quotes
+            $stmt =~ s/\\//g;                  # Remove escape character
+            $stmt =~ s/\;//g;                  # Remove semicolons
+            $stmt =~ s/\s+//g;                 # Remove spaces
+            $stmt =~ s/\[.*?\]//g;             # Remove attributes 
+            $stmt =~ s/\/\/.+//g;              # Remove comments
             # What about multiline comments?
     
             next unless $stmt =~ m/\w/;
@@ -270,11 +271,15 @@ sub read_dot {
             if ($stmt =~ m/\->/g) { 
             # interactions "node1"->"node2"->"node3"
                 my @node_names = split /\->/, $stmt;
+                check_IDs(\@node_names) or error("Not allowed character found ".
+                                                 "in dotfile $dot at line $.");
                 add_nodes(\@node_names, $nodes, $dot_symbol);
                 add_interactions(\@node_names,$interactions,$dot_symbol);
             } else { 
             # just defined nodes: node [foo = bar];
                 my @node_names = ($stmt);
+                check_IDs(\@node_names) or error("Not allowed character found ".
+                                                 "in dotfile $dot at line $.");
                 add_nodes(\@node_names, $nodes, $dot_symbol);
             } # if node or interaction
     
@@ -312,6 +317,25 @@ sub add_nodes {
     }
 
     return;
+}
+
+#--------------------------------------------------------------------------------
+sub check_IDs {
+    my $ids = shift;
+
+    # We didn't use the full DOT specification, as it stands that IDs with 
+    # letters that start with a digit are not allowed. Given the fact that 
+    # many genes may start with a digit and then some letters, I wasn't very 
+    # strict with the characters restriction.
+
+    # Also, note that DOT allows " and ' in IDs (if they are properly escaped).
+    # Unescaped quotes were removed before, so only escaped ones remain.
+
+    foreach my $id (@{$ids}) {
+        return 0 if ($id =~ m/[^A-Z0-9_\"\']/i);
+    } 
+
+    return 1;
 }
 
 #--------------------------------------------------------------------------------
@@ -468,7 +492,7 @@ sub results_table {
         or error("Can't create results.tbl : $!");
 
     print $fh "GROUP\tNODES\tINTERACTIONS\n";
-    foreach my $group (keys %{$groups}) {
+    foreach my $group (sort keys %{$groups}) {
         print $fh    $group, "\t", 
                      $groups->{$group}->{nodes}, "\t", 
                      $groups->{$group}->{ints}, "\n";
