@@ -19,9 +19,15 @@ v0.1.1
 
 =head1 DESCRIPTION
 
-This script compares two or more DOT files    
-and prints the resulting merged DOT file      
-with different colors.
+This script compares two or more DOT files and 
+prints the resulting merged DOT file with different 
+colors for each group. 
+
+Dotcompare has some optional outputs: an svg venn 
+diagram, an html file that contains a 
+representation of the resulting merged graph, a 
+table with the counts and a plot with information
+about the subgraphs within each DOT file.
 
 =head1 OPTIONS
 
@@ -37,7 +43,24 @@ with different colors.
 
 Sergio Castillo Lara - s.cast.lara@gmail.com
 
+=head1 BUGS AND PROBLEMS
+
+=head2 Current Limitations
+
+- This program still can't handle multiple line comments in DOT files.
+
+- Only works with directed graphs.
+
+- Still no clusters support eg: {A B C} -> D
+
+- Does not work with IDs containing "->"
+
+=head2 Reporting Bugs
+
+Report Bugs to s.cast.lara@gmail.com
+
 =head1 COPYRIGHT 
+
     (C) 2015 - Sergio CASTILLO LARA
 
     This program is free software; you can redistribute it and/or modify
@@ -92,6 +115,10 @@ my $out_name      = "STDOUT";
 my %nodes         = ();
 my %interactions  = ();
 
+# If no arguments provided
+pod2usage( -verbose => 1,  
+           -output  => \*STDERR   ) unless @ARGV;
+
 my $options = GetOptions (
     'help'     => \$help,
     "files=s"  => \$dot_files,    
@@ -106,9 +133,11 @@ my $options = GetOptions (
 
 my @files = split /,/, $dot_files;
 
-pod2usage( -verbose => 2,  
+# If option --help
+pod2usage( -verbose => 1,  
            -output  => \*STDERR   ) if $help;
 
+# If no files
 unless (@files > 0) {
     error("You have to introduce at least 1 dot file \n\n\t" . 
           'perl DOTCompare.pl -f file1,file2,file3...'
@@ -214,9 +243,13 @@ sub read_dot {
         $_ =~ s/\/\/.+//g;  # Remove comments
         # What about multiline comments?
 
-        next if ($_ =~ m/^digraph/ or
-                 $_ =~ m/^graph/   or 
-                 $_ =~ m/^node/    or 
+        # DOT language reserved keywords
+        next if ($_ =~ m/^digraph/i  or
+                 $_ =~ m/^graph/i    or 
+                 $_ =~ m/^subgraph/i or
+                 $_ =~ m/^node/i     or 
+                 $_ =~ m/^edge/i     or
+                 $_ =~ m/^#/         or
                  $_ =~ m/^}$/);
 
         print $_, "\n";
