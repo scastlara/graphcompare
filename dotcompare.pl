@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.1.1
+v0.1.2
 
 =head1 SYNOPSIS
 
@@ -53,7 +53,8 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 - Still no clusters support eg: {A B C} -> D
 
-- Does not work with IDs containing "->"
+- No support for multiline IDs.
+
 
 =head2 Reporting Bugs
 
@@ -95,7 +96,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.1.1';
+our $VERSION       = 'v0.1.2';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -236,35 +237,49 @@ sub read_dot {
 
     while (<$dot_fh>) {
         chomp;
-        $_ =~ s/\"|\'//g;   # Remove quotes
-        $_ =~ s/\;//g;      # Remove semicolons
-        $_ =~ s/\s+//g;     # Remove spaces
-        $_ =~ s/\[.*?\]//g; # Remove attributes [foo = bar, bar = baz]
-        $_ =~ s/\/\/.+//g;  # Remove comments
-        # What about multiline comments?
 
-        # DOT language reserved keywords
-        next if ($_ =~ m/^digraph/i  or
-                 $_ =~ m/^graph/i    or 
-                 $_ =~ m/^subgraph/i or
-                 $_ =~ m/^node/i     or 
-                 $_ =~ m/^edge/i     or
-                 $_ =~ m/^#/         or
-                 $_ =~ m/^}$/);
+        # Multiple statements per line
+        my @statements = ();
+        if ($_ =~ m/;/) {
+            @statements = split /;/;
+        } else {
+            push @statements, $_;
+        }
 
-        print $_, "\n";
-
-        if ($_ =~ m/\->/g) { 
-        # interactions "node1"->"node2"->"node3"
-            my @node_names = split /\->/, $_;
-            add_nodes(\@node_names, $nodes, $dot_symbol);
-            add_interactions(\@node_names,$interactions,$dot_symbol);
-        } else { 
-        # just defined nodes: node [foo = bar];
-            my @node_names = ($_);
-            add_nodes(\@node_names, $nodes, $dot_symbol);
-        } # if node or interaction
-
+        foreach my $stmt (@statements) {
+            $stmt =~ s/\"|\'//g;   # Remove quotes
+            $stmt =~ s/\;//g;      # Remove semicolons
+            $stmt =~ s/\s+//g;     # Remove spaces
+            $stmt =~ s/\[.*?\]//g; # Remove attributes [foo = bar, bar = baz]
+            $stmt =~ s/\/\/.+//g;  # Remove comments
+            # What about multiline comments?
+    
+            next unless $stmt =~ m/\w/;
+    
+            # DOT language reserved keywords
+            next if ($stmt =~ m/^digraph/i  or
+                     $stmt =~ m/^graph/i    or 
+                     $stmt =~ m/^subgraph/i or
+                     $stmt =~ m/^node/i     or 
+                     $stmt =~ m/^edge/i     or
+                     $stmt =~ m/^#/         or
+                     $stmt =~ m/^}$/);
+    
+            print $stmt, "\n";
+    
+            if ($stmt =~ m/\->/g) { 
+            # interactions "node1"->"node2"->"node3"
+                my @node_names = split /\->/, $stmt;
+                add_nodes(\@node_names, $nodes, $dot_symbol);
+                add_interactions(\@node_names,$interactions,$dot_symbol);
+            } else { 
+            # just defined nodes: node [foo = bar];
+                my @node_names = ($stmt);
+                add_nodes(\@node_names, $nodes, $dot_symbol);
+            } # if node or interaction
+    
+            }
+       
     } # while file
 
     return;
