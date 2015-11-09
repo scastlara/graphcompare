@@ -1,12 +1,12 @@
-## NAME
+### NAME
 
 dotcompare - A program to compare DOT files
 
-## VERSION
+### VERSION
 
 v0.1.3
 
-## SYNOPSIS
+### SYNOPSIS
 
     dotcompare  --files file1.dot,file2.dot \\  
                 --colors HARD               \\   
@@ -15,7 +15,7 @@ v0.1.3
                 --sub subgraphs             \\ 
                 --cyt graph.html               
 
-## DESCRIPTION
+### DESCRIPTION
 
 This script compares two or more DOT files and 
 prints the resulting merged DOT file with different 
@@ -27,7 +27,7 @@ representation of the resulting merged graph, a
 table with the counts and a plot with information
 about the subgraphs within each DOT file.
 
-## OPTIONS
+### OPTIONS
 
 - **-h**, **--help**               
 
@@ -57,13 +57,13 @@ about the subgraphs within each DOT file.
 
     Creates an svg plot comparing the subgraphs in each DOT.
 
-## AUTHOR
+### AUTHOR
 
 Sergio Castillo Lara - s.cast.lara@gmail.com
 
-## BUGS AND PROBLEMS
+### BUGS AND PROBLEMS
 
-### Current Limitations
+#### Current Limitations
 
 \- This program still can't handle multiple line comments in DOT files.
 
@@ -73,11 +73,11 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 \- No support for multiline IDs.
 
-### Reporting Bugs
+#### Reporting Bugs
 
-Report Bugs to s.cast.lara@gmail.com
+Report Bugs to https://github.com/scastlara/dotcompare or s.cast.lara@gmail.com
 
-## COPYRIGHT 
+### COPYRIGHT 
 
     (C) 2015 - Sergio CASTILLO LARA
 
