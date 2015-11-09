@@ -96,7 +96,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.1.2';
+our $VERSION       = 'v0.1.3';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
