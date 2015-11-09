@@ -1,22 +1,60 @@
 #!/usr/bin/perl
-#################################################################################
-#                               dotcompare                                      #
-#################################################################################
-# Copyright (C) 2015 - Sergio CASTILLO LARA
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 NAME
+
+dotcompare - A program to compare DOT files
+
+=head1 VERSION
+
+v0.1.1
+
+=head1 SYNOPSIS
+
+    dotcompare  --files file1.dot,file2.dot \\  
+                --colors HARD               \\   
+                --dot output.dot            \\               
+                --venn venn.svg             \\ 
+                --sub subgraphs             \\ 
+                --cyt graph.html               
+
+=head1 DESCRIPTION
+
+This script compares two or more DOT files    
+and prints the resulting merged DOT file      
+with different colors.
+
+=head1 OPTIONS
+
+    --help      Shows this help.                       
+    --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
+    --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
+    --colors    <profile> Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
+    --venn      <filename.svg> Creates a venn diagram with the results. 
+    --web       <filename.html> Writes html file with the graph using cytoscape.js
+    --sub       <filename> Creates an svg plot comparing the subgraphs in each DOT.
+
+=head1 AUTHOR
+
+Sergio Castillo Lara - s.cast.lara@gmail.com
+
+=head1 COPYRIGHT 
+    (C) 2015 - Sergio CASTILLO LARA
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=cut
 
 
 #===============================================================================
@@ -27,13 +65,14 @@ use strict;
 use Getopt::Long;
 use Algorithm::Combinatorics qw(combinations);
 use Cwd 'abs_path';
+use Pod::Usage;
 
 
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.1.0';
+our $VERSION       = 'v0.1.1';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -67,7 +106,8 @@ my $options = GetOptions (
 
 my @files = split /,/, $dot_files;
 
-help() if $help;
+pod2usage( -verbose => 2,  
+           -output  => \*STDERR   ) if $help;
 
 unless (@files > 0) {
     error("You have to introduce at least 1 dot file \n\n\t" . 
@@ -569,47 +609,3 @@ sub get_installpath {
     return($path);
 }
 
-#--------------------------------------------------------------------------------
-sub help {
-    print STDERR << "EOF";
-
-
-NAME            dotcompare
-
-VERSION         $VERSION
-
-SYNOPSIS        dotcompare [options]
-
-DESCRIPTION     This script compares two or more DOT files    
-                and prints the resulting merged DOT file      
-                with different colors.        
-                                   
-OPTIONS
-
-    --help      Shows this help.                       
-    --files     <file#,file#> REQUIRED. Input DOT files, separated by commas.            
-    --dot       <filename.dot> Creates a merged dot file. Default to STDOUT.
-    --colors    <profile> Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
-    --venn      <filename.svg> Creates a venn diagram with the results. 
-    --web       <filename.html> Writes html file with the graph using cytoscape.js
-    --sub       <filename> Creates an svg plot comparing the subgraphs in each DOT.
-
-EXAMPLE                                      
-                                                
-    dotcompare  --files file1.dot,file2.dot \\  
-                --colors HARD               \\   
-                --dot output.dot            \\               
-                --venn venn.svg             \\ 
-                --sub subgraphs             \\ 
-                --cyt graph.html               
-                                              
-BUGS
-    Report bugs to Sergio CASTILLO LARA: $MAIL
-
-    Copyright (C) 2015 - S. CASTILLO LARA
-
-EOF
-;
-
-    exit(0);
-}
