@@ -91,7 +91,7 @@ Writes html file with the graph using cytoscape.js
 
 =item B<-s>, B<--sub> <filename>
     
-Creates an svg plot comparing the subgraphs in each DOT.
+Creates an svg plot comparing the subgraphs in each DOT. (NOT IMPLEMENTED)
 
 =back
 
