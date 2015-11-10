@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.1.3
+v0.1.4
 
 =head1 SYNOPSIS
 
@@ -120,7 +120,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.1.3';
+our $VERSION       = 'v0.1.4';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -255,12 +255,24 @@ sub read_dot {
     my $nodes        = shift;
     my $interactions = shift;
     my $dot_symbol   = clean_name($dot);
+    my $multicomm    = 0; 
 
     open my $dot_fh, "<", $dot
         or error("Can't open dot file $dot: $!");
 
     while (<$dot_fh>) {
         chomp;
+        # Remove spaces
+        $_ =~ s/\s+//g; 
+
+        # Multiline comments
+        if ($_ =~ m/^\/\*/) {
+            $multicomm = 1;
+        } elsif ( $_ =~ m/\*\/$/ ) {
+            $multicomm = 0;
+            next;
+        }
+        next if $multicomm;
 
         # Multiple statements per line
         my @statements = ();
@@ -274,21 +286,19 @@ sub read_dot {
             $stmt =~ s/(?<!\\)\"|(?<!\\)\'//g; # Remove unescaped quotes
             $stmt =~ s/\\//g;                  # Remove escape character
             $stmt =~ s/\;//g;                  # Remove semicolons
-            $stmt =~ s/\s+//g;                 # Remove spaces
             $stmt =~ s/\[.*?\]//g;             # Remove attributes 
             $stmt =~ s/\/\/.+//g;              # Remove comments
-            # What about multiline comments?
     
-            next unless $stmt =~ m/\w/;
+            next unless $stmt =~ m/[\w\d]/;
     
-            # DOT language reserved keywords
-            next if ($stmt =~ m/^digraph/i  or
-                     $stmt =~ m/^graph/i    or 
-                     $stmt =~ m/^subgraph/i or
-                     $stmt =~ m/^node/i     or 
-                     $stmt =~ m/^edge/i     or
-                     $stmt =~ m/^#/         or
-                     $stmt =~ m/^}$/);
+            # DOT language keywords
+            next if ($stmt =~ m/^digraph/i  or # digraph declaration
+                     $stmt =~ m/^graph/i    or # graph declaration
+                     $stmt =~ m/^subgraph/i or # subgraph declaration
+                     $stmt =~ m/^node/i     or # node properties
+                     $stmt =~ m/^edge/i     or # edge properties
+                     $stmt =~ m/^#/         or # C preprocessor lines
+                     $stmt =~ m/^}$/);         # End of sub/di/graph
     
             print $stmt, "\n";
             
@@ -298,14 +308,14 @@ sub read_dot {
             }
 
             if ($stmt =~ m/\->/g) { 
-            # interactions "node1"->"node2"->"node3"
+                # interactions "node1"->"node2"->"node3"
                 my @node_names = split /\->/, $stmt;
                 check_IDs(\@node_names) or error("Not allowed character found ".
                                                  "in dotfile $dot at line $.");
                 add_nodes(\@node_names, $nodes, $dot_symbol);
                 add_interactions(\@node_names,$interactions,$dot_symbol);
             } else { 
-            # just defined nodes: node [foo = bar];
+                # just defined nodes: node [foo = bar];
                 my @node_names = ($stmt);
                 check_IDs(\@node_names) or error("Not allowed character found ".
                                                  "in dotfile $dot at line $.");
@@ -331,24 +341,6 @@ sub clean_name {
 } 
 
 #--------------------------------------------------------------------------------
-sub add_nodes {
-    my $node_names = shift;
-    my $nodes      = shift;
-    my $dot_symbol = shift;
-
-    foreach my $node (@{$node_names}) {
-        if (exists $nodes->{$node}) {
-            $nodes->{$node} .= ":$dot_symbol"
-                unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
-        } else {
-            $nodes->{$node} = $dot_symbol;
-        }
-    }
-
-    return;
-}
-
-#--------------------------------------------------------------------------------
 sub check_IDs {
     my $ids = shift;
 
@@ -365,6 +357,24 @@ sub check_IDs {
     } 
 
     return 1;
+}
+
+#--------------------------------------------------------------------------------
+sub add_nodes {
+    my $node_names = shift;
+    my $nodes      = shift;
+    my $dot_symbol = shift;
+
+    foreach my $node (@{$node_names}) {
+        if (exists $nodes->{$node}) {
+            $nodes->{$node} .= ":$dot_symbol"
+                unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
+        } else {
+            $nodes->{$node} = $dot_symbol;
+        }
+    }
+
+    return;
 }
 
 #--------------------------------------------------------------------------------
