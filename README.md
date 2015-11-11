@@ -19,7 +19,7 @@ v0.1.4
 
 This script compares two or more DOT files and prints the resulting merged DOT file with different colors for each group. 
 
-Dotcompare has some optional outputs: an svg venn diagram, an html file that contains a representation of the resulting merged graph, a table with the counts and a plot with informationabout the subgraphs within each DOT file.
+Dotcompare has some optional outputs: an svg venn diagram, an html file that contains a representation of the resulting merged graph, a table with the counts and a plot with information about the subgraphs within each DOT file.
 
 ### OPTIONS
 
