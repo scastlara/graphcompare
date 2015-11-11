@@ -27,7 +27,7 @@ By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -d (see options below).
 
 Dotcompare has some optional outputs, each one specified by one 
-options.
+option.
 
 =over 8
 
