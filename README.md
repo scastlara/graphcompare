@@ -4,7 +4,7 @@ dotcompare - A program to compare DOT files
 
 ### VERSION
 
-v0.1.3
+v0.1.4
 
 ### SYNOPSIS
 
@@ -17,15 +17,9 @@ v0.1.3
 
 ### DESCRIPTION
 
-This script compares two or more DOT files and 
-prints the resulting merged DOT file with different 
-colors for each group. 
+This script compares two or more DOT files and prints the resulting merged DOT file with different colors for each group. 
 
-Dotcompare has some optional outputs: an svg venn 
-diagram, an html file that contains a 
-representation of the resulting merged graph, a 
-table with the counts and a plot with information
-about the subgraphs within each DOT file.
+Dotcompare has some optional outputs: an svg venn diagram, an html file that contains a representation of the resulting merged graph, a table with the counts and a plot with informationabout the subgraphs within each DOT file.
 
 ### OPTIONS
 
@@ -56,6 +50,13 @@ about the subgraphs within each DOT file.
 - **-s**, **--sub** &lt;filename>
 
     Creates an svg plot comparing the subgraphs in each DOT.
+
+
+### INSTALLATION
+To install dotcompare you have two options: either you move the files manually to wherever you want, or you use the script `install.sh`. 
+
+If you use `install.sh`, it will ask you in which directory you want to storethe program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
+
 
 ### AUTHOR
 
