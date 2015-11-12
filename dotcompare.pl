@@ -19,7 +19,7 @@ v0.1.4
 
 =head1 DESCRIPTION
 
-This script compares two or more DOT files and 
+This script compares two or more DOT (graphviz) files and 
 prints the resulting merged DOT file with different 
 colors for each group. 
 
@@ -101,12 +101,12 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 =over 8
 
-=item B<- Undirected graphs>. Only works with directed graphs. If undirected, 
+=item I<- Undirected graphs>. Only works with directed graphs. If undirected, 
 dotcompare considers it to be directed.
 
-=item B<- Clusters>. Still no clusters support eg: {A B C} -> D
+=item I<- Clusters>. Still no clusters support eg: {A B C} -> D
 
-=item B<- Multiline IDs>. No complete support for multiline IDs: 
+=item I<- Multiline IDs>. No complete support for multiline IDs: 
 
                 comments of the form /* comment */
 
@@ -295,13 +295,15 @@ sub read_dot {
         # Remove spaces
         $_ =~ s/\s+//g; 
 
-        # Multiline comments
-        # What if a multiline comment is in just one line? /* foo bar baz */
-        # It won't work and it will not read the DOT file from
-        # the /* . It needs to be solved!
-        if ($_ =~ m#^\/\*#) {
+        # Comments
+        $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
+        $_ =~ s/\/\/.+//g;       # Remove regular comments
+
+        # If there are still comments...
+        # They must be multiline!
+        if ($_ =~ m{\/\*}) {
             $multicomm = 1;
-        } elsif ( $_ =~ m#\*\/$# ) {
+        } elsif ( $_ =~ m{\*\/$} ) {
             $multicomm = 0;
             next;
         }
@@ -320,7 +322,7 @@ sub read_dot {
             $stmt =~ s/\\//g;                  # Remove escape character
             $stmt =~ s/\;//g;                  # Remove semicolons
             $stmt =~ s/\[.*?\]//g;             # Remove attributes 
-            $stmt =~ s/\/\/.+//g;              # Remove comments
+
     
             next unless $stmt =~ m/[\w\d]/;
     
