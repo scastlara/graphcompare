@@ -300,9 +300,12 @@ sub read_dot {
         $_ =~ s/\s+//g; 
 
         # Multiline comments
-        if ($_ =~ m/^\/\*/) {
+        # What if a multiline comment is in just one line? /* foo bar baz */
+        # It won't work and it will not read the DOT file from
+        # the /* . It needs to be solved!
+        if ($_ =~ m#^\/\*#) {
             $multicomm = 1;
-        } elsif ( $_ =~ m/\*\/$/ ) {
+        } elsif ( $_ =~ m#\*\/$# ) {
             $multicomm = 0;
             next;
         }
