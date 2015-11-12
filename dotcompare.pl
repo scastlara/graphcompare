@@ -101,10 +101,10 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 =over 8
 
-=item I<- Undirected graphs>. Only works with directed graphs. If undirected, 
+=item I<Undirected_graphs>. Only works with directed graphs. If undirected, 
 dotcompare considers it to be directed.
 
-=item I<- Clusters>. Still no clusters support eg: {A B C} -> D
+=item I<Clusters>. Still no clusters support eg: {A B C} -> D
 
 =back
 
