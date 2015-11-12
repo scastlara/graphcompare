@@ -277,6 +277,7 @@ if ($debug) {
 # READING DOT FILES
 #--------------------------------------------------------------------------------
 sub read_dot {
+    # Function is TOO long. May need to refactor
     my $dot          = shift;
     my $nodes        = shift;
     my $interactions = shift;
