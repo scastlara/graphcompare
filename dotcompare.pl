@@ -293,7 +293,7 @@ sub read_dot {
 
         # Comments
         $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
-        $_ =~ s/\/\/.+//g;       # Remove regular comments
+        $_ =~ s{\/\/.+}{}g;       # Remove regular comments
 
         # If there are still comments,
         # they must be multiline
@@ -316,12 +316,11 @@ sub read_dot {
         }
 
         foreach my $stmt (@statements) {
-            $stmt =~ s/(?<!\\)\"|(?<!\\)\'//g; # Remove unescaped quotes
-            $stmt =~ s/\\//g;                  # Remove escape character
-            $stmt =~ s/\;//g;                  # Remove semicolons
-            $stmt =~ s/\[.*?\]//g;             # Remove attributes 
+            $stmt =~ s{(?<!\\)\"|(?<!\\)\'}{}g; # Remove unescaped quotes
+            $stmt =~ s{\\}{}g;                  # Remove escape character
+            $stmt =~ s{\;}{}g;                  # Remove semicolons
+            $stmt =~ s{\[.*?\]}{}g;             # Remove attributes 
 
-    
             next unless $stmt =~ m/[\w\d]/;
     
             # DOT language keywords
@@ -333,11 +332,9 @@ sub read_dot {
                      $stmt =~ m/^#/         or # C preprocessor lines
                      $stmt =~ m/^}$/);         # End of sub/di/graph
     
-           # print $stmt, "\n";
-            
             if ($stmt =~ m/\-\-/) {
                 print STDERR "Your graph is undirected. Changed it to directed.\n";
-                $stmt =~ s/\-\-/\->/g
+                $stmt =~ s{\-\-}{\->}g
             }
 
             if ($stmt =~ m/\->/g) { 
