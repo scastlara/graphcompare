@@ -89,10 +89,6 @@ Creates a venn diagram with the results.
 
 Writes html file with the graph using cytoscape.js
 
-=item B<-s>, B<--sub> <filename>
-    
-Creates an svg plot comparing the subgraphs in each DOT. (NOT IMPLEMENTED)
-
 =back
 
 =head1 AUTHOR
@@ -110,13 +106,15 @@ dotcompare considers it to be directed.
 
 =item B<- Clusters>. Still no clusters support eg: {A B C} -> D
 
-=item B<- Multiline IDs>. No support for multiline IDs.
+=item B<- Multiline IDs>. No complete support for multiline IDs: 
+
+                comments of the form /* comment */
 
 =back
 
 =head2 Reporting Bugs
 
-Report Bugs at I<https://github.com/scastlara/dotcompare/issues>
+Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 
 =head1 COPYRIGHT 
 
@@ -168,7 +166,6 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
-my $sub           = "";
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -186,7 +183,6 @@ my $options = GetOptions (
     "table=s"  => \$table,
     "venn=s"   => \$venn,
     "web=s"    => \$web,
-    #"sub=s"    => \$sub,
     "debug"    => \$debug
 );
 
@@ -237,11 +233,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-#my $dot_fh = get_fh($out_name);
-#print $dot_fh "digraph ALL {\n";
-#write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
-#write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-#print $dot_fh "}";
+my $dot_fh = get_fh($out_name);
+print $dot_fh "digraph ALL {\n";
+write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $dot_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
