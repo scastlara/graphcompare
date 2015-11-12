@@ -101,10 +101,18 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 =over 8
 
-=item I<Undirected_graphs>. Only works with directed graphs. If undirected, 
+=item I<Undirected_graphs> 
+
+Only works with directed graphs. If undirected, 
 dotcompare considers it to be directed.
 
-=item I<Clusters>. Still no clusters support eg: {A B C} -> D
+=item I<Clusters> 
+
+Still no clusters support eg: {A B C} -> D
+
+=item I<Multiline IDs> 
+
+No support for multiline IDs (yet).
 
 =back
 
@@ -294,7 +302,7 @@ sub read_dot {
 
         # Comments
         $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
-        $_ =~ s{\/\/.+}{}g;       # Remove regular comments
+        $_ =~ s{\/\/.+}{}g;      # Remove regular comments
 
         # If there are still comments,
         # they must be multiline

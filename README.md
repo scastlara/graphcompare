@@ -1,27 +1,60 @@
-### NAME
+# NAME
 
 dotcompare - A program to compare DOT files
 
-### VERSION
+# VERSION
 
 v0.1.4
 
-### SYNOPSIS
+# SYNOPSIS
 
     dotcompare  --files file1.dot,file2.dot \\  
                 --colors HARD               \\   
-                --dot output.dot            \\               
+                --dot output.dot            \\   
+                --table table.tbl           \\ 
                 --venn venn.svg             \\ 
-                --sub subgraphs             \\ 
-                --cyt graph.html               
+                --web graph.html               
 
-### DESCRIPTION
+# DESCRIPTION
 
-This script compares two or more DOT files and prints the resulting merged DOT file with different colors for each group. 
+This script compares two or more DOT (graphviz) files and 
+prints the resulting merged DOT file with different 
+colors for each group. 
 
-Dotcompare has some optional outputs: an svg venn diagram, an html file that contains a representation of the resulting merged graph, a table with the counts and a plot with information about the subgraphs within each DOT file.
+By default, dotcompare will print the resulting graph to
+STDOUT, but you can change it with the option -d (see options below).
 
-### OPTIONS
+Dotcompare has some optional outputs, each one specified by one 
+option.
+
+- - Venn diagram. 
+
+    If given the option -v, dotcompare will create an
+    svg file containing a venn diagram. In this image, you will be able to see
+    a comparison of the counts of nodes and relationships in each input DOT file,
+    and those nodes/relationships common to more than one file. The colors will be
+    chosen using one of the profiles in data/colors.txt. By default, the color palette
+    is set to be "SOFT". To change it, use the option -c (see options below).
+
+- - Table. 
+
+    Complementary to the venn diagram, one can choose to create a 
+    table containing all the counts (so it can be used to create other plots or tables). The 
+    table is already formated to be used by R. Load it to a dataframe using:
+
+            df <-read.table(file="yourtable.tbl", header=FALSE)
+
+- - Webpage with the graph. 
+
+    With the option -w, one can create a webpage
+    with a representation of the merged graph (with different colors for nodes and 
+    relationships depending on their presence in each DOT file). To make this representation,
+    dotcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
+    embedded in the html file to allow maximum portability: the webpage and the graph work
+    without any external file/script dependencies. This allows for an easy upload of the graph
+    to any website.
+
+# OPTIONS
 
 - **-h**, **--help**               
 
@@ -47,38 +80,37 @@ Dotcompare has some optional outputs: an svg venn diagram, an html file that con
 
     Writes html file with the graph using cytoscape.js
 
-- **-s**, **--sub** &lt;filename>
+# INSTALLATION
+To install dotcompare you have two options: either you move the files manually to wherever you want or you use the script `install.sh`. 
 
-    Creates an svg plot comparing the subgraphs in each DOT.
+If you use `install.sh`, it will ask you in which directory you want to store the program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
 
-
-### INSTALLATION
-To install dotcompare you have two options: either you move the files manually to wherever you want, or you use the script `install.sh`. 
-
-If you use `install.sh`, it will ask you in which directory you want to storethe program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
-
-
-### AUTHOR
+# AUTHOR
 
 Sergio Castillo Lara - s.cast.lara@gmail.com
 
-### BUGS AND PROBLEMS
+# BUGS AND PROBLEMS
 
-#### Current Limitations
+## Current Limitations
 
-\- This program still can't handle multiple line comments in DOT files.
+- _Undirected\_graphs_ 
 
-\- Only works with directed graphs.
+    Only works with directed graphs. If undirected, 
+    dotcompare considers it to be directed.
 
-\- Still no clusters support eg: {A B C} -> D
+- _Clusters_ 
 
-\- No support for multiline IDs.
+    Still no clusters support eg: {A B C} -> D
 
-#### Reporting Bugs
+- _Multiline IDs_ 
 
-Report Bugs at https://github.com/scastlara/dotcompare/issues
+    No support for multiline IDs (yet).
 
-### COPYRIGHT 
+## Reporting Bugs
+
+Report Bugs at _https://github.com/scastlara/dotcompare/issues_ (still private)
+
+# COPYRIGHT 
 
     (C) 2015 - Sergio CASTILLO LARA
 
