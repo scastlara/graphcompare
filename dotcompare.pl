@@ -106,10 +106,6 @@ dotcompare considers it to be directed.
 
 =item I<- Clusters>. Still no clusters support eg: {A B C} -> D
 
-=item I<- Multiline IDs>. No complete support for multiline IDs: 
-
-                comments of the form /* comment */
-
 =back
 
 =head2 Reporting Bugs
@@ -299,15 +295,17 @@ sub read_dot {
         $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
         $_ =~ s/\/\/.+//g;       # Remove regular comments
 
-        # If there are still comments...
-        # They must be multiline!
+        # If there are still comments,
+        # they must be multiline
         if ($_ =~ m{\/\*}) {
             $multicomm = 1;
-        } elsif ( $_ =~ m{\*\/$} ) {
+        } elsif ( $_ =~ m{\*\/} ) {
             $multicomm = 0;
-            next;
+            $_ =~ s{.*\*\/}{};
+            next unless $_ =~ m/[\w\d]/;
         }
         next if $multicomm;
+
 
         # Multiple statements per line
         my @statements = ();
