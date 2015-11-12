@@ -6,8 +6,8 @@ digraph G {
 	"RHO" [ color = "#CBB0F0" ];
 	// ALL LINE COMMENT
 	"SAG" [ color = "#CBB0F0" ];
-	"FSCN2" [ color = "#CBB0F0" ];
-	"DDIT3" [ color = "#CCCCCC" ];
+	"FSCN2" [ color = "#CBB0F0" ]; /*MULTILINE
+	CONTAINS DATA:*/"DDIT3" [ color = "#CCCCCC" ];
 	"BCL2L11" [ color = "#CCCCCC" ];
 	"H3F3AP3" [ color = "#CCCCCC" ];
 	"PDE6B" [ color = "#CBB0F0" ];
@@ -76,7 +76,7 @@ digraph G {
 	"EMC1" [ color = "#F1A111" ];
 	"PROM1" [ color = "#F1A111" ];
 	"USH2A" [ color = "#F1A111" ];
-	 "PRPF31"->"ROM1";
+	 "PRPF31"->"ROM1";  "PRPF31"->"ROM1"; // repeated relationship to test
 	 "PRPF31"->"RHO";
 	 "PRPF31"->"FSCN2";
 	 "H3F3AP3"->"PDE6B";
