@@ -1,8 +1,10 @@
 digraph G {
 	graph [ splines = true, overlap = false, dpi="72" ];
 	 node [ style = filled, color = "#F1A111" ];
-	"PRPF31" [ color = "#CBB0F0" ];
+	/* COMMENT */ "PRPF31" [ color = "#CBB0F0" ] /* MULTI
+	LINE */ 
 	"RHO" [ color = "#CBB0F0" ];
+	// ALL LINE COMMENT
 	"SAG" [ color = "#CBB0F0" ];
 	"FSCN2" [ color = "#CBB0F0" ];
 	"DDIT3" [ color = "#CCCCCC" ];
