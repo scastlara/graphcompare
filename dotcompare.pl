@@ -337,7 +337,7 @@ sub read_dot {
                      $stmt =~ m/^#/         or # C preprocessor lines
                      $stmt =~ m/^}$/);         # End of sub/di/graph
     
-            print $stmt, "\n";
+           # print $stmt, "\n";
             
             if ($stmt =~ m/\-\-/) {
                 print STDERR "Your graph is undirected. Changed it to directed.\n";
