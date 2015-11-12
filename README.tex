@@ -1,0 +1,139 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{listings}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{hyperref}
+
+\title{Readme - dotcompare}
+
+\author{}
+\date{}
+
+
+
+\begin{document}
+\maketitle
+
+\section{NAME}\label{name}
+
+dotcompare - A program to compare DOT files
+
+\index{Name}
+\section{VERSION}\label{version}
+
+v0.1.4
+
+\index{Synopsis}
+\section{SYNOPSIS}\label{synopsis}
+
+\begin{verbatim}
+dotcompare  --files file1.dot,file2.dot \\  
+            --colors HARD               \\   
+            --dot output.dot            \\               
+            --venn venn.svg             \\ 
+            --sub subgraphs             \\ 
+            --cyt graph.html               
+\end{verbatim}
+
+\section{DESCRIPTION}\label{description}
+
+This script compares two or more DOT files and prints the resulting
+merged DOT file with different colors for each group.
+
+Dotcompare has some optional outputs: an svg venn diagram, an html file
+that contains a representation of the resulting merged graph, a table
+with the counts and a plot with information about the subgraphs within
+each DOT file.
+
+\section{OPTIONS}\label{options}
+
+\begin{itemize}
+\item
+  \textbf{-h}, \textbf{--help}
+
+  Shows this help.
+\item
+  \textbf{-f}, \textbf{--files}
+  \textless{}file1,file2,\ldots{}\textgreater{}
+
+  REQUIRED. Input DOT files, separated by commas.
+\item
+  \textbf{-d}, \textbf{--dot} \textless{}filename.dot\textgreater{}
+
+  Creates a merged dot file. Default to STDOUT.
+\item
+  \textbf{-c}, \textbf{--colors} \textless{}profile\textgreater{}
+
+  Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
+\item
+  \textbf{-v}, \textbf{--venn} \textless{}filename.svg\textgreater{}
+
+  Creates a venn diagram with the results.
+\item
+  \textbf{-w}, \textbf{--web} \textless{}filename.html\textgreater{}
+
+  Writes html file with the graph using cytoscape.js
+\item
+  \textbf{-s}, \textbf{--sub} \textless{}filename\textgreater{}
+
+  Creates an svg plot comparing the subgraphs in each DOT.
+\end{itemize}
+
+\section{INSTALLATION}\label{installation}
+
+To install dotcompare you have two options: either you move the files
+manually to wherever you want, or you use the script
+\texttt{install.sh}.
+
+If you use \texttt{install.sh}, it will ask you in which directory you
+want to storethe program and all the files it needs. You will need
+\textbf{ROOT} privileges to use install.sh, as it creates a symlink to
+dotcompare.pl in \texttt{/usr/local/bin} and a man page in
+\texttt{/usr/share/man/man1/}.
+
+\section{AUTHOR}\label{author}
+
+Sergio Castillo Lara - s.cast.lara@gmail.com
+
+\section{BUGS AND PROBLEMS}\label{bugs-and-problems}
+
+\paragraph{Current Limitations}\label{current-limitations}
+
+- This program still can't handle multiple line comments in DOT files.
+
+- Only works with directed graphs.
+
+- Still no clusters support eg: \{A B C\} -\textgreater{} D
+
+- No support for multiline IDs.
+
+\paragraph{Reporting Bugs}\label{reporting-bugs}
+
+Report Bugs at https://github.com/scastlara/dotcompare/issues
+
+\section{COPYRIGHT}\label{copyright}
+
+\begin{verbatim}
+(C) 2015 - Sergio CASTILLO LARA
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+\end{verbatim}
+
+\end{document}
