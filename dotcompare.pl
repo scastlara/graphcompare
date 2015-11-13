@@ -339,8 +339,8 @@ sub read_dot {
         foreach my $stmt (@statements) {
             # CHECK STRANGE CHARACTERS
             if ($stmt =~ m/([^$node_id\s\t\n\->{}])/) {
-                print STDERR "\n[MINOR ERROR]\nProblem parsing DOT file. ",
-                             "Not allowed character in $dot at line $..\n\n";
+                min_error("Problem parsing DOT file. ".
+                          "Not allowed character in $dot at line $..\n\n");
             }
 
             # ADD NODES
@@ -592,10 +592,10 @@ sub print_venn {
         # We have 3 dotfiles -> venn with 3 circles
         $venn_template = "$INSTALL_PATH/data/v3_template.svg";
     } else {
-        print STDERR "You have more than 3 dot files (or less than 2), ", 
-                     "I won't draw any venn diagram.\n", 
-                     "I suggest you to use the option -t to print a ",
-                     "table with the results\n";
+        min_error("One or more than three DOT files, ". 
+                  "none venn diagram will be drawn.\n". 
+                  "You could use the option -t to print a ".
+                  "table with the results.\n");
         return;
     }
 
@@ -739,9 +739,25 @@ sub print_html {
 #--------------------------------------------------------------------------------
 sub error {
     my $string = shift;
+    my @lines = split /\n/, $string;
 
-    die "\n[FATAL ERROR]\n$string\n",
-        "\nUse dotcompare -h to get help.\n\n";
+    print STDERR "\n# [FATAL ERROR]\n";
+    print STDERR "# $_\n" foreach (@lines);    
+    print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
+
+    exit(1);
+}
+
+#--------------------------------------------------------------------------------
+sub min_error {
+    my $string = shift;
+    my @lines = split /\n/, $string;
+
+    print STDERR "\n# [MINOR ERROR]\n";
+    print STDERR "# $_\n" foreach (@lines);
+    print STDERR "\n\n";
+    
+    return;
 }
 
 #--------------------------------------------------------------------------------
