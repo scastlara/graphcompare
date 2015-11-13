@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.1
+v0.2.2
 
 =head1 SYNOPSIS
 
@@ -164,7 +164,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.1';
+our $VERSION       = 'v0.2.2';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
