@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.1.4
+v0.2.0
 
 =head1 SYNOPSIS
 
@@ -110,9 +110,17 @@ dotcompare considers it to be directed.
 
 Still no clusters support eg: {A B C} -> D
 
-=item I<Multiline IDs> 
+=item I<Multiline_IDs> 
 
 No support for multiline IDs (yet).
+
+=item I<Non_alphanumeric_characters>
+
+All non alphanumeric characters [^A-Z0-9] will be converted to underscores in node IDs. 
+
+=item I<No_escaped_quotes>
+
+No support for quotes in node IDs.
 
 =back
 
@@ -156,7 +164,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.1.4';
+our $VERSION       = 'v0.2.0';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -237,11 +245,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-#my $dot_fh = get_fh($out_name);
-#print $dot_fh "digraph ALL {\n";
-#write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
-#write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-#print $dot_fh "}";
+my $dot_fh = get_fh($out_name);
+print $dot_fh "digraph ALL {\n";
+write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
+write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+print $dot_fh "}\n";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -295,65 +303,76 @@ sub read_dot {
     open my $dot_fh, "<", $dot
         or error("Can't open dot file $dot: $!");
 
+    # Define regex classes
     my $ue_quote = "[\"\']";
     my $node_id  = "A-Z0-9_\"\'";
+
     while (<$dot_fh>) {
         chomp;
-        # Remove DOT header
-        s{(strict)?[\s]*?(di|sub)?graph\s*?.*?\s*?\{}{}g; 
-
+        my $line = clean_line($_);
         # Comments and keywords
-        $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
-        $_ =~ s{\/\/.+}{}g;      # Remove regular comments
-        $_ =~ s{(di|sub)?graph}{}g;
-        $_ =~ s{node|edge}{}g;
-        $_ =~ s{\s+}{ }g;
-        
-        # REMOVE ATTRIBUTES
-        $_ =~ s{\[.*?\]}{}g; 
+                                    # Graph inizialization
+        #$line =~ s{(strict)?[\s]*?(di|sub)?graph\b\s*?.*?\s*?\{}{}g; 
+        #$line =~ s{\/\*.*?\*\/}{}g;    # Remove comments
+        #$line =~ s{\/\/.+}{}g;         # Remove regular comments
+        #$line =~ s{\b(di|sub)?graph\b}{}g; # Remove graph attribute statements
+        #$line =~ s{\bnode\b|\bedge\b}{}g;      # Node or edge attribute statements
+        #$line =~ s/^#.+//;            # Remove C style preprocessor comments 
+        #
+        #$line =~ s{\[.*?\]}{}g;        # Remove attributes
         
         # If there are still comments,
         # they must be multiline
-        if ($_ =~ m{\/\*}) {
+        if ($line =~ m{\/\*}) {
             $multicomm = 1;
-        } elsif ( $_ =~ m{\*\/} ) {
+        } elsif ( $line =~ m{\*\/} ) {
             $multicomm = 0;
-            $_ =~ s{.*\*\/}{};
-            next unless $_ =~ m/[\w\d]/;
+            $line =~ s{.*\*\/}{};
+            next unless $line =~ m/[\w\d]/;
         }
         next if $multicomm;
         
         # Fix and remove quoted IDs
-        while ($_ =~ m/$ue_quote(.*?)$ue_quote/g) {
+        while ($line =~ m/$ue_quote(.*?)$ue_quote/g) {
             my $id = $1;
             my $clean_id = $id;
             $clean_id =~ s{[^$node_id]}{_}g;
-            $_ =~ s/$ue_quote$id$ue_quote/$clean_id/;
+            $line =~ s/$ue_quote$id$ue_quote/ $clean_id/ ;
         }
+        $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
         my @statements = ();
-        if ($_ =~ m/;|,/g) {
-            @statements = split /;|,/;
+        if ($line =~ m/;|,/g) {
+            @statements = split /;|,/, $line;
         } else {
-            @statements = ($_);
+            @statements = ($line);
         }
 
         foreach my $stmt (@statements) {
             # CHECK STRANGE CHARACTERS
-            if ($stmt =~ m/[^$node_id\->\s\t\n]/) {
-                print STDERR "Not allowed character in $dot at line $.\n";
+            if ($stmt =~ m/([^$node_id\s\t\n\->{}])/) {
+                print STDERR "\n[MINOR ERROR]\nProblem parsing DOT file. ",
+                             "Not allowed character in $dot at line $..\n\n";
             }
 
             # ADD NODES
-            while ($stmt =~ m/([A-Z0-9]+)/gi) {
-                print "node $1\n";
+            while ($stmt =~ m/([$node_id]+)/gi) {
                 add_nodes($1, $nodes, $dot_symbol);
             }
 
             # ADD RELATIONSHIPS
-            while ($stmt =~ m/([A-Z0-9]+)\s?\->\s?([$node_id]+)/g) {
-                add_interactions($1, $2, $interactions, $dot_symbol);
+            # This loop allows dotcompare to parse multiple relationships per
+            # statement: A -> B -> C -> D
+            # First it will save A -> B, C -> D; and then B -> C.
+            for (1..2) {
+                while ($stmt =~ m/([$node_id]+)\s?(\->|\-\-)\s?([$node_id]+)/gi) {
+                    my $int = quotemeta($2);
+                    my ($parent, $child) = ($1, $3);
+                    $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
+                    add_interactions($parent, $child, $interactions, $dot_symbol);
+                }
             }
+            
         
         } # foreach statement
         
@@ -376,6 +395,21 @@ sub clean_name {
 
     return($cleaned);
 } 
+
+sub clean_line {
+    my $line = shift;
+
+    # Graph inizialization
+    $line =~ s{(strict)?[\s]*?(di|sub)?graph\b\s*?.*?\s*?\{}{}g; 
+    $line =~ s{\/\*.*?\*\/}{}g;        # Remove comments
+    $line =~ s{\/\/.+}{}g;             # Remove regular comments
+    $line =~ s{\b(di|sub)?graph\b}{}g; # Remove graph attribute statements
+    $line =~ s{\bnode\b|\bedge\b}{}g;  # Node or edge attribute statements
+    $line =~ s/^#.+//;                 # Remove C style preprocessor comments 
+    $line =~ s{\[.*?\]}{}g;            # Remove attributes
+
+    return($line);
+}
 
 #--------------------------------------------------------------------------------
 sub add_nodes {
@@ -722,7 +756,7 @@ sub print_html {
 sub error {
     my $string = shift;
 
-    die "\n[ERROR] $string\n",
+    die "\n[FATAL ERROR]\n$string\n",
         "\nUse dotcompare -h to get help.\n\n";
 }
 
