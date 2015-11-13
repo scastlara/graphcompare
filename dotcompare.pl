@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.0
+v0.2.1
 
 =head1 SYNOPSIS
 
@@ -164,7 +164,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.0';
+our $VERSION       = 'v0.2.1';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -310,19 +310,7 @@ sub read_dot {
     while (<$dot_fh>) {
         chomp;
         my $line = clean_line($_);
-        # Comments and keywords
-                                    # Graph inizialization
-        #$line =~ s{(strict)?[\s]*?(di|sub)?graph\b\s*?.*?\s*?\{}{}g; 
-        #$line =~ s{\/\*.*?\*\/}{}g;    # Remove comments
-        #$line =~ s{\/\/.+}{}g;         # Remove regular comments
-        #$line =~ s{\b(di|sub)?graph\b}{}g; # Remove graph attribute statements
-        #$line =~ s{\bnode\b|\bedge\b}{}g;      # Node or edge attribute statements
-        #$line =~ s/^#.+//;            # Remove C style preprocessor comments 
-        #
-        #$line =~ s{\[.*?\]}{}g;        # Remove attributes
-        
-        # If there are still comments,
-        # they must be multiline
+
         if ($line =~ m{\/\*}) {
             $multicomm = 1;
         } elsif ( $line =~ m{\*\/} ) {
@@ -342,8 +330,8 @@ sub read_dot {
         $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
         my @statements = ();
-        if ($line =~ m/;|,/g) {
-            @statements = split /;|,/, $line;
+        if ($line =~ m/;/g) {
+            @statements = split /;/, $line;
         } else {
             @statements = ($line);
         }
@@ -371,15 +359,10 @@ sub read_dot {
                     $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
                     add_interactions($parent, $child, $interactions, $dot_symbol);
                 }
-            }
-            
+            }   
         
         } # foreach statement
-        
-
-        # ADD INTERACTIONS
-
-       
+    
     } # while file
 
     return;
@@ -396,6 +379,7 @@ sub clean_name {
     return($cleaned);
 } 
 
+#--------------------------------------------------------------------------------
 sub clean_line {
     my $line = shift;
 
