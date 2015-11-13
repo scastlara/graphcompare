@@ -293,7 +293,6 @@ if ($debug) {
 # READING DOT FILES
 #--------------------------------------------------------------------------------
 sub read_dot {
-    # Function is TOO long. May need to refactor
     my $dot          = shift;
     my $nodes        = shift;
     my $interactions = shift;
@@ -313,57 +312,91 @@ sub read_dot {
 
         if ($line =~ m{\/\*}) {
             $multicomm = 1;
+            $line =~ s{\/\*.+}{};
+            parse_dotline(
+                $line, 
+                $nodes, 
+                $interactions, 
+                $dot_symbol, 
+                $dot,
+                $ue_quote, 
+                $node_id
+            );
         } elsif ( $line =~ m{\*\/} ) {
             $multicomm = 0;
             $line =~ s{.*\*\/}{};
             next unless $line =~ m/[\w\d]/;
         }
+
         next if $multicomm;
-        
-        # Fix and remove quoted IDs
-        while ($line =~ m/$ue_quote(.*?)$ue_quote/g) {
-            my $id = $1;
-            my $clean_id = $id;
-            $clean_id =~ s{[^$node_id]}{_}g;
-            $line =~ s/$ue_quote$id$ue_quote/ $clean_id/ ;
-        }
-        $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
-        my @statements = ();
-        if ($line =~ m/;/g) {
-            @statements = split /;/, $line;
-        } else {
-            @statements = ($line);
-        }
-
-        foreach my $stmt (@statements) {
-            # CHECK STRANGE CHARACTERS
-            if ($stmt =~ m/([^$node_id\s\t\n\->{}])/) {
-                min_error("Problem parsing DOT file. ".
-                          "Not allowed character in $dot at line $..\n\n");
-            }
-
-            # ADD NODES
-            while ($stmt =~ m/([$node_id]+)/gi) {
-                add_nodes($1, $nodes, $dot_symbol);
-            }
-
-            # ADD RELATIONSHIPS
-            # This loop allows dotcompare to parse multiple relationships per
-            # statement: A -> B -> C -> D
-            # First it will save A -> B, C -> D; and then B -> C.
-            for (1..2) {
-                while ($stmt =~ m/([$node_id]+)\s?(\->|\-\-)\s?([$node_id]+)/gi) {
-                    my $int = quotemeta($2);
-                    my ($parent, $child) = ($1, $3);
-                    $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
-                    add_interactions($parent, $child, $interactions, $dot_symbol);
-                }
-            }   
-        
-        } # foreach statement
+        parse_dotline(
+            $line, 
+            $nodes, 
+            $interactions, 
+            $dot_symbol, 
+            $dot,
+            $ue_quote, 
+            $node_id
+        );    
     
     } # while file
+
+    return;
+}
+
+#--------------------------------------------------------------------------------
+sub parse_dotline {
+    my $line         = shift; 
+    my $nodes        = shift; 
+    my $interactions = shift; 
+    my $dot_symbol   = shift;
+    my $dot          = shift; 
+    my $ue_quote     = shift; 
+    my $node_id      = shift;
+
+    # Fix and remove quoted IDs
+    while ($line =~ m/$ue_quote(.*?)$ue_quote/g) {
+        my $id = $1;
+        my $clean_id = $id;
+        $clean_id =~ s{[^$node_id]}{_}g;
+        $line =~ s/$ue_quote$id$ue_quote/ $clean_id/ ;
+    }
+    $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
+
+    my @statements = ();
+    if ($line =~ m/;/g) {
+        @statements = split /;/, $line;
+    } else {
+        @statements = ($line);
+    }
+
+    foreach my $stmt (@statements) {
+        # CHECK STRANGE CHARACTERS
+        if ($stmt =~ m/([^$node_id\s\t\n\->{}])/) {
+            min_error("Problem parsing DOT file. ".
+                      "Not allowed character in $dot at line $..\n\n");
+        }
+
+        # ADD NODES
+        while ($stmt =~ m/([$node_id]+)/gi) {
+            add_nodes($1, $nodes, $dot_symbol);
+        }
+
+        # ADD RELATIONSHIPS
+        # This loop allows dotcompare to parse multiple relationships per
+        # statement: A -> B -> C -> D
+        # First it will save A -> B, C -> D; and then B -> C.
+        for (1..2) {
+            while ($stmt =~ m/([$node_id]+)\s?(\->|\-\-)\s?([$node_id]+)/gi) {
+                my $int = quotemeta($2);
+                my ($parent, $child) = ($1, $3);
+                $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
+                add_interactions($parent, $child, $interactions, $dot_symbol);
+            }
+        }   
+    
+    } # foreach statement
 
     return;
 }
