@@ -237,11 +237,11 @@ count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
 
 # WRITE DOT FILE
-my $dot_fh = get_fh($out_name);
-print $dot_fh "digraph ALL {\n";
-write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
-write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
-print $dot_fh "}";
+#my $dot_fh = get_fh($out_name);
+#print $dot_fh "digraph ALL {\n";
+#write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
+#write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
+#print $dot_fh "}";
 
 # OPTIONAL OUTPUTS
 if ($table) {
@@ -295,15 +295,23 @@ sub read_dot {
     open my $dot_fh, "<", $dot
         or error("Can't open dot file $dot: $!");
 
+    my $ue_quote = "[\"\']";
+    my $node_id  = "A-Z0-9_\"\'";
     while (<$dot_fh>) {
         chomp;
-        # Remove spaces
-        $_ =~ s/\s+//g; 
+        # Remove DOT header
+        s{(strict)?[\s]*?(di|sub)?graph\s*?.*?\s*?\{}{}g; 
 
-        # Comments
+        # Comments and keywords
         $_ =~ s{\/\*.*?\*\/}{}g; # Remove comments
         $_ =~ s{\/\/.+}{}g;      # Remove regular comments
-
+        $_ =~ s{(di|sub)?graph}{}g;
+        $_ =~ s{node|edge}{}g;
+        $_ =~ s{\s+}{ }g;
+        
+        # REMOVE ATTRIBUTES
+        $_ =~ s{\[.*?\]}{}g; 
+        
         # If there are still comments,
         # they must be multiline
         if ($_ =~ m{\/\*}) {
@@ -314,54 +322,44 @@ sub read_dot {
             next unless $_ =~ m/[\w\d]/;
         }
         next if $multicomm;
+        
+        # Fix and remove quoted IDs
+        while ($_ =~ m/$ue_quote(.*?)$ue_quote/g) {
+            my $id = $1;
+            my $clean_id = $id;
+            $clean_id =~ s{[^$node_id]}{_}g;
+            $_ =~ s/$ue_quote$id$ue_quote/$clean_id/;
+        }
 
-
-        # Multiple statements per line
         my @statements = ();
-        if ($_ =~ m/;/) {
-            @statements = split /;/;
+        if ($_ =~ m/;|,/g) {
+            @statements = split /;|,/;
         } else {
-            push @statements, $_;
+            @statements = ($_);
         }
 
         foreach my $stmt (@statements) {
-            $stmt =~ s{(?<!\\)\"|(?<!\\)\'}{}g; # Remove unescaped quotes
-            $stmt =~ s{\\}{}g;                  # Remove escape character
-            $stmt =~ s{\;}{}g;                  # Remove semicolons
-            $stmt =~ s{\[.*?\]}{}g;             # Remove attributes 
-
-            next unless $stmt =~ m/[\w\d]/;
-    
-            # DOT language keywords
-            next if ($stmt =~ m/^digraph/i  or # digraph declaration
-                     $stmt =~ m/^graph/i    or # graph declaration
-                     $stmt =~ m/^subgraph/i or # subgraph declaration
-                     $stmt =~ m/^node/i     or # node properties
-                     $stmt =~ m/^edge/i     or # edge properties
-                     $stmt =~ m/^#/         or # C preprocessor lines
-                     $stmt =~ m/^}$/);         # End of sub/di/graph
-    
-            if ($stmt =~ m/\-\-/) {
-                print STDERR "Your graph is undirected. Changed it to directed.\n";
-                $stmt =~ s{\-\-}{\->}g
+            # CHECK STRANGE CHARACTERS
+            if ($stmt =~ m/[^$node_id\->\s\t\n]/) {
+                print STDERR "Not allowed character in $dot at line $.\n";
             }
 
-            if ($stmt =~ m/\->/g) { 
-                # interactions "node1"->"node2"->"node3"
-                my @node_names = split /\->/, $stmt;
-                check_IDs(\@node_names) or error("Not allowed character found ".
-                                                 "in dotfile $dot at line $.");
-                add_nodes(\@node_names, $nodes, $dot_symbol);
-                add_interactions(\@node_names,$interactions,$dot_symbol);
-            } else { 
-                # just defined nodes: node [foo = bar];
-                my @node_names = ($stmt);
-                check_IDs(\@node_names) or error("Not allowed character found ".
-                                                 "in dotfile $dot at line $.");
-                add_nodes(\@node_names, $nodes, $dot_symbol);
-            } # if node or interaction
-    
+            # ADD NODES
+            while ($stmt =~ m/([A-Z0-9]+)/gi) {
+                print "node $1\n";
+                add_nodes($1, $nodes, $dot_symbol);
             }
+
+            # ADD RELATIONSHIPS
+            while ($stmt =~ m/([A-Z0-9]+)\s?\->\s?([$node_id]+)/g) {
+                add_interactions($1, $2, $interactions, $dot_symbol);
+            }
+        
+        } # foreach statement
+        
+
+        # ADD INTERACTIONS
+
        
     } # while file
 
@@ -380,37 +378,16 @@ sub clean_name {
 } 
 
 #--------------------------------------------------------------------------------
-sub check_IDs {
-    my $ids = shift;
-
-    # We didn't use the full DOT specification, as it stands that IDs with 
-    # letters that start with a digit are not allowed. Given the fact that 
-    # many genes may start with a digit and then some letters, I wasn't very 
-    # strict with the characters restriction.
-
-    # Also, note that DOT allows " and ' in IDs (if they are properly escaped).
-    # Unescaped quotes were removed before, so only escaped ones remain.
-
-    foreach my $id (@{$ids}) {
-        return 0 if ($id =~ m/[^A-Z0-9_\"\']/i);
-    } 
-
-    return 1;
-}
-
-#--------------------------------------------------------------------------------
 sub add_nodes {
-    my $node_names = shift;
+    my $node       = shift;
     my $nodes      = shift;
     my $dot_symbol = shift;
 
-    foreach my $node (@{$node_names}) {
-        if (exists $nodes->{$node}) {
-            $nodes->{$node} .= ":$dot_symbol"
-                unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
-        } else {
-            $nodes->{$node} = $dot_symbol;
-        }
+    if (exists $nodes->{$node}) {
+        $nodes->{$node} .= ":$dot_symbol"
+            unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
+    } else {
+        $nodes->{$node} = $dot_symbol;
     }
 
     return;
@@ -418,22 +395,19 @@ sub add_nodes {
 
 #--------------------------------------------------------------------------------
 sub add_interactions {
-    my $node_list    = shift;
+    my $parent       = shift;
+    my $child        = shift;
     my $interactions = shift;
     my $dot_symbol   = shift;
 
-    foreach my $i (0..$#{$node_list} - 1) {
-        my $string = $node_list->[$i]."->".$node_list->[$i+1];
-
-        if (exists $interactions->{$string}) {
-            $interactions->{$string} .= ":$dot_symbol"
-                unless $interactions->{$string} =~ m/\b$dot_symbol\b/;
-        } else {
-            $interactions->{$string} = $dot_symbol;
-        }
+    my $string = $parent . "->" . $child;
+    if (exists $interactions->{$string}) {
+        $interactions->{$string} .= ":$dot_symbol"
+            unless $interactions->{$string} =~ m/\b$dot_symbol\b/;
+    } else {
+        $interactions->{$string} = $dot_symbol;
+    }
         
-    } # #foreach
-
     return;
 }
 
