@@ -1,0 +1,6 @@
+strict digraph MYNAME{
+    
+    A -> B -> C -> "D E" F G -> "H%" /* A -> Z */ A -> Z
+    B -> "D E"; F -> "D E"
+    subgraph {F -> "H%" -> A; K [color = "blue"] A -> K}
+}
