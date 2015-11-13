@@ -112,7 +112,7 @@ Still no clusters support eg: {A B C} -> D
 
 =item I<Multiline_IDs> 
 
-No support for multiline IDs (yet).
+No support for multiline IDs.
 
 =item I<Non_alphanumeric_characters>
 
@@ -120,7 +120,7 @@ All non alphanumeric characters [^A-Z0-9] will be converted to underscores in no
 
 =item I<No_escaped_quotes>
 
-No support for quotes in node IDs.
+No support for quotes in node IDs (even if properly escaped).
 
 =back
 
@@ -309,10 +309,13 @@ sub read_dot {
     while (<$dot_fh>) {
         chomp;
         my $line = clean_line($_);
+        next unless $line =~ m/[^\s]/;
 
+        # If there are still comments, they are multiline
         if ($line =~ m{\/\*}) {
             $multicomm = 1;
-            $line =~ s{\/\*.+}{};
+            # Remove everything after the comment
+            $line =~ s{\/\*.+}{}; 
             parse_dotline(
                 $line, 
                 $nodes, 
