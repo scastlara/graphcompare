@@ -170,6 +170,7 @@ use Pod::Usage;
 our $PROGRAM       = "dotcompare";
 our $VERSION       = 'v0.2.5';
 our $USER          = $ENV{ USER };
+our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
 
 error("Error trying to find Installation path through \$0.")
@@ -228,7 +229,7 @@ print STDERR "\nPROGRAM STARTED\n",
              "\tProgram         $PROGRAM\n",
              "\tVersion         $VERSION\n",
              "\tUser            $USER\n",
-             "\tInstallpath     $INSTALL_PATH\n",
+             "\tWorking dir     $W_DIRECTORY\n",
              "\tColor Profile   $color_profile\n",
              "\tInput files     ", join("\n\t\t\t", @files), "\n\n",
              "\tStart time      $current_time\n\n";
