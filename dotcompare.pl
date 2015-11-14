@@ -366,7 +366,7 @@ sub parse_dotline {
 
     foreach my $stmt (@statements) {
         # ADD NODES
-        while ($stmt =~ m{  ([$node_id]+)  |  $ue_quote($quoted_node)$ue_quote  }gix) {
+        while ($stmt =~ m{  ([$node_id]+)  |  $ue_quote($quoted_node)$ue_quote  }gx) {
             my $node = $1 ? $1 : $2;
             add_nodes($insensitive ? uc($node) : $node, $nodes, $dot_symbol);
         }
@@ -597,7 +597,7 @@ sub write_dot {
 
     print $fhandle "// $string\n";
 
-    foreach my $datum (keys %{ $in_data }) {
+    foreach my $datum (sort keys %{ $in_data }) {
         my $output = "";
 
         if ($datum =~ m/\->/) {
