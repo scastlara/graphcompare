@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.4
+v0.2.5
 
 =head1 SYNOPSIS
 
@@ -68,6 +68,10 @@ to any website.
 =item B<-h>, B<--help>               
 
 Shows this help. 
+
+=item B<-i>, B<--insensitive> 
+
+Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
 
 =item B<-f>, B<--files> <file1,file2,...>
 
@@ -160,10 +164,9 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.4';
+our $VERSION       = 'v0.2.5';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
-our $MAIL          = 's.cast.lara@gmail.com';
 
 error("Error trying to find Installation path through \$0.")
     unless $INSTALL_PATH;
@@ -174,6 +177,7 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
+my $insensitive   = 0;
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
 my %nodes         = ();
@@ -184,14 +188,15 @@ pod2usage( -verbose => 1,
            -output  => \*STDERR   ) unless @ARGV;
 
 my $options = GetOptions (
-    'help|?'     => \$help,
-    "files=s"  => \$dot_files,    
-    "colors=s" => \$color_profile,
-    "out=s"    => \$out_name,
-    "table=s"  => \$table,
-    "venn=s"   => \$venn,
-    "web=s"    => \$web,
-    "debug"    => \$debug
+    'help|?'      => \$help,
+    "files=s"     => \$dot_files,    
+    "colors=s"    => \$color_profile,
+    "out=s"       => \$out_name,
+    "table=s"     => \$table,
+    "venn=s"      => \$venn,
+    "web=s"       => \$web,
+    "insensitive" => \$insensitive,
+    "debug"       => \$debug
 );
 
 my @files = split /,/, $dot_files;
@@ -298,8 +303,6 @@ sub read_dot {
     open my $dot_fh, "<", $dot
         or error("Can't open dot file $dot: $!");
 
-
-
     while (<$dot_fh>) {
         chomp;
         my $line = clean_line($_);
@@ -347,10 +350,10 @@ sub parse_dotline {
     my $dot          = shift; 
 
     # Define regex classes
-    my $ue_quote = "[\"\']";
-    my $node_id  = "A-Z0-9_";
+    my $ue_quote    = "[\"]";
+    my $node_id     = "A-Za-z0-9_";
     my $quoted_node = "[^\"]+";
-    my $connector = "\->|\-\-";
+    my $connector   = "\->|\-\-";
 
     $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
@@ -364,7 +367,8 @@ sub parse_dotline {
     foreach my $stmt (@statements) {
         # ADD NODES
         while ($stmt =~ m{  ([$node_id]+)  |  $ue_quote($quoted_node)$ue_quote  }gix) {
-            add_nodes($1 ? $1 : $2, $nodes, $dot_symbol);
+            my $node = $1 ? $1 : $2;
+            add_nodes($insensitive ? uc($node) : $node, $nodes, $dot_symbol);
         }
 
         # ADD RELATIONSHIPS
@@ -373,16 +377,21 @@ sub parse_dotline {
         # First it will save A -> B, C -> D; and then B -> C.
         for (1..2) {
             while ($stmt =~ m{
-                    ([$node_id]+|$ue_quote $quoted_node $ue_quote) # node ID
-                    \s?                                            # optional whitespace
-                    ($connector)                                   # -> or --
-                    \s?                                            # optional whitespace
-                    ([$node_id]+|$ue_quote $quoted_node $ue_quote) # node ID
-                }gix) {
+                ([$node_id]+ | $ue_quote $quoted_node $ue_quote) # node ID
+                \s?                                              # optional whitespace
+                ($connector)                                     # -> or --
+                \s?                                              # optional whitespace
+                ([$node_id]+ | $ue_quote $quoted_node $ue_quote) # node ID
+            }gix) {
                 my $int = quotemeta($2);
-                my ($parent, $child) = ($1, $3);
+                my ($parent, $child)     = ($1, $3);
                 my ($uqparent, $uqchild) = ($parent, $child);
-                ($uqparent, $uqchild) = map { $_ =~ s/$ue_quote//g; $_ } $uqparent, $uqchild;
+
+                ($uqparent, $uqchild) = map {
+                    $_ =~ s/$ue_quote//g; 
+                    $insensitive ? uc($_) : $_ 
+                } $uqparent, $uqchild;
+
                 $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
                 add_interactions($uqparent, $uqchild, $interactions, $dot_symbol);
             } # while
