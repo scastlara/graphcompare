@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.2
+v0.2.3
 
 =head1 SYNOPSIS
 
@@ -114,10 +114,6 @@ Still no clusters support eg: {A B C} -> D
 
 No support for multiline IDs.
 
-=item I<Non_alphanumeric_characters>
-
-All non alphanumeric characters [^A-Z0-9] will be converted to underscores in node IDs. 
-
 =item I<No_escaped_quotes>
 
 No support for quotes in node IDs (even if properly escaped).
@@ -164,7 +160,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.2';
+our $VERSION       = 'v0.2.3';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -304,7 +300,7 @@ sub read_dot {
 
     # Define regex classes
     my $ue_quote = "[\"\']";
-    my $node_id  = "A-Z0-9_\"\'";
+    my $node_id  = "A-Z0-9_";
 
     while (<$dot_fh>) {
         chomp;
@@ -358,13 +354,6 @@ sub parse_dotline {
     my $ue_quote     = shift; 
     my $node_id      = shift;
 
-    # Fix and remove quoted IDs
-    while ($line =~ m/$ue_quote(.*?)$ue_quote/g) {
-        my $id = $1;
-        my $clean_id = $id;
-        $clean_id =~ s{[^$node_id]}{_}g;
-        $line =~ s/$ue_quote$id$ue_quote/ $clean_id/ ;
-    }
     $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
     my @statements = ();
@@ -382,8 +371,8 @@ sub parse_dotline {
         }
 
         # ADD NODES
-        while ($stmt =~ m/([$node_id]+)/gi) {
-            add_nodes($1, $nodes, $dot_symbol);
+        while ($stmt =~ m/([$node_id]+)|\"([^"]+)\"/gi) {
+            add_nodes($1 ? $1 : $2, $nodes, $dot_symbol);
         }
 
         # ADD RELATIONSHIPS
@@ -391,11 +380,16 @@ sub parse_dotline {
         # statement: A -> B -> C -> D
         # First it will save A -> B, C -> D; and then B -> C.
         for (1..2) {
-            while ($stmt =~ m/([$node_id]+)\s?(\->|\-\-)\s?([$node_id]+)/gi) {
+            while ($stmt =~ m/([$node_id]+|\"[^"]+\")\s?(\->|\-\-)\s?([$node_id]+|\"[^"]+\")/gi) {
                 my $int = quotemeta($2);
                 my ($parent, $child) = ($1, $3);
+                my ($uqparent, $uqchild) = ($parent, $child);
+                #print "$parent and $child\n";
+                #print "BF: $stmt\n";
+                ($uqparent, $uqchild) = map { $_ =~ s/\"//g; $_ } $uqparent, $uqchild;
                 $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
-                add_interactions($parent, $child, $interactions, $dot_symbol);
+                #print "AFTER: $stmt\n";
+                add_interactions($uqparent, $uqchild, $interactions, $dot_symbol);
             }
         }   
     
@@ -579,7 +573,16 @@ sub write_dot {
     print $fhandle "// $string\n";
 
     foreach my $datum (keys %{ $in_data }) {
-        print $fhandle "\t", $datum, "\t", 
+        my $output = "";
+
+        if ($datum =~ m/\->/) {
+            my ($parent, $child) = split /\->/, $datum;
+            $output = "\"$parent\"->\"$child\"";
+        } else {
+            $output = "\"$datum\"";
+        }
+
+        print $fhandle "\t", $output, "\t", 
                        "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t", 
                        "// $in_data->{$datum}", "\n";
     }
