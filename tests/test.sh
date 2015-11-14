@@ -3,13 +3,33 @@
 # Directory of the test script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 
+#-------------------------------------
 # TESTING
-echo "";
 ERROR=0;
 
+# DOT PARSING
+#-------------------------------------
+echo;
+echo "Testing dot parser...";
+
+# Create dot
+perl $DIR/../dotcompare.pl \
+-f $DIR/Thehard.dot > $DIR/hdot.tmp 2> /dev/null
+
+# TWO DOT FILES
+if diff -q $DIR/hdot.tmp $DIR/hdot > /dev/null ; then
+    echo "parsing dot file... ok";
+else
+    ((ERROR++));
+    echo "parsing dot file... not ok";
+fi;
+
+
+
 # COUNTS
+#-------------------------------------
+echo;
 echo "Testing dotcompare counts...";
-echo "";
 
 # CREATE NEW TABLES
 # 2table
@@ -41,9 +61,9 @@ echo;
 
 
 # SVGs
+#-------------------------------------
 echo;
 echo "Testing dotcompare venn svg output...";
-echo;
 
 # CREATE NEW SVGs
 # 2svg
@@ -72,12 +92,13 @@ else
 fi;
 
 
-
-# Remove all temp files
+# REMOVE FILES
+#-------------------------------------
 rm $DIR/2table.tmp;
 rm $DIR/3table.tmp;
 rm $DIR/2svg.tmp;
 rm $DIR/3svg.tmp;
+rm $DIR/hdot.tmp;
 
 echo;
 if [ $ERROR -ne 0 ]; then
