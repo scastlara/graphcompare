@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.3
+v0.2.4
 
 =head1 SYNOPSIS
 
@@ -160,7 +160,7 @@ use Pod::Usage;
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.3';
+our $VERSION       = 'v0.2.4';
 our $USER          = $ENV{ USER };
 our $INSTALL_PATH  = get_installpath(); 
 our $MAIL          = 's.cast.lara@gmail.com';
@@ -298,9 +298,7 @@ sub read_dot {
     open my $dot_fh, "<", $dot
         or error("Can't open dot file $dot: $!");
 
-    # Define regex classes
-    my $ue_quote = "[\"\']";
-    my $node_id  = "A-Z0-9_";
+
 
     while (<$dot_fh>) {
         chomp;
@@ -317,9 +315,7 @@ sub read_dot {
                 $nodes, 
                 $interactions, 
                 $dot_symbol, 
-                $dot,
-                $ue_quote, 
-                $node_id
+                $dot
             );
         } elsif ( $line =~ m{\*\/} ) {
             $multicomm = 0;
@@ -334,9 +330,7 @@ sub read_dot {
             $nodes, 
             $interactions, 
             $dot_symbol, 
-            $dot,
-            $ue_quote, 
-            $node_id
+            $dot
         );    
     
     } # while file
@@ -351,8 +345,12 @@ sub parse_dotline {
     my $interactions = shift; 
     my $dot_symbol   = shift;
     my $dot          = shift; 
-    my $ue_quote     = shift; 
-    my $node_id      = shift;
+
+    # Define regex classes
+    my $ue_quote = "[\"\']";
+    my $node_id  = "A-Z0-9_";
+    my $quoted_node = "[^\"]+";
+    my $connector = "\->|\-\-";
 
     $line =~ s{\s+}{ }g; # Substitute multiple spaces by just one
 
@@ -364,14 +362,8 @@ sub parse_dotline {
     }
 
     foreach my $stmt (@statements) {
-        # CHECK STRANGE CHARACTERS
-        if ($stmt =~ m/([^$node_id\s\t\n\->{}])/) {
-            min_error("Problem parsing DOT file. ".
-                      "Not allowed character in $dot at line $..\n\n");
-        }
-
         # ADD NODES
-        while ($stmt =~ m/([$node_id]+)|\"([^"]+)\"/gi) {
+        while ($stmt =~ m{  ([$node_id]+)  |  $ue_quote($quoted_node)$ue_quote  }gix) {
             add_nodes($1 ? $1 : $2, $nodes, $dot_symbol);
         }
 
@@ -380,18 +372,24 @@ sub parse_dotline {
         # statement: A -> B -> C -> D
         # First it will save A -> B, C -> D; and then B -> C.
         for (1..2) {
-            while ($stmt =~ m/([$node_id]+|\"[^"]+\")\s?(\->|\-\-)\s?([$node_id]+|\"[^"]+\")/gi) {
+            while ($stmt =~ m{
+                    ([$node_id]+|$ue_quote $quoted_node $ue_quote) # node ID
+                    \s?                                            # optional whitespace
+                    ($connector)                                   # -> or --
+                    \s?                                            # optional whitespace
+                    ([$node_id]+|$ue_quote $quoted_node $ue_quote) # node ID
+                }gix) {
                 my $int = quotemeta($2);
                 my ($parent, $child) = ($1, $3);
                 my ($uqparent, $uqchild) = ($parent, $child);
-                #print "$parent and $child\n";
-                #print "BF: $stmt\n";
-                ($uqparent, $uqchild) = map { $_ =~ s/\"//g; $_ } $uqparent, $uqchild;
+                ($uqparent, $uqchild) = map { $_ =~ s/$ue_quote//g; $_ } $uqparent, $uqchild;
                 $stmt =~ s/$parent\s?$int\s?$child/$parent $child/;
-                #print "AFTER: $stmt\n";
                 add_interactions($uqparent, $uqchild, $interactions, $dot_symbol);
-            }
-        }   
+            } # while
+        
+        } # for   
+
+        check_characters($stmt, $node_id, $ue_quote, $dot);
     
     } # foreach statement
 
@@ -456,6 +454,24 @@ sub add_interactions {
         $interactions->{$string} = $dot_symbol;
     }
         
+    return;
+}
+
+#--------------------------------------------------------------------------------
+sub check_characters {
+    my $statement = shift;
+    my $node_id   = shift;
+    my $ue_quote  = shift;
+    my $dot       = shift;
+
+    # Remove quoted things
+    $statement =~ s{ $ue_quote .*? $ue_quote }{}gx;
+
+    if ($statement =~ m/([^$node_id\s\t\n\->{}])/) {
+        min_error("Problem parsing DOT file. ".
+                  "Not allowed character in $dot at line $..\n\n");
+    }
+
     return;
 }
 
