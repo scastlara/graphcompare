@@ -122,6 +122,10 @@ No support for multiline IDs.
 
 No support for quotes in node IDs (even if properly escaped).
 
+=item I<No_keywords>
+
+Can't use graph, subgraph, digraph, strict as node IDs
+
 =back
 
 =head2 Reporting Bugs
@@ -382,7 +386,7 @@ sub parse_dotline {
                 ($connector)                                     # -> or --
                 \s?                                              # optional whitespace
                 ([$node_id]+ | $ue_quote $quoted_node $ue_quote) # node ID
-            }gix) {
+            }gx) {
                 my $int = quotemeta($2);
                 my ($parent, $child)     = ($1, $3);
                 my ($uqparent, $uqchild) = ($parent, $child);
@@ -421,13 +425,23 @@ sub clean_line {
     my $line = shift;
 
     # Graph inizialization
-    $line =~ s{(strict)?[\s]*?(di|sub)?graph\b\s*?.*?\s*?\{}{}g; 
-    $line =~ s{\/\*.*?\*\/}{}g;        # Remove comments
-    $line =~ s{\/\/.+}{}g;             # Remove regular comments
-    $line =~ s{\b(di|sub)?graph\b}{}g; # Remove graph attribute statements
-    $line =~ s{\bnode\b|\bedge\b}{}g;  # Node or edge attribute statements
-    $line =~ s/^#.+//;                 # Remove C style preprocessor comments 
-    $line =~ s{\[.*?\]}{}g;            # Remove attributes
+    $line =~ s{
+        (strict)? # Optional strict
+        [\s]*?    # Optional whitespace
+        (di|sub)? # Di or subgraph
+        graph\b   # Graph keyword
+        \s*?      # Optional whitespace
+        .*?       # Optional graph name
+        \s*?      # Optional whitespace
+        \{        # Curly bracket
+    }{}gx;        # Remove IT
+
+    $line =~ s{\/\*.*?\*\/}{}g;                  # Remove comments
+    $line =~ s{\/\/.+}{}g;                       # Remove regular comments
+    $line =~ s{\b(di|sub)?graph\b}{}g;           # Remove graph attribute statements
+    $line =~ s{\bnode\b|\bedge\b|\bstrict\b}{}g; # Node or edge attribute statements
+    $line =~ s/^#.+//;                           # Remove C style preprocessor comments 
+    $line =~ s{\[.*?\]}{}g;                      # Remove attributes
 
     return($line);
 }
