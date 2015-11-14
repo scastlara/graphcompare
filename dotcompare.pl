@@ -370,7 +370,7 @@ sub parse_dotline {
 
     foreach my $stmt (@statements) {
         # ADD NODES
-        while ($stmt =~ m{  ([$node_id]+)  |  $ue_quote($quoted_node)$ue_quote  }gx) {
+        while ($stmt =~ m{ ([$node_id]+) | $ue_quote($quoted_node)$ue_quote }gx) {
             my $node = $1 ? $1 : $2;
             add_nodes($insensitive ? uc($node) : $node, $nodes, $dot_symbol);
         }
