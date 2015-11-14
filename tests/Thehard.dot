@@ -1,7 +1,6 @@
 strict digraph MYNAME{
-    
-    A->B -> C -> "D E"[color = "red"] F G -> "H%" /* A -> XXX */ A -> Z
-    B -> "D E";F -> "D E" /* MULTILINE A -> W
-    COMMENT */ F -> A
-    subgraph {F -> "H%" -> A; K [color = "blue"] A -> K}
+    A->B -> C -> "D E"[color = "red"] W G -> "H%" /* A -> XXX */ A -> Z
+    B -> "D E";"D E" -> F /* MULTILINE A -> W
+    COMMENT */ F -> A 
+    subgraph {F -> "H%"-> a; K [color = "blue"] A -> K}
 }

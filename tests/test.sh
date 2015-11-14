@@ -10,7 +10,7 @@ ERROR=0;
 # DOT PARSING
 #-------------------------------------
 echo;
-echo "Testing dot parser...";
+echo "# Testing DOT parser...";
 
 # Create dot
 perl $DIR/../dotcompare.pl \
@@ -18,10 +18,10 @@ perl $DIR/../dotcompare.pl \
 
 # TWO DOT FILES
 if diff -q $DIR/hdot.tmp $DIR/hdot > /dev/null ; then
-    echo "parsing dot file... ok";
+    echo "parsing DOT file... ok";
 else
     ((ERROR++));
-    echo "parsing dot file... not ok";
+    echo "parsing DOT file... not ok";
 fi;
 
 
@@ -29,7 +29,7 @@ fi;
 # COUNTS
 #-------------------------------------
 echo;
-echo "Testing dotcompare counts...";
+echo "# Testing dotcompare counts...";
 
 # CREATE NEW TABLES
 # 2table
@@ -57,13 +57,12 @@ else
     ((ERROR++));
     echo "count 3 DOT files... not ok"
 fi;
-echo;
 
 
 # SVGs
 #-------------------------------------
 echo;
-echo "Testing dotcompare venn svg output...";
+echo "# Testing dotcompare venn svg output...";
 
 # CREATE NEW SVGs
 # 2svg
@@ -102,8 +101,8 @@ rm $DIR/hdot.tmp;
 
 echo;
 if [ $ERROR -ne 0 ]; then
-    echo "Something is wrong: $ERROR number of errors";
+    echo "Something went wrong: $ERROR errors";
 else 
-    echo "Everything is fine: $ERROR number of errors";
+    echo "Everything is fine: $ERROR errors";
 fi;
 echo;
