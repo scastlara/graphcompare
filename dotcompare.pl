@@ -241,14 +241,17 @@ foreach my $file (@files) {
     read_dot($file, \%nodes, \%interactions);
 }
 
+
 # COLORS AND COUNTS
 my $groups           = initialize_groups(\@files);
 my $colors           = load_colors($color_profile);
 my $groups_to_colors = assign_colors($colors,$groups);
 
+
 # COUNT NODES AND INTERACTIONS IN GROUPS
 count_nodeints(\%nodes, $groups, "nodes");
 count_nodeints(\%interactions, $groups, "ints");
+
 
 # WRITE DOT FILE
 my $dot_fh = get_fh($out_name);
@@ -452,10 +455,11 @@ sub add_nodes {
     my $node       = shift;
     my $nodes      = shift;
     my $dot_symbol = shift;
+    my $escaped_dot = quotemeta($dot_symbol);
 
     if (exists $nodes->{$node}) {
         $nodes->{$node} .= ":$dot_symbol"
-            unless $nodes->{$node} =~ m/\b$dot_symbol\b/;
+            unless $nodes->{$node} =~ m/\b$escaped_dot\b/;
     } else {
         $nodes->{$node} = $dot_symbol;
     }
@@ -469,11 +473,12 @@ sub add_interactions {
     my $child        = shift;
     my $interactions = shift;
     my $dot_symbol   = shift;
+    my $escaped_dot = quotemeta($dot_symbol);
 
     my $string = $parent . "->" . $child;
     if (exists $interactions->{$string}) {
         $interactions->{$string} .= ":$dot_symbol"
-            unless $interactions->{$string} =~ m/\b$dot_symbol\b/;
+            unless $interactions->{$string} =~ m/\b$escaped_dot\b/;
     } else {
         $interactions->{$string} = $dot_symbol;
     }
@@ -507,6 +512,7 @@ sub initialize_groups {
     my %count_hash  = ();
 
     @{$files_array} = map {clean_name($_)} @{$files_array};
+
 
     foreach my $idx (1..@{$files_array} ) {
         my $iter = combinations($files_array, $idx);
@@ -563,7 +569,6 @@ sub assign_colors {
     error("There are more groups than colors!")
         if (keys %{$groups} > @{$colors});
 
-    
     foreach my $group (sort keys %{ $groups }) {
         $g_to_c{$group} = shift @{$colors};
     }
