@@ -24,7 +24,7 @@ prints the resulting merged DOT file with different
 colors for each group. 
 
 By default, dotcompare will print the resulting graph to
-STDOUT, but you can change it with the option -d (see options below).
+STDOUT, but you can change it with the option -o (see options below).
 
 Dotcompare has some optional outputs, each one specified by one 
 option.
@@ -77,9 +77,9 @@ Makes dotocompare case insensitive. By default, dotcompare is case sensitive.
 
 REQUIRED. Input DOT files, separated by commas.    
 
-=item B<-d>, B<--dot> <filename.dot>
+=item B<-o>, B<--out> <filename.dot>
 
-Creates a merged dot file. Default to STDOUT.
+Saves the merged dot file to the specified file. Default to STDOUT.
 
 =item B<-c>, B<--colors> <profile>
 
