@@ -4,7 +4,7 @@ dotcompare - A program to compare DOT files
 
 # VERSION
 
-v0.1.4
+v0.2.6
 
 # SYNOPSIS
 
@@ -22,7 +22,7 @@ prints the resulting merged DOT file with different
 colors for each group. 
 
 By default, dotcompare will print the resulting graph to
-STDOUT, but you can change it with the option -d (see options below).
+STDOUT, but you can change it with the option -o (see options below).
 
 Dotcompare has some optional outputs, each one specified by one 
 option.
@@ -54,19 +54,29 @@ option.
     without any external file/script dependencies. This allows for an easy upload of the graph
     to any website.
 
+# INSTALLATION
+To install dotcompare you have two options: either you move the files manually to wherever you want or you use the script `install.sh`. 
+
+If you use `install.sh`, it will ask you in which directory you want to store the program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
+
+
 # OPTIONS
 
 - **-h**, **--help**               
 
     Shows this help. 
 
+- **-i**, **--insensitive** 
+
+    Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+
 - **-f**, **--files** &lt;file1,file2,...>
 
     REQUIRED. Input DOT files, separated by commas.    
 
-- **-d**, **--dot** &lt;filename.dot>
+- **-o**, **--out** &lt;filename.dot>
 
-    Creates a merged dot file. Default to STDOUT.
+    Saves the merged dot file to the specified file. Default to STDOUT.
 
 - **-c**, **--colors** &lt;profile>
 
@@ -79,11 +89,6 @@ option.
 - **-w**, **--web** &lt;filename.html>
 
     Writes html file with the graph using cytoscape.js
-
-# INSTALLATION
-To install dotcompare you have two options: either you move the files manually to wherever you want or you use the script `install.sh`. 
-
-If you use `install.sh`, it will ask you in which directory you want to store the program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
 
 # AUTHOR
 
@@ -102,9 +107,17 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
     Still no clusters support eg: {A B C} -> D
 
-- _Multiline IDs_ 
+- _Multiline\_IDs_ 
 
-    No support for multiline IDs (yet).
+    No support for multiline IDs.
+
+- _No\_escaped\_quotes_
+
+    No support for quotes in node IDs (even if properly escaped).
+
+- _No\_keywords_
+
+    Can't use graph, subgraph, digraph, strict as node IDs
 
 ## Reporting Bugs
 
