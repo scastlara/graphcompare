@@ -173,7 +173,7 @@ our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
 
-error("Error trying to find Installation path through \$0.")
+error("Error trying to find Installation path through \$0.", 1)
     unless $INSTALL_PATH;
 
 my $dot_files     = "";
@@ -213,7 +213,7 @@ pod2usage( -verbose => 1,
 # If no files
 unless (@files > 0) {
     error("You have to introduce at least 1 dot file \n\n\t" . 
-          'perl DOTCompare.pl -f file1,file2,file3...'
+          'perl DOTCompare.pl -f file1,file2,file3...', 1
          );
 }
 
@@ -309,7 +309,7 @@ sub read_dot {
     my $multicomm    = 0; 
 
     open my $dot_fh, "<", $dot
-        or error("Can't open dot file $dot: $!");
+        or error("Can't open dot file $dot: $!", 1);
 
     while (<$dot_fh>) {
         chomp;
@@ -537,7 +537,7 @@ sub load_colors {
 
     open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
         or error("Can't open $INSTALL_PATH/data/colors.txt,". 
-                 " is your installpath correct? :$!");
+                 " is your installpath correct? :$!", 1);
 
     while (<$fh>) {
         chomp;
@@ -553,7 +553,7 @@ sub load_colors {
               "\t- SOFT\n".
               "\t- HARD\n" .
               "\t- LARGE\n" .
-              "\t- CBLIND\n"
+              "\t- CBLIND\n", 1
               );
     }
 
@@ -566,7 +566,7 @@ sub assign_colors {
     my $groups = shift;
     my %g_to_c = ();
 
-    error("There are more groups than colors!")
+    error("There are more groups than colors!\nUse -c LARGE", 1)
         if (keys %{$groups} > @{$colors});
 
     foreach my $group (sort keys %{ $groups }) {
@@ -602,7 +602,7 @@ sub get_fh {
         $out_fh =\*STDOUT
     } else {
         open $out_fh, ">", $filename
-            or error("Can't write to $filename : $!");
+            or error("Can't write to $filename : $!", 1);
     }
 
     return($out_fh);
@@ -643,7 +643,7 @@ sub results_table {
     my $groups   = shift;
 
     open my $fh, '>', "$out_file"
-        or error("Can't create results.tbl : $!");
+        or error("Can't create results.tbl : $!", 1);
 
     print $fh "GROUP\tNODES\tINTERACTIONS\n";
     foreach my $group (sort keys %{$groups}) {
@@ -667,7 +667,7 @@ sub print_venn {
     my $venn_template = "";
 
     open my $out, ">", $out_file
-        or error("Can't create $out_file :$!");
+        or error("Can't create $out_file :$!", 1);
 
     if (@group_keys == 3) {
         # We have 2 dotfiles -> venn with 2 circles
@@ -804,10 +804,10 @@ sub print_html {
     local $/ = ">DATAHERE";
 
     open my $tt_fh, "<", $template
-        or error("Can't open $template, is your installpath correct? :$!");
+        or error("Can't open $template, is your installpath correct? :$!", 1);
 
     open my $out_fh, ">", $filename
-        or error("Can't create $filename : $!");
+        or error("Can't create $filename : $!", 1);
 
     foreach my $element ("", $$json, $color_table) {
         my $html = <$tt_fh>;
@@ -823,25 +823,20 @@ sub print_html {
 #--------------------------------------------------------------------------------
 sub error {
     my $string = shift;
+    my $fatal  = shift;
     my @lines = split /\n/, $string;
 
-    print STDERR "\n# [FATAL ERROR]\n";
+    my $error_msg = $fatal ? "FATAL" : "MINOR";
+    print STDERR "\n# [$error_msg ERROR]\n";
     print STDERR "# $_\n" foreach (@lines);    
-    print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
 
-    exit(1);
-}
+    if ($fatal) {
+        print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
+        exit(1);
+    } else {
+        print STDERR "\n\n";
+    }
 
-#--------------------------------------------------------------------------------
-sub min_error {
-    my $string = shift;
-    my @lines = split /\n/, $string;
-
-    print STDERR "\n# [MINOR ERROR]\n";
-    print STDERR "# $_\n" foreach (@lines);
-    print STDERR "\n\n";
-    
-    return;
 }
 
 #--------------------------------------------------------------------------------
