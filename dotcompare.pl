@@ -567,6 +567,9 @@ sub assign_colors {
     my $groups = shift;
     my %g_to_c = ();
 
+    error("Currently, dotcompare can only compare up to 10 DOT files\n", 1)
+        if (keys %{$groups} > 91);
+        
     error("There are more groups than colors!\nUse -c LARGE or -c RIDICULOUS", 1)
         if (keys %{$groups} > @{$colors});
 
