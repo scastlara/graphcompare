@@ -1,8 +1,0 @@
-GROUP	NODES	INTERACTIONS
-AllGraphs	469	1251
-AllGraphs:Sparser	7	18
-AllGraphs:Sparser:iHOP	62	5
-AllGraphs:iHOP	0	3
-Sparser	4	10
-Sparser:iHOP	0	0
-iHOP	0	0
