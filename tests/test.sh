@@ -14,10 +14,10 @@ echo "# Testing DOT parser...";
 
 # Create dot
 perl $DIR/../dotcompare.pl \
--f $DIR/Thehard.dot > $DIR/hdot.tmp 2> /dev/null
+-f $DIR/Thehard.dot > $DIR/Thehard_result.tmp 2> /dev/null
 
 # TWO DOT FILES
-if diff -q $DIR/hdot.tmp $DIR/hdot > /dev/null ; then
+if diff -q $DIR/Thehard_result.tmp $DIR/Thehard_result.dot > /dev/null ; then
     echo "parsing DOT file... ok";
 else
     ((ERROR++));
@@ -34,16 +34,16 @@ echo "# Testing dotcompare counts...";
 # CREATE NEW TABLES
 # 2table
 perl $DIR/../dotcompare.pl \
--f $DIR/iHOP.dot,$DIR/Sparser.dot \
+-f $DIR/test1.dot,$DIR/test2.dot \
 -t $DIR/2table.tmp >/dev/null 2> /dev/null;
 # 3table
 perl $DIR/../dotcompare.pl \
--f $DIR/AllGraphs.dot,$DIR/iHOP.dot,$DIR/Sparser.dot \
+-f $DIR/test1.dot,$DIR/test2.dot,$DIR/test3.dot \
 -t $DIR/3table.tmp >/dev/null 2> /dev/null;
 
 
 # TWO DOT FILES
-if diff -q $DIR/2table.tmp $DIR/2table > /dev/null ; then
+if diff -q $DIR/2table.tmp $DIR/2table.tbl > /dev/null ; then
     echo "count 2 DOT files... ok";
 else
     ((ERROR++));
@@ -51,7 +51,7 @@ else
 fi;
 
 # THREE DOT FILES
-if diff -q $DIR/3table.tmp $DIR/3table > /dev/null ; then
+if diff -q $DIR/3table.tmp $DIR/3table.tbl > /dev/null ; then
     echo "count 3 DOT files... ok";
 else
     ((ERROR++));
@@ -67,15 +67,15 @@ echo "# Testing dotcompare venn svg output...";
 # CREATE NEW SVGs
 # 2svg
 perl $DIR/../dotcompare.pl \
--f $DIR/Sparser.dot,$DIR/iHOP.dot \
+-f $DIR/test1.dot,$DIR/test2.dot \
 -v $DIR/2svg.tmp >/dev/null 2> /dev/null;
 # 3svg
 perl $DIR/../dotcompare.pl \
--f $DIR/AllGraphs.dot,$DIR/iHOP.dot,$DIR/Sparser.dot \
+-f $DIR/test1.dot,$DIR/test2.dot,$DIR/test3.dot \
 -v $DIR/3svg.tmp >/dev/null 2> /dev/null;
 
 # TWO DOT FILES
-if diff -q $DIR/2svg.tmp $DIR/2svg > /dev/null ; then
+if diff -q $DIR/2svg.tmp $DIR/2svg.svg > /dev/null ; then
     echo "svg 2 DOT files... ok";
 else
     ((ERROR++));
@@ -83,7 +83,7 @@ else
 fi;
 
 # THREE DOT FILES
-if diff -q $DIR/3svg.tmp $DIR/3svg > /dev/null ; then
+if diff -q $DIR/3svg.tmp $DIR/3svg.svg > /dev/null ; then
     echo "svg 3 DOT files... ok";
 else
     ((ERROR++));
@@ -97,7 +97,7 @@ rm $DIR/2table.tmp;
 rm $DIR/3table.tmp;
 rm $DIR/2svg.tmp;
 rm $DIR/3svg.tmp;
-rm $DIR/hdot.tmp;
+rm $DIR/Thehard_result.tmp;
 
 echo;
 if [ $ERROR -ne 0 ]; then

@@ -1,0 +1,12 @@
+digraph DOT2 {
+    A -> B
+    E -> F
+    E -> G
+    G -> H
+    H -> I
+    H -> D
+    B -> A
+    J -> K
+    K -> E
+    L -> M
+}

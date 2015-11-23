@@ -1,0 +1,26 @@
+digraph ALL {
+// NODES
+	"A"	[color="#CA6347"]	// Thehard
+	"B"	[color="#CA6347"]	// Thehard
+	"C"	[color="#CA6347"]	// Thehard
+	"D E"	[color="#CA6347"]	// Thehard
+	"F"	[color="#CA6347"]	// Thehard
+	"G"	[color="#CA6347"]	// Thehard
+	"H%"	[color="#CA6347"]	// Thehard
+	"K"	[color="#CA6347"]	// Thehard
+	"W"	[color="#CA6347"]	// Thehard
+	"Z"	[color="#CA6347"]	// Thehard
+	"a"	[color="#CA6347"]	// Thehard
+// INTERACTIONS
+	"A"->"B"	[color="#CA6347"]	// Thehard
+	"A"->"K"	[color="#CA6347"]	// Thehard
+	"A"->"Z"	[color="#CA6347"]	// Thehard
+	"B"->"C"	[color="#CA6347"]	// Thehard
+	"B"->"D E"	[color="#CA6347"]	// Thehard
+	"C"->"D E"	[color="#CA6347"]	// Thehard
+	"D E"->"F"	[color="#CA6347"]	// Thehard
+	"F"->"A"	[color="#CA6347"]	// Thehard
+	"F"->"H%"	[color="#CA6347"]	// Thehard
+	"G"->"H%"	[color="#CA6347"]	// Thehard
+	"H%"->"a"	[color="#CA6347"]	// Thehard
+}
