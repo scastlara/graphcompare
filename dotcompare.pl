@@ -213,7 +213,7 @@ pod2usage( -verbose => 1,
 # If no files or too many files
 if (@files == 0) {
     error("You have to introduce at least 1 dot file \n\n\t" . 
-          'perl DOTCompare.pl -f file1,file2,file3...', 1
+          'perl dotcompare -f file1,file2,file3...', 1
          );
 } elsif (@files > 10) {
     error("Currently, dotcompare can only compare up to 10 DOT files\n", 1);
