@@ -497,8 +497,8 @@ sub check_characters {
     $statement =~ s{ $ue_quote .*? $ue_quote }{}gx;
 
     if ($statement =~ m/([^$node_id\s\t\n\->{}])/) {
-        min_error("Problem parsing DOT file. ".
-                  "Not allowed character in $dot at line $..\n\n");
+        error("Problem parsing DOT file. ".
+              "Not allowed character in $dot at line $..\n\n");
     }
 
     return;
@@ -676,7 +676,7 @@ sub print_venn {
         # We have 3 dotfiles -> venn with 3 circles
         $venn_template = "$INSTALL_PATH/data/v3_template.svg";
     } else {
-        min_error("One or more than three DOT files, ". 
+        error("One or more than three DOT files, ". 
                   "none venn diagram will be drawn.\n". 
                   "You could use the option -t to print a ".
                   "table with the results.\n");
