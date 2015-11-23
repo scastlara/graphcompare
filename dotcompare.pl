@@ -210,12 +210,15 @@ my @files = split /,/, $dot_files;
 pod2usage( -verbose => 1,  
            -output  => \*STDERR   ) if $help;
 
-# If no files
-unless (@files > 0) {
+# If no files or too many files
+if (@files == 0) {
     error("You have to introduce at least 1 dot file \n\n\t" . 
           'perl DOTCompare.pl -f file1,file2,file3...', 1
          );
+} elsif (@files > 10) {
+    error("Currently, dotcompare can only compare up to 10 DOT files\n", 1);
 }
+
 
 
 #===============================================================================
@@ -567,9 +570,6 @@ sub assign_colors {
     my $groups = shift;
     my %g_to_c = ();
 
-    error("Currently, dotcompare can only compare up to 10 DOT files\n", 1)
-        if (keys %{$groups} > 91);
-        
     error("There are more groups than colors!\nUse -c LARGE or -c RIDICULOUS", 1)
         if (keys %{$groups} > @{$colors});
 
