@@ -83,7 +83,7 @@ Saves the merged dot file to the specified file. Default to STDOUT.
 
 =item B<-c>, B<--colors> <profile>
 
-Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
+Color profile to use: SOFT (default), HARD, LARGE, RIDICULOUS or CBLIND.
 
 =item B<-v>, B<--venn> <filename.svg>
 
@@ -553,6 +553,7 @@ sub load_colors {
               "\t- SOFT\n".
               "\t- HARD\n" .
               "\t- LARGE\n" .
+              "\t- RIDICULOUS\n" .
               "\t- CBLIND\n", 1
               );
     }
@@ -566,7 +567,7 @@ sub assign_colors {
     my $groups = shift;
     my %g_to_c = ();
 
-    error("There are more groups than colors!\nUse -c LARGE", 1)
+    error("There are more groups than colors!\nUse -c LARGE or -c RIDICULOUS", 1)
         if (keys %{$groups} > @{$colors});
 
     foreach my $group (sort keys %{ $groups }) {
