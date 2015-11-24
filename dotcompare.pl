@@ -165,8 +165,9 @@ Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 use warnings;
 use strict;
 use Pod::Usage;
-use Getopt::Long qw(:config no_ignore_case);
+use Data::Dumper;
 use Cwd 'abs_path';
+use Getopt::Long qw(:config no_ignore_case);
 use Algorithm::Combinatorics 'combinations';
 
 
@@ -319,7 +320,6 @@ print STDERR "PROGRAM FINISHED\n",
 
 # DEBUGGING
 if ($debug) {
-    require Data::Dumper;
     print STDERR Dumper(\%nodes);
     print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors], 
                                     [("GROUPS", "GROUPS_2_COLORS") ]), "\n";
@@ -571,6 +571,7 @@ sub load_colors {
                  " is your installpath correct? :$!", 1);
 
     while (<$fh>) {
+        last if @colors;
         chomp;
         my ($name, @prof_colors) = split /\n/;
         next unless $profile eq $name;
@@ -585,7 +586,8 @@ sub load_colors {
               "\t- HARD\n" .
               "\t- LARGE\n" .
               "\t- RIDICULOUS\n" .
-              "\t- CBLIND\n", 1
+              "\t- CBLIND\n", 
+              1
               );
     }
 
