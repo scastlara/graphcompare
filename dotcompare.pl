@@ -294,7 +294,7 @@ if ($stats) {
     require Graph::Directed;
     my $graph_objs = load_graphs(\%interactions, \%nodes);
 
-    print STDERR "\n# GRAPH ATTRIBUTES:\n\n";
+    print STDERR "\n# GRAPH PROPERTIES:\n\n";
     foreach my $g_name (sort keys %{$graph_objs}) {
         next if $g_name eq "MERGED";
         print_attributes($g_name, $graph_objs->{$g_name});
