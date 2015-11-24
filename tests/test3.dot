@@ -15,6 +15,7 @@ digraph DOT3 {
     X -> T
     X -> Y
     Y -> Z
+    N -> U
     Z -> T
     Z -> A
 }
