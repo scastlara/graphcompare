@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.3.0
+v0.3.1
 
 =head1 SYNOPSIS
 
@@ -165,7 +165,7 @@ Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 use warnings;
 use strict;
 use Pod::Usage;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case);
 use Cwd 'abs_path';
 use Algorithm::Combinatorics 'combinations';
 
@@ -174,7 +174,7 @@ use Algorithm::Combinatorics 'combinations';
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.3.0';
+our $VERSION       = 'v0.3.1';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -188,6 +188,7 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
+my $test          = 0;
 my $stats         = 0;
 my $insensitive   = 0;
 my $color_profile = "SOFT";
@@ -209,6 +210,7 @@ my $options = GetOptions (
     "web=s"       => \$web,
     "stats"       => \$stats,
     "insensitive" => \$insensitive,
+    "Test"        => \$test,
     "debug"       => \$debug
 );
 
@@ -647,7 +649,10 @@ sub write_dot {
 
     print $fhandle "// $string\n";
 
-    foreach my $datum (sort keys %{ $in_data }) {
+    my @keys = keys %{ $in_data };
+    @keys = sort @keys if $test;
+
+    foreach my $datum (@keys) {
         my $output = "";
 
         if ($datum =~ m/\->/) {

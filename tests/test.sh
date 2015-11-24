@@ -14,7 +14,7 @@ echo "# Testing DOT parser...";
 
 # Create dot
 perl $DIR/../dotcompare.pl \
--f $DIR/Thehard.dot > $DIR/Thehard_result.tmp 2> /dev/null
+-f $DIR/Thehard.dot -T > $DIR/Thehard_result.tmp 2> /dev/null
 
 # TWO DOT FILES
 if diff -q $DIR/Thehard_result.tmp $DIR/Thehard_result.dot > /dev/null ; then
@@ -35,11 +35,11 @@ echo "# Testing dotcompare counts...";
 # 2table
 perl $DIR/../dotcompare.pl \
 -f $DIR/test1.dot,$DIR/test2.dot \
--t $DIR/2table.tmp >/dev/null 2> /dev/null;
+-t $DIR/2table.tmp -T >/dev/null 2> /dev/null;
 # 3table
 perl $DIR/../dotcompare.pl \
 -f $DIR/test1.dot,$DIR/test2.dot,$DIR/test3.dot \
--t $DIR/3table.tmp >/dev/null 2> /dev/null;
+-t $DIR/3table.tmp -T >/dev/null 2> /dev/null;
 
 
 # TWO DOT FILES
@@ -68,11 +68,11 @@ echo "# Testing dotcompare venn svg output...";
 # 2svg
 perl $DIR/../dotcompare.pl \
 -f $DIR/test1.dot,$DIR/test2.dot \
--v $DIR/2svg.tmp >/dev/null 2> /dev/null;
+-v $DIR/2svg.tmp -T >/dev/null 2> /dev/null;
 # 3svg
 perl $DIR/../dotcompare.pl \
 -f $DIR/test1.dot,$DIR/test2.dot,$DIR/test3.dot \
--v $DIR/3svg.tmp >/dev/null 2> /dev/null;
+-v $DIR/3svg.tmp -T >/dev/null 2> /dev/null;
 
 # TWO DOT FILES
 if diff -q $DIR/2svg.tmp $DIR/2svg.svg > /dev/null ; then
