@@ -158,10 +158,10 @@ Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 #===============================================================================
 use warnings;
 use strict;
-use Getopt::Long;
-use Algorithm::Combinatorics qw(combinations);
-use Cwd 'abs_path';
 use Pod::Usage;
+use Getopt::Long;
+use Cwd 'abs_path';
+use Algorithm::Combinatorics 'combinations';
 
 
 #===============================================================================
@@ -182,6 +182,7 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
+my $sub           = "";
 my $insensitive   = 0;
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
@@ -200,6 +201,7 @@ my $options = GetOptions (
     "table=s"     => \$table,
     "venn=s"      => \$venn,
     "web=s"       => \$web,
+    "sub=s"       => \$sub,
     "insensitive" => \$insensitive,
     "debug"       => \$debug
 );
@@ -278,6 +280,16 @@ if ($web) {
     print_html($web, $json, $color_table);
 }
 
+if ($sub) {
+    require Graph;
+    require Statistics::R;
+    
+    my $graph_obj = load_graph(\%interactions);
+    # my @subgraphs = $graph_obj->connected_components;
+    # my $results   = count_subgraphs(\@subgraphs);
+
+}
+
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
@@ -291,7 +303,7 @@ print STDERR "PROGRAM FINISHED\n",
 
 # DEBUGGING
 if ($debug) {
-    use Data::Dumper;
+    require Data::Dumper;
     print STDERR Dumper(\%nodes);
     print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors], 
                                     [("GROUPS", "GROUPS_2_COLORS") ]), "\n";
@@ -820,6 +832,13 @@ sub print_html {
     }
 
     return;
+}
+
+
+# GRAPH CONNECTIVITY
+#--------------------------------------------------------------------------------
+sub load_graph {
+    # body...
 }
 
 
