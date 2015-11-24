@@ -6,11 +6,12 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.2.6
+v0.3.0
 
 =head1 SYNOPSIS
 
     dotcompare  --files file1.dot,file2.dot \\  
+                --stats                     \\
                 --colors HARD               \\   
                 --dot output.dot            \\   
                 --table table.tbl           \\ 
@@ -72,6 +73,11 @@ Shows this help.
 =item B<-i>, B<--insensitive> 
 
 Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+
+=item B<-s>, B<--stats> 
+
+Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
+input graphs are very big.
 
 =item B<-f>, B<--files> <file1,file2,...>
 
@@ -168,7 +174,7 @@ use Algorithm::Combinatorics 'combinations';
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.2.6';
+our $VERSION       = 'v0.3.0';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -182,7 +188,7 @@ my $venn          = "";
 my $table         = "";
 my $debug         = "";
 my $web           = "";
-my $sub           = "";
+my $stats         = 0;
 my $insensitive   = 0;
 my $color_profile = "SOFT";
 my $out_name      = "STDOUT";
@@ -201,7 +207,7 @@ my $options = GetOptions (
     "table=s"     => \$table,
     "venn=s"      => \$venn,
     "web=s"       => \$web,
-    "sub=s"       => \$sub,
+    "stats"       => \$stats,
     "insensitive" => \$insensitive,
     "debug"       => \$debug
 );
@@ -265,14 +271,17 @@ write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES");
 write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS");
 print $dot_fh "}\n";
 
+
 # OPTIONAL OUTPUTS
 if ($table) {
     results_table($table, $groups);
 }
 
+
 if ($venn) {
     print_venn($venn, $groups, \@files, $groups_to_colors);
 }
+
 
 if ($web) {
     my $json        = create_json(\%nodes, \%interactions, $groups_to_colors); 
@@ -280,14 +289,19 @@ if ($web) {
     print_html($web, $json, $color_table);
 }
 
-if ($sub) {
-    require Graph;
-    require Statistics::R;
-    
-    my $graph_obj = load_graph(\%interactions);
-    # my @subgraphs = $graph_obj->connected_components;
-    # my $results   = count_subgraphs(\@subgraphs);
 
+if ($stats) {
+    require Graph::Directed;
+    my $graph_objs = load_graphs(\%interactions, \%nodes);
+
+    print STDERR "\n# GRAPH ATTRIBUTES:\n\n";
+    foreach my $g_name (sort keys %{$graph_objs}) {
+        next if $g_name eq "MERGED";
+        print_attributes($g_name, $graph_objs->{$g_name});
+    }
+
+    print_attributes("MERGED", $graph_objs->{"MERGED"});
+    print STDERR "\n";
 }
 
 # END REPORT
@@ -837,8 +851,65 @@ sub print_html {
 
 # GRAPH CONNECTIVITY
 #--------------------------------------------------------------------------------
-sub load_graph {
-    # body...
+sub load_graphs {
+    my $interactions = shift;
+    my $nodes        = shift;
+    my %graphs       = ();
+
+    # Initialized merged graph
+    $graphs{"MERGED"} = Graph::Directed->new;
+
+    # Fill graphs with nodes and edges
+    foreach my $element ($interactions, $nodes) {
+        foreach my $rel (keys %{$element}) {
+            my ($src, $trg) = split /\->/, $rel;
+            my @files = split /:/, $element->{$rel};
+
+            foreach my $file (@files) {
+                
+                if (not exists $graphs{$file}) {
+                    $graphs{$file} = Graph::Directed->new;
+                }
+
+                if ($trg) {
+                    $graphs{$file}->add_edge($src, $trg);
+                    $graphs{"MERGED"}->add_edge($src, $trg);
+                } else { 
+                    $graphs{$file}->add_vertex($src);
+                    $graphs{"MERGED"}->add_vertex($src) ;
+                }
+                
+            }
+        }
+    }
+    
+    # It returns a hash of graph objects with
+    # the names of the DOT files as keys
+    return(\%graphs);
+}
+
+#--------------------------------------------------------------------------------
+sub print_attributes {
+    my $name  = shift;
+    my $graph = shift;
+
+    my $node_num    = $graph->unique_vertices;
+    my $rel_num     = $graph->unique_edges;
+    my $diameter    = $graph->diameter;
+    my $avg_plength = $graph->average_path_length;
+    my $gamma       = $graph->clustering_coefficient;
+    my $avg_degree  = $graph->average_degree;
+
+    print STDERR "#\t$name\n";
+    print STDERR "#\t   Number of nodes                = $node_num\n";
+    print STDERR "#\t   Number of edges                = $rel_num\n";
+    print STDERR "#\t   Average degree                 = $diameter\n";
+    print STDERR "#\t   Diameter (longest path)        = $diameter\n";
+    print STDERR "#\t   Average shortest path length   = $avg_plength\n";
+    print STDERR "#\t   Clustering coefficient         = $gamma\n";
+    print STDERR "\n";
+
+    return;
 }
 
 
