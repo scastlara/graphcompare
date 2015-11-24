@@ -47,7 +47,7 @@ Complementary to the venn diagram, one can choose to create a
 table containing all the counts (so it can be used to create other plots or tables). The 
 table is already formated to be used by R. Load it to a dataframe using:
 
-        df <-read.table(file="yourtable.tbl", header=FALSE)
+        df <-read.table(file="yourtable.tbl", header=TRUE)
 
 =item - Webpage with the graph. 
 
@@ -682,7 +682,7 @@ sub results_table {
     open my $fh, '>', "$out_file"
         or error("Can't create results.tbl : $!", 1);
 
-    print $fh "GROUP\tNODES\tINTERACTIONS\n";
+    print $fh "GROUP\tNODES\tEDGES\n";
     foreach my $group (sort keys %{$groups}) {
         print $fh    $group, "\t", 
                      $groups->{$group}->{nodes}, "\t", 
