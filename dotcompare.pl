@@ -199,7 +199,7 @@ my %interactions  = ();
 
 # If no arguments provided
 pod2usage( -verbose => 1,  
-           -output  => \*STDERR   ) unless @ARGV;
+           -output  => \*STDOUT   ) unless @ARGV;
 
 my $options = GetOptions (
     'help|?'      => \$help,
@@ -219,7 +219,7 @@ my @files = split /,/, $dot_files;
 
 # If option --help
 pod2usage( -verbose => 1,  
-           -output  => \*STDERR   ) if $help;
+           -output  => \*STDOUT   ) if $help;
 
 # If no files or too many files
 if (@files == 0) {
