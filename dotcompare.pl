@@ -219,7 +219,7 @@ pod2usage( -verbose => 1,
 
 # If no files or too many files
 if (@files == 0) {
-    error("You have to introduce at least 1 dot file \n\n\t" . 
+    error("You have to introduce at least 1 DOT file \n\n\t" . 
           'perl dotcompare -f file1,file2,file3...', 1
          );
 } elsif (@files > 10) {
@@ -336,8 +336,9 @@ sub read_dot {
     my $multicomm    = 0; 
 
     open my $dot_fh, "<", $dot
-        or error("Can't open dot file $dot: $!", 1);
+        or error("Can't open DOT file $dot: $!", 1);
 
+    <$dot_fh>; # skip first line
     while (<$dot_fh>) {
         chomp;
         my $line = clean_line($_);
@@ -745,7 +746,7 @@ sub print_venn {
         $venn_template = "$INSTALL_PATH/data/v3_template.svg";
     } else {
         error("One or more than three DOT files, ". 
-                  "none venn diagram will be drawn.\n". 
+                  "won't draw any venn diagram.\n". 
                   "You could use the option -t to print a ".
                   "table with the results.\n");
         return;
