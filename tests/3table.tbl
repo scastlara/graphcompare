@@ -3,6 +3,6 @@ test1	1	4
 test1:test2	1	2
 test1:test2:test3	5	1
 test1:test3	0	0
-test2	3	4
-test2:test3	3	3
-test3	13	15
+test2	3	5
+test2:test3	4	3
+test3	12	17

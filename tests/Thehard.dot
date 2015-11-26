@@ -1,6 +1,9 @@
 strict digraph MYNAME{
-    A->B -> C -> "D E"[color = "red"] W G -> "H%" /* A -> XXX */ A -> Z
+    digraph [attributes]
+    strict    graph      [attributes]
+    strict node[attributes] edge [attributes]
+    A->B -> C -> "D E"[color = "red"] W G    -> "H%" /* A -> XXX */ A -> Z
     B -> "D E";"D E" -> F /* MULTILINE A -> W
-    COMMENT */ F -> A 
+    COMMENT */ F -> A
     subgraph {F -> "H%"-> a; K [color = "blue"] A -> K}
 }
