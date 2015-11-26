@@ -404,12 +404,7 @@ sub parse_dotline {
         while ($stmt =~ m{ ([$node_id]+) | ($ue_quote $quoted_node $ue_quote) }gx) {
             my $node = $1 ? $1 : $2;
             my @nodes = ($node);
-            if ( keyword_checker(\@nodes) ) {
-                error("Possible syntax error in $dot at line $.\n".
-                      "Not allowed keyword found without quotes:\n".
-                      "\t[ (di|sub)? graph | node | edge ]");
-                next;
-            }
+            next if keyword_checker(\@nodes, $dot);
             $node =~ s/$ue_quote//g;
             add_nodes($insensitive ? uc($node) : $node, $nodes, $dot_symbol);
         }
@@ -429,14 +424,9 @@ sub parse_dotline {
                 my $int = quotemeta($2);
                 my ($parent, $child)     = ($1, $3);
                 my ($uqparent, $uqchild) = ($parent, $child);
-                my @nodes = ($parent, $child);
                 
-                if ( keyword_checker(\@nodes) ) {
-                    error("Possible syntax error in $dot at line $.\n".
-                          "Not allowed keyword found without quotes:\n".
-                          "\t[ (di|sub)? graph | node | edge ]");
-                    next;
-                }
+                my @nodes = ($parent, $child);
+                next if keyword_checker(\@nodes, $dot);
 
                 ($uqparent, $uqchild) = map {
                     $_ =~ s/$ue_quote//g; 
@@ -459,13 +449,19 @@ sub parse_dotline {
 #--------------------------------------------------------------------------------
 sub keyword_checker {
     my $nodes = shift;
+    my $dot   = shift;
     my @keywords = qw(graph digraph subgraph edge node);
 
-    foreach my $node (@{ $nodes }) {
+    foreach my $node (@{ $nodes }) {      
         foreach my $keyw (@keywords) {
-            return 1 if $node eq $keyw;
-            # It works because if the keywords 
-            # are quoted then this is false!
+            if ($node eq $keyw) {
+                error("Possible syntax error in $dot at line $.\n".
+                      "Not allowed keyword found without quotes:\n".
+                      "\t[ (di|sub)? graph | node | edge ]");
+                return 1;
+                # It works because if the keywords 
+                # are quoted then this is false!
+            }
         }
     }
 
