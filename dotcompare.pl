@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.3.2
+v0.3.3
 
 =head1 SYNOPSIS
 
@@ -128,10 +128,6 @@ No support for multiline IDs.
 
 No support for quotes in node IDs (even if properly escaped).
 
-=item I<No_keywords>
-
-Can't use graph, subgraph, digraph, strict as node IDs
-
 =back
 
 =head2 Reporting Bugs
@@ -175,7 +171,7 @@ use Algorithm::Combinatorics 'combinations';
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.3.2';
+our $VERSION       = 'v0.3.3';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -405,8 +401,16 @@ sub parse_dotline {
 
     foreach my $stmt (@statements) {
         # ADD NODES
-        while ($stmt =~ m{ ([$node_id]+) | $ue_quote($quoted_node)$ue_quote }gx) {
+        while ($stmt =~ m{ ([$node_id]+) | ($ue_quote $quoted_node $ue_quote) }gx) {
             my $node = $1 ? $1 : $2;
+            my @nodes = ($node);
+            if ( keyword_checker(\@nodes) ) {
+                error("Possible syntax error in $dot at line $.\n".
+                      "Not allowed keyword found without quotes:\n".
+                      "\t[ (di|sub)? graph | node | edge ]");
+                next;
+            }
+            $node =~ s/$ue_quote//g;
             add_nodes($insensitive ? uc($node) : $node, $nodes, $dot_symbol);
         }
 
@@ -425,6 +429,14 @@ sub parse_dotline {
                 my $int = quotemeta($2);
                 my ($parent, $child)     = ($1, $3);
                 my ($uqparent, $uqchild) = ($parent, $child);
+                my @nodes = ($parent, $child);
+                
+                if ( keyword_checker(\@nodes) ) {
+                    error("Possible syntax error in $dot at line $.\n".
+                          "Not allowed keyword found without quotes:\n".
+                          "\t[ (di|sub)? graph | node | edge ]");
+                    next;
+                }
 
                 ($uqparent, $uqchild) = map {
                     $_ =~ s/$ue_quote//g; 
@@ -445,6 +457,22 @@ sub parse_dotline {
 }
 
 #--------------------------------------------------------------------------------
+sub keyword_checker {
+    my $nodes = shift;
+    my @keywords = qw(graph digraph subgraph edge node);
+
+    foreach my $node (@{ $nodes }) {
+        foreach my $keyw (@keywords) {
+            return 1 if $node eq $keyw;
+            # It works because if the keywords 
+            # are quoted then this is false!
+        }
+    }
+
+    return;
+}
+
+#--------------------------------------------------------------------------------
 sub clean_name {
     my $file_name = shift;
     my $cleaned   = $file_name;
@@ -459,7 +487,7 @@ sub clean_name {
 sub clean_line {
     my $line = shift;
 
-    # Graph inizialization
+    # Graph initialization
     $line =~ s{
         (strict)? # Optional strict
         [\s]*?    # Optional whitespace
@@ -471,12 +499,19 @@ sub clean_line {
         \{        # Curly bracket
     }{}gx;        # Remove IT
 
-    $line =~ s{\/\*.*?\*\/}{}g;                  # Remove comments
-    $line =~ s{\/\/.+}{}g;                       # Remove regular comments
-    $line =~ s{\b(di|sub)?graph\b}{}g;           # Remove graph attribute statements
-    $line =~ s{\bnode\b|\bedge\b|\bstrict\b}{}g; # Node or edge attribute statements
-    $line =~ s/^#.+//;                           # Remove C style preprocessor comments 
-    $line =~ s{\[.*?\]}{}g;                      # Remove attributes
+    $line =~ s{\/\*.*?\*\/}{}g;             # Remove comments
+    $line =~ s{\/\/.+}{}g;                  # Remove regular comments
+
+    $line =~ s{\b strict \s*?               
+              ( (di|sub)? graph | node | edge ) }{}gxi; 
+
+    $line =~ s{\b (di|sub)? graph \s*? \[ |
+               \b           node  \s*? \[ |
+               \b           edge  \s*? \[ 
+               }{ \[ }gix;                  # Remove graph/node/edge attribute stmts
+
+    $line =~ s/^#.+//;                      # Remove C style preprocessor comments 
+    $line =~ s{\[.*?\]}{}g;                 # Remove attributes
 
     return($line);
 }
