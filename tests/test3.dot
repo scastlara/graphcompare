@@ -6,6 +6,8 @@ digraph DOT3 {
     A -> E
     O -> M
     P -> Q
+    P -> N
+    P -> U
     R -> P
     R -> S
     T -> V

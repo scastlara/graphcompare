@@ -4,6 +4,7 @@ digraph DOT2 {
     E -> G
     G -> H
     H -> I
+    O -> I
     H -> D
     B -> A
     J -> K
