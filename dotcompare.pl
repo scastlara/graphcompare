@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.3.1
+v0.3.2
 
 =head1 SYNOPSIS
 
@@ -175,7 +175,7 @@ use Algorithm::Combinatorics 'combinations';
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.3.1';
+our $VERSION       = 'v0.3.2';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -903,8 +903,8 @@ sub print_attributes {
     my $node_num    = $graph->unique_vertices;
     my $rel_num     = $graph->unique_edges;
     my $diameter    = $graph->diameter;
-    my $avg_plength = $graph->average_path_length;
-    my $gamma       = $graph->clustering_coefficient;
+    my $avg_plength = sprintf("%.3f", $graph->average_path_length);
+    my $gamma       = sprintf("%.3f", $graph->clustering_coefficient);
     my $avg_degree  = $graph->average_degree;
 
     print STDERR "#\t$name\n";
@@ -912,7 +912,7 @@ sub print_attributes {
     print STDERR "#\t   Number of edges                = $rel_num\n";
     print STDERR "#\t   Average degree                 = $diameter\n";
     print STDERR "#\t   Diameter (longest path)        = $diameter\n";
-    print STDERR "#\t   Average shortest path length   = $avg_plength\n";
+    print STDERR "#\t   Average shortest path          = $avg_plength\n";
     print STDERR "#\t   Clustering coefficient         = $gamma\n";
     print STDERR "\n";
 
