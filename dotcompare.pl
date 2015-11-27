@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.3.3
+v0.3.5
 
 =head1 SYNOPSIS
 
@@ -114,11 +114,11 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 =item I<Undirected_graphs> 
 
 Only works with directed graphs. If undirected, 
-dotcompare considers it to be directed.
+dotcompare considers them to be directed.
 
 =item I<Clusters> 
 
-Still no clusters support eg: {A B C} -> D
+Still no clusters support e.g. {A B C} -> D
 
 =item I<Multiline_IDs> 
 
@@ -127,6 +127,15 @@ No support for multiline IDs.
 =item I<No_escaped_quotes>
 
 No support for quotes in node IDs (even if properly escaped).
+
+=item I<Equal_signs_in_IDs> 
+
+Can't use equal signs '=' in node IDs even if quoted.
+
+=item I<Compass_ports> 
+
+No support for compass ports.
+
 
 =back
 
@@ -171,7 +180,7 @@ use Algorithm::Combinatorics 'combinations';
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.3.3';
+our $VERSION       = 'v0.3.5';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -217,20 +226,6 @@ my @files = split /,/, $dot_files;
 pod2usage( -verbose => 1,  
            -output  => \*STDOUT   ) if $help;
 
-# If no files or too many files
-if (@files == 0) {
-    error("You have to introduce at least 1 DOT file \n\n\t" . 
-          'perl dotcompare -f file1,file2,file3...', 1
-         );
-} elsif (@files > 10) {
-    error("Currently, dotcompare can only compare up to 10 DOT files\n", 1);
-}
-
-
-
-#===============================================================================
-# MAIN
-#===============================================================================
 
 # START REPORT
 my $start_time   = time();
@@ -245,6 +240,27 @@ print STDERR "\nPROGRAM STARTED\n",
              "\tStart time      $current_time\n\n";
 #--
 
+
+# If no files or too many files
+if (@files == 0) {
+    error("You have to introduce at least 1 DOT file \n\n\t" . 
+          'perl dotcompare -f file1,file2,file3...', 1
+         );
+} elsif (@files == 5 and $color_profile ne "LARGE") {
+    error("Too many files to use color palette $color_profile\n". 
+          "Changing color palette to LARGE\n");
+    $color_profile = "LARGE";
+} elsif (@files > 5) {
+    error("Too many files to use the default color palettes.\n".
+          "Will generate one using Color::Spectrum\n");
+}
+
+
+
+#===============================================================================
+# MAIN
+#===============================================================================
+
 # READ DOT FILES
 @files = sort @files;
 foreach my $file (@files) {
@@ -253,8 +269,20 @@ foreach my $file (@files) {
 
 
 # COLORS AND COUNTS
-my $groups           = initialize_groups(\@files);
-my $colors           = load_colors($color_profile);
+my $groups = initialize_groups(\@files);
+my $colors;
+
+if (@files <= 5) {
+    $colors = load_colors($color_profile);
+} else {
+    require AutoLoader;
+    require Color::Spectrum::Multi;
+    my $spect  = Color::Spectrum::Multi->new();
+    my $number = keys %{$groups};
+    @$colors = $spect->generate($number, "#d5482b", "#2b63d5", "#2bd59d");
+    array_shuffle($colors);
+}
+
 my $groups_to_colors = assign_colors($colors,$groups);
 
 
@@ -308,7 +336,7 @@ my $end_time  = time();
 $current_time = localtime();
 my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 60));
 my @out_files = grep {$_} ($out_name, $table, $venn, $web);
-print STDERR "PROGRAM FINISHED\n",
+print STDERR "\nPROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
              "\tJob took ~ $run_time minutes\n\n"; 
@@ -496,19 +524,19 @@ sub clean_line {
         \{        # Curly bracket
     }{}gx;        # Remove IT
 
-    $line =~ s{\/\*.*?\*\/}{}g;             # Remove comments
-    $line =~ s{\/\/.+}{}g;                  # Remove regular comments
-
+    $line =~ s{\/\*.*?\*\/}{}g;              # Remove comments
+    $line =~ s{\/\/.+}{}g;                   # Remove regular comments
+    $line =~ s{\w+ \s* = \s* \"?[\w\d\.,]+\"?}{}gx; # Remove whole graph attributes
     $line =~ s{\b strict \s*?               
               ( (di|sub)? graph | node | edge ) }{}gxi; 
 
     $line =~ s{\b (di|sub)? graph \s*? \[ |
                \b           node  \s*? \[ |
                \b           edge  \s*? \[ 
-               }{ \[ }gix;                  # Remove graph/node/edge attribute stmts
+               }{ \[ }gix;                   # Remove graph/node/edge attribute stmts
 
-    $line =~ s/^#.+//;                      # Remove C style preprocessor comments 
-    $line =~ s{\[.*?\]}{}g;                 # Remove attributes
+    $line =~ s/^#.+//;                       # Remove C style preprocessor comments 
+    $line =~ s{\[.*?\]}{}g;                  # Remove attributes
 
     return($line);
 }
@@ -617,13 +645,23 @@ sub load_colors {
               "\t- SOFT\n".
               "\t- HARD\n" .
               "\t- LARGE\n" .
-              "\t- RIDICULOUS\n" .
               "\t- CBLIND\n", 
               1
               );
     }
 
     return \@colors;
+}
+
+#--------------------------------------------------------------------------------
+sub array_shuffle { # F-Y shuffle
+    my $array = shift;
+    my $i     = @$array;
+    while ( --$i ) {
+        my $j = int rand( $i+1 );
+        @$array[$i,$j] = @$array[$j,$i];
+    }
+    return;
 }
 
 #--------------------------------------------------------------------------------
