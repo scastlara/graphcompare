@@ -173,7 +173,6 @@ use Pod::Usage;
 use Data::Dumper;
 use Cwd 'abs_path';
 use Getopt::Long qw(:config no_ignore_case);
-use Algorithm::Combinatorics 'combinations';
 
 
 #===============================================================================
@@ -606,12 +605,12 @@ sub initialize_groups {
 
 
     foreach my $idx (1..@{$files_array} ) {
-        my $iter = combinations($files_array, $idx);
+        my @combinations = combinations($files_array, $idx);
 
-        while (my $combi = $iter->next) {
+        foreach my $combi (@combinations) {
             my @sorted = sort @$combi;
             $count_hash{join ":",@sorted}->{nodes} = 0;
-            $count_hash{join ":",@sorted}->{ints} = 0;
+            $count_hash{join ":",@sorted}->{ints}  = 0;
         } # while
 
     } # foreach
@@ -619,6 +618,27 @@ sub initialize_groups {
     return (\%count_hash);
 
 } 
+
+#--------------------------------------------------------------------------------
+sub combinations {
+    my $list = shift;
+    my $n    = shift;
+
+    error("Something went wrong when getting the combinations of your files", 1) 
+        if $n > @$list;
+
+    return map [$_], @$list if $n <= 1;
+
+    my @comb;
+
+    for (my $i = 0; $i+$n <= @$list; ++$i) {
+        my $val  = $list->[$i];
+        my @rest = @$list[$i+1..$#$list];
+        push @comb, [$val, @$_] for combinations(\@rest, $n-1);
+    }
+
+    return @comb;
+}
 
 #--------------------------------------------------------------------------------
 sub load_colors {
