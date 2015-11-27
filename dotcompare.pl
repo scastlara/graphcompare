@@ -278,7 +278,7 @@ if (@files <= 5) {
     require Color::Spectrum::Multi;
     my $spect  = Color::Spectrum::Multi->new();
     my $number = keys %{$groups};
-    @$colors = $spect->generate($number, "#d5482b", "#2b63d5", "#2bd59d");
+    @$colors = $spect->generate($number, "#d5482b", "#2b63d5", "#2bd59d", "#d5482b");
     array_shuffle($colors);
 }
 
@@ -360,57 +360,9 @@ sub read_dot {
     my $nodes        = shift;
     my $interactions = shift;
     my $dot_symbol   = clean_name($dot);
-    my $multicomm    = 0; 
 
-    open my $dot_fh, "<", $dot
-        or error("Can't open DOT file $dot: $!", 1);
-
-    <$dot_fh>; # skip first line
-    while (<$dot_fh>) {
-        chomp;
-        my $line = clean_line($_);
-        next unless $line =~ m/[^\s]/;
-
-        # If there are still comments, they are multiline
-        if ($line =~ m{\/\*}) {
-            $multicomm = 1;
-            # Remove everything after the comment
-            $line =~ s{\/\*.+}{}; 
-            parse_dotline(
-                $line, 
-                $nodes, 
-                $interactions, 
-                $dot_symbol, 
-                $dot
-            );
-        } elsif ( $line =~ m{\*\/} ) {
-            $multicomm = 0;
-            $line =~ s{.*\*\/}{};
-            next unless $line =~ m/[\w\d]/;
-        }
-
-        next if $multicomm;
-
-        parse_dotline(
-            $line, 
-            $nodes, 
-            $interactions, 
-            $dot_symbol, 
-            $dot
-        );    
-    
-    } # while file
-
-    return;
-}
-
-#--------------------------------------------------------------------------------
-sub parse_dotline {
-    my $line         = shift; 
-    my $nodes        = shift; 
-    my $interactions = shift; 
-    my $dot_symbol   = shift;
-    my $dot          = shift; 
+    my $dot_data = slurp_dot($dot);
+    my $line     = clean_line($dot_data);
 
     # Define regex classes
     my $ue_quote    = "[\"]";
@@ -475,6 +427,21 @@ sub parse_dotline {
 }
 
 #--------------------------------------------------------------------------------
+sub slurp_dot {
+    my $file = shift;
+    my $data = "";
+
+    open my $dot_file, "<", $file
+        or error("Can't open DOT file $file: $!", 1);
+
+    while (<$dot_file>) {
+        $data .= "$_";
+    }
+    return $data;
+}
+
+
+#--------------------------------------------------------------------------------
 sub keyword_checker {
     my $nodes = shift;
     my $dot   = shift;
@@ -511,7 +478,7 @@ sub clean_name {
 sub clean_line {
     my $line = shift;
 
-    # Graph initialization
+    # Remove graph initialization
     $line =~ s{
         (strict)? # Optional strict
         [\s]*?    # Optional whitespace
@@ -521,21 +488,28 @@ sub clean_line {
         .*?       # Optional graph name
         \s*?      # Optional whitespace
         \{        # Curly bracket
-    }{}gx;        # Remove IT
+    }{ }gxi;       
 
-    $line =~ s{\/\*.*?\*\/}{}g;              # Remove comments
-    $line =~ s{\/\/.+}{}g;                   # Remove regular comments
-    $line =~ s{\w+ \s* = \s* \"?[\w\d\.,]+\"?}{}gx; # Remove whole graph attributes
-    $line =~ s{\b strict \s*?               
-              ( (di|sub)? graph | node | edge ) }{}gxi; 
-
+    # Remove comments (including multiline)
+    $line =~ s{\/\*.*?\*\/}{ }gs; # The /s makes . also match \n
+    
+    # Remove regular comments
+    $line =~ s{\/\/.*?\n}{ }g; 
+    
+    # Remove whole graph attributes e.g. rank=same
+    $line =~ s{\w+ \s* = \s* \"?[\w\d\.,]+\"?}{ }gx; 
+    
+    # Remove graph/node/edge attribute stmts
     $line =~ s{\b (di|sub)? graph \s*? \[ |
                \b           node  \s*? \[ |
                \b           edge  \s*? \[ 
-               }{ \[ }gix;                   # Remove graph/node/edge attribute stmts
+               }{ \[ }gix;      
 
-    $line =~ s/^#.+//;                       # Remove C style preprocessor comments 
-    $line =~ s{\[.*?\]}{}g;                  # Remove attributes
+    # Remove C style preprocessor comments           
+    $line =~ s/\n\s*#.*?\n/ /;     
+
+    # Remove attributes                  
+    $line =~ s{\[.*?\]}{ }g;                  
 
     return($line);
 }
