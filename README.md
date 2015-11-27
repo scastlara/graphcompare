@@ -4,11 +4,12 @@ dotcompare - A program to compare DOT files
 
 # VERSION
 
-v0.2.6
+v0.3.5
 
 # SYNOPSIS
 
     dotcompare  --files file1.dot,file2.dot \\  
+                --stats                     \\
                 --colors HARD               \\   
                 --dot output.dot            \\   
                 --table table.tbl           \\ 
@@ -42,7 +43,7 @@ option.
     table containing all the counts (so it can be used to create other plots or tables). The 
     table is already formated to be used by R. Load it to a dataframe using:
 
-            df <-read.table(file="yourtable.tbl", header=FALSE)
+            df <-read.table(file="yourtable.tbl", header=TRUE)
 
 - - Webpage with the graph. 
 
@@ -54,10 +55,12 @@ option.
     without any external file/script dependencies. This allows for an easy upload of the graph
     to any website.
 
+
 # INSTALLATION
 To install dotcompare you have two options: either you move the files manually to wherever you want or you use the script `install.sh`. 
 
 If you use `install.sh`, it will ask you in which directory you want to store the program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
+
 
 
 # OPTIONS
@@ -69,6 +72,11 @@ If you use `install.sh`, it will ask you in which directory you want to store th
 - **-i**, **--insensitive** 
 
     Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+
+- **-s**, **--stats** 
+
+    Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
+    input graphs are very big.
 
 - **-f**, **--files** &lt;file1,file2,...>
 
@@ -101,11 +109,11 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 - _Undirected\_graphs_ 
 
     Only works with directed graphs. If undirected, 
-    dotcompare considers it to be directed.
+    dotcompare considers them to be directed.
 
 - _Clusters_ 
 
-    Still no clusters support eg: {A B C} -> D
+    Still no clusters support e.g. {A B C} -> D
 
 - _Multiline\_IDs_ 
 
@@ -115,9 +123,13 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
     No support for quotes in node IDs (even if properly escaped).
 
-- _No\_keywords_
+- _Equal\_signs\_in\_IDs_ 
 
-    Can't use graph, subgraph, digraph, strict as node IDs
+    Can't use equal signs '=' in node IDs even if quoted.
+
+- _Compass\_ports_ 
+
+    No support for compass ports.
 
 ## Reporting Bugs
 
