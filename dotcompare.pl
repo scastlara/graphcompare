@@ -89,7 +89,7 @@ Saves the merged dot file to the specified file. Default to STDOUT.
 
 =item B<-c>, B<--colors> <profile>
 
-Color profile to use: SOFT (default), HARD, LARGE, RIDICULOUS or CBLIND.
+Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
 
 =item B<-v>, B<--venn> <filename.svg>
 
@@ -670,7 +670,7 @@ sub assign_colors {
     my $groups = shift;
     my %g_to_c = ();
 
-    error("There are more groups than colors!\nUse -c LARGE or -c RIDICULOUS", 1)
+    error("There are more groups than colors!\nUse -c LARGE\n", 1)
         if (keys %{$groups} > @{$colors});
 
     foreach my $group (sort keys %{ $groups }) {
