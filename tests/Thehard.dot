@@ -1,4 +1,5 @@
 strict digraph MYNAME{
+    rank = "same"
      graph      [color = "blue"]
     node [color = "blue"] edge [color = "blue"]
     A->B -> C -> "D E"[color = "red"] W G    -> "H%" /* A -> XXX */ A -> Z
