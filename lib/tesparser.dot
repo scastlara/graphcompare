@@ -4,8 +4,8 @@ NODE_COMM// this is a comment PENES COLORADOS
 /* MULTILINE
 COMMENT */
 graph [attribute]
-    B -> C [this is an attribute]
-    A -> C
+    B -> C[this is an attribute]
+    "A" -> "C"   [CULOSIDAD]
     D -> B -> Y XXX
     D -> E
     E -> F
