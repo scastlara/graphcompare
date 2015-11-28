@@ -1,14 +1,17 @@
 digraph DOT1 {
-    AAA -> B
-NODE_COMM// this is a comment PENES COLORADOS
-/* MULTILINE
+    rank = 0.15
+    node[att]
+    PENES;AAA -> "B"
+    NODE_COMM/* MULTILINE
 COMMENT */
-graph [attribute]
+    // this is a comment PENES COLORADOS
+=?
+subgraph [attribute]
     B -> C[this is an attribute]
     "A" -> "C"   [CULOSIDAD]
     D -> B -> Y XXX
     D -> E
-    E -> F
+    E->F
     E -> G
     "CU L=O % $&" -> "PENES COLORADOS"
 } 

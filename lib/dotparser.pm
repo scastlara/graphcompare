@@ -11,7 +11,7 @@ my $dotdata = slurp($file);
 
 my $buffer = "";
 my $state  = "";
-my $node_id = "A-Z0-9_";
+my $node_id = "A-Za-z0-9_";
 my @nodes;
 my @interactions;
 
@@ -42,14 +42,29 @@ for (my $i = 0; $i < length($dotdata); $i++) {
         state_multicomment(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "quoted_node") {
         state_quoted_node(\$i, \$buffer, \$char, \$state, $node_id);
+    } elsif ($state eq "ass_attribute") {
+        state_ass_attribute(\$i, \$buffer, \$char, \$state, $node_id);
     }
 
     print STDOUT "STATE: $state\tCHAR: $char \n\n";
 
 }
 
-print join(" | ", @nodes), "\n";
-print join(" | ", @interactions), "\n";
+my %nodes = map {$_ => 1} @nodes;
+
+print STDERR "digraph {\n";
+foreach my $node (sort keys %nodes) {
+    print STDERR "\"$node\"\n";
+} 
+
+foreach my $int (@interactions) {
+    my ($p, $c) = split /\->/, $int;
+    print STDERR "\"$p\" -> \"$c\"\n";
+}
+
+print STDERR "}\n";
+#print join(" | ", @nodes), "\n";
+#print join(" | ", @interactions), "\n";
 
 
 
@@ -112,8 +127,13 @@ sub state_inside {
     my $state   = shift;
     my $node_id = shift;
 
-    $$buffer .= $$char if $$char =~ m/[A-Z0-9\->_]/ig;
+    if ($$char =~ m/[$node_id\->_]/ig) {
+        $$buffer .= $$char 
+    }
+
     print "BUFFER: $$buffer\n";
+
+    # BUFFER KEYWORDS!
     if ($$buffer =~ m/^(di|sub)?graph/) {
         # graph init
         $$state  = "init";
@@ -123,26 +143,30 @@ sub state_inside {
         $$buffer = "";
     }
 
+    # WHAT AM I READING?
     if ($$char eq "=") {
-        # attribute assignment
+        # Attribute assignment
         $$state = "ass_attribute";
         $$buffer = "";
     } elsif ($$char eq "[") {
+        # Attributes
         $$state  = "attribute";
         if ($$buffer =~ m/$node_id/) {
             # There is a node in the buffer
             print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;
+        } elsif ($$buffer) {
+            die "We have something not allowed in buffer: $$buffer\n";
         }
         $$buffer = "";
     } elsif ($$char =~ m/[\s\n;]/) {
-
+        # End of node statement, probably
         if ($$buffer =~ m/^[$node_id]+$/i) {
             # We have a node
             print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;
             $$buffer = "";
-        }
+       }
 
     } elsif ($$buffer eq "->") {
         $$state  = "edge";
@@ -158,9 +182,11 @@ sub state_inside {
     } elsif ($$char eq "/" and substr($dotdata, $$i+1, 1) eq "*") {
         # WE HAVE A POSSIBLY MULTILINE COMMENT
         if ($$buffer =~ m/^[$node_id]+$/i) {
+            # We have a node in the buffer
             print "NODE-MULTI-COMMENT HERE : $$buffer\n";
             push @nodes, $$buffer;          
-        }
+        } # else the buffer is empty or full of crap
+
         $$state  = "multicomment";
         $$i++; # so we will skip * and it won't be added to buffer
         $$buffer = ""; 
@@ -173,7 +199,9 @@ sub state_inside {
             $$state = "quoted_node";
 
         }
-    } 
+    } elsif ($$char =~ m/[^$node_id\->}{]/) {
+        die "Not allowed character! $$char \n";
+    }
 
     return;
 }
@@ -266,6 +294,23 @@ sub state_attribute {
     return;
 }
 
+sub state_ass_attribute {
+    my $i      = shift;
+    my $buffer = shift;
+    my $char   = shift;
+    my $state  = shift;
+    my $node_id = shift;
+
+    if ($$char =~ m/[$node_id\."]/) {
+        # good
+    } else {
+        # end of attribute
+        $$state = "inside";
+    }
+
+    return;
+}
+
 sub state_comment {
     my $i      = shift;
     my $buffer = shift;
@@ -328,8 +373,20 @@ sub slurp {
         or die "Can't open $file:$!\n";
 
     while (<$fh>) {
+        next if $_ =~ m/^\s*#/;
+
+        # Removes spaces between equal signs
+        # we lose node info in IDs with =,
+        # but it is worth the loss. Easier to parse
+        # things like rank=same
         if ($_ =~ m/\s*=\s*/) {
             $_ =~ s/\s+=\s+/=/g;
+        }
+
+        # Add space between edges in edge stmts
+        # makes everything easier to parse
+        if ($_ =~ m/\->/) {
+            $_ =~ s/\->/ \-> /g;
         }
 
         $string .= "$_ ";
