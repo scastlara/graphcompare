@@ -125,13 +125,13 @@ sub state_inside {
         $$state  = "attribute";
         if ($$buffer =~ m/$node_id/) {
             # There is a node in the buffer
-            print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;
         }
         $$buffer = "";
     } elsif ($$buffer =~ m/^[$node_id]+$/i and $$char =~ m/[\s\n]/) {
         # We have a node
-        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
         push @nodes, $$buffer;
         $$buffer = "";
     } elsif ($$buffer eq "->") {
@@ -141,7 +141,7 @@ sub state_inside {
         # WE HAVE A COMMENT!
         $$state  = "comment";
         if ($$buffer =~ m/^[$node_id]+$/i) {
-            print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;          
         }
         $$buffer = ""; 
@@ -184,14 +184,19 @@ sub state_edge {
             # Edge statement with node starting with quote
             $$state = "quoted_edge";
         }
-    } elsif ($$char =~ m/[\s\n]/ and $$buffer =~ m/^[A-Z0-9]+$/) {
+    } elsif ($$char =~ m/[\s\n\[]/ and $$buffer =~ m/^[A-Z0-9]+$/) {
         # END OF REGULAR EDGE STATEMENT
-        print "INT HERE: $$buffer with char $nodes[-1]\n";
+        if ($$char =~ m/\[/) {
+            $$state = "attribute";
+        } else {
+            $$state = "inside"; 
+        }
+
+        print "\tINT HERE: $nodes[-1] -> $$buffer : char $$char at line ", __LINE__, "\n";
         push @interactions, $nodes[-1] . "->" . $$buffer;
         push @nodes, $$buffer;
-        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
-        $$state = "inside";
     }
 
     return;
@@ -206,10 +211,10 @@ sub state_quoted_edge {
 
     if ($$char eq "\"") {
         # end of quoted edge
-        print "Q_INT HERE: $$buffer with char $nodes[-1]\n";
+        print "\tQ_INT HERE: $nodes[-1] -> $$buffer\n";
         push @interactions, $nodes[-1] . "->" . $$buffer;
         push @nodes, $$buffer;
-        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
         $$state = "inside";
     } else {
@@ -273,7 +278,7 @@ sub state_quoted_node {
     if ($$char eq "\"") {
         # end of quoted node
         push @nodes, $$buffer;
-        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
         $$state = "inside";
     } else {
