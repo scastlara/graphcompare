@@ -1,0 +1,11 @@
+Makefile.PL
+MANIFEST
+bin/dotcompare
+lib/Dot/Parser.pm
+t/parser.t
+data/colors.txt  
+data/cyt.template  
+data/dependencies.txt  
+data/v2_template.svg  
+data/v3_template.old.svg  
+data/v3_template.svg
