@@ -1,0 +1,13 @@
+digraph DOT1 {
+    AAA -> B
+NODE// this is a comment PENES COLORADOS
+/* MULTILINE
+COMMENT */
+    B -> C
+    A -> C
+    D -> B -> Y XXX
+    D -> E
+    E -> F
+    E -> G
+
+}
