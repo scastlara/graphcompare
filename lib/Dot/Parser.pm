@@ -2,85 +2,77 @@ package Dot::Parser;
 
 use warnings;
 use strict;
-
+use Exporter qw(import);
+use Carp;
 
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
-my $file = shift @ARGV;
-
-my $node_id = "A-Za-z0-9_";
-my @nodes   = ();
-my @edges   = ();
-my $buffer  = ""; # This will store what has been read in each state
-
-
-#===============================================================================
-# MAIN
-#===============================================================================
-
-# ALL POSSIBLE STATES OF THE PARSER
-my %states = (
-    none          => \&_state_none,
-    init          => \&_state_init,
-    inside        => \&_state_inside,
-    edge          => \&_state_edge,
-    attribute     => \&_state_attribute,
-    quoted_edge   => \&_state_quoted_edge,
-    comment       => \&_state_comment,
-    multicomment  => \&_state_multicomment,
-    quoted_node   => \&_state_quoted_node,
-    ass_attribute => \&_state_ass_attribute
-);
-
-
-# INITIAL STATE
-my $state  = "none";
-
-# READ DOT FILE
-my $dotdata = slurp($file);
-
-# START PARSING
-for (my $i = 0; $i < length($dotdata); $i++) {
-    my $char = substr($dotdata, $i, 1);
-    
-    $states{$state}->(
-        \$i, 
-        $dotdata, 
-        \$buffer, 
-        \$char, 
-        \$state, 
-        $node_id, 
-        \@nodes, 
-        \@edges
-    );
-
-    print STDOUT "STATE: $state\tCHAR: $char \n\n";
-
-}
-
-
-# DEBUGGING OUTPUT
-# Remove repeated nodes from stack
-my %nodes = map {$_ => 1} @nodes;
-
-print STDERR "digraph {\n";
-foreach my $node (sort keys %nodes) {
-    print STDERR "\"$node\"\n";
-} 
-
-foreach my $int (@edges) {
-    my ($p, $c) = split /\->/, $int;
-    print STDERR "\"$p\" -> \"$c\"\n";
-}
-
-print STDERR "}\n";
-
-
+our $VERSION     = 1.00;
+our @ISA         = qw(Exporter);
+our @EXPORT_OK   = qw(parse);
+our %EXPORT_TAGS = ( DEFAULT => [qw(parse)]);
 
 
 #===============================================================================
 # METHODS AND FUNCTIONS 
+#===============================================================================
+
+sub parse {
+    my $file    = shift;
+    my $debug   = shift;
+    my $node_id = "A-Za-z0-9_";
+    my @nodes   = ();
+    my @edges   = ();
+    my $buffer  = ""; # This will store what has been read in each state
+
+    # ALL POSSIBLE STATES OF THE PARSER
+    my %states = (
+        none          => \&_state_none,
+        init          => \&_state_init,
+        inside        => \&_state_inside,
+        edge          => \&_state_edge,
+        attribute     => \&_state_attribute,
+        quoted_edge   => \&_state_quoted_edge,
+        comment       => \&_state_comment,
+        multicomment  => \&_state_multicomment,
+        quoted_node   => \&_state_quoted_node,
+        ass_attribute => \&_state_ass_attribute
+    );
+
+
+    # INITIAL STATE
+    my $state  = "none";
+
+    # READ DOT FILE
+    my $dotdata = slurp($file);
+
+    # START PARSING
+    for (my $i = 0; $i < length($dotdata); $i++) {
+        my $char = substr($dotdata, $i, 1);
+        
+        $states{$state}->(
+            \$i, 
+            $dotdata, 
+            \$buffer, 
+            \$char, 
+            \$state, 
+            $node_id, 
+            \@nodes, 
+            \@edges,
+            $debug
+        );
+
+    }
+
+    # Remove repeated nodes from stack
+    my %nodes = map {$_ => 1} @nodes;
+
+    return(\@nodes, \@edges);
+}
+
+
+# INTERNAL SUBROUTINES
 #===============================================================================
 
 sub _state_none {
@@ -92,6 +84,7 @@ sub _state_none {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char ne " ") {
         $$buffer .= $$char
@@ -116,6 +109,7 @@ sub _state_init {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char =~ /[$node_id]/i) {
         # graph name
@@ -145,12 +139,13 @@ sub _state_inside {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char =~ m/[$node_id\->_]/ig) {
         $$buffer .= $$char 
     }
 
-    print "BUFFER: $$buffer\n";
+    print STDERR "BUFFER: $$buffer\n" if $debug;
 
     # BUFFER KEYWORDS!
     if ($$buffer =~ m/^(di|sub)?graph/) {
@@ -172,17 +167,17 @@ sub _state_inside {
         $$state  = "attribute";
         if ($$buffer =~ m/$node_id/) {
             # There is a node in the buffer
-            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;
         } elsif ($$buffer) {
-            die "We have something not allowed in buffer: $$buffer\n";
+            croak "We have something not allowed in buffer: $$buffer\n";
         }
         $$buffer = "";
     } elsif ($$char =~ m/[\s\n;]/) {
         # End of node statement, probably
         if ($$buffer =~ m/^[$node_id]+$/i) {
             # We have a node
-            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;
             $$buffer = "";
        }
@@ -193,7 +188,7 @@ sub _state_inside {
     } elsif( $$char eq "/" and substr($dotdata, $$i+1, 1) eq "/") {
         # WE HAVE A COMMENT!
         if ($$buffer =~ m/^[$node_id]+$/i) {
-            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;          
         }
         $$state  = "comment";
@@ -202,7 +197,7 @@ sub _state_inside {
         # WE HAVE A POSSIBLY MULTILINE COMMENT
         if ($$buffer =~ m/^[$node_id]+$/i) {
             # We have a node in the buffer
-            print "NODE-MULTI-COMMENT HERE : $$buffer\n";
+            print STDERR "NODE-MULTI-COMMENT HERE : $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;          
         } # else the buffer is empty or full of crap
 
@@ -211,7 +206,7 @@ sub _state_inside {
         $$buffer = ""; 
     } elsif ($$char eq "\"") {
         if ($$buffer =~ /[^"]/) {
-            die "PROBLEM HERE\n";
+            croak "PROBLEM HERE\n";
         } else {
             # We have the beginning of a quoted node!
             $$buffer = ""; # remove quote from buffer
@@ -219,7 +214,7 @@ sub _state_inside {
 
         }
     } elsif ($$char =~ m/[^$node_id\->}{]/) {
-        die "Not allowed character! $$char \n";
+        croak "Not allowed character! $$char \n";
     }
 
     return;
@@ -234,13 +229,14 @@ sub _state_edge {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char =~ m/^[$node_id]$/i) {
         # REGULAR EDGE
         $$buffer .= $$char;
     } elsif ($$char =~ m/"/) {
         if ($$buffer) {
-            die "You can't use quotes inside node strings. BUFF: $$buffer CHAR: $$char\n";
+            croak "You can't use quotes inside node strings. BUFF: $$buffer CHAR: $$char\n";
         } else {
             # Edge statement with node starting with quote
             $$state = "quoted_edge";
@@ -260,17 +256,17 @@ sub _state_edge {
                 # regular comment
                 $$state = "comment";
             } else {
-                die "Found $$char that is not a comment\n";
+                croak "Found $$char that is not a comment\n";
             }
 
         } else {
             $$state = "inside"; 
         }
 
-        print "\tINT HERE: $nodes[-1] -> $$buffer : char $$char at line ", __LINE__, "\n";
-        push @{$edges}, $nodes[-1] . "->" . $$buffer;
+        print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", __LINE__, "\n" if $debug;
+        push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
         push @{$node_stack}, $$buffer;
-        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
     }
 
@@ -287,13 +283,14 @@ sub _state_quoted_edge {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char eq "\"") {
         # end of quoted edge
-        print "\tQ_INT HERE: $nodes[-1] -> $$buffer\n";
-        push @{$edges}, $nodes[-1] . "->" . $$buffer;
+        print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
+        push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
         push @{$node_stack}, $$buffer;
-        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
         $$state = "inside";
     } else {
@@ -312,6 +309,7 @@ sub _state_attribute {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char eq "]") {
         $$state = "inside";
@@ -330,6 +328,7 @@ sub _state_ass_attribute {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char =~ m/[$node_id\."]/) {
         # good
@@ -350,8 +349,9 @@ sub _state_comment {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
-    print "BUFF: $$buffer\n";
+    print STDERR "BUFF: $$buffer\n" if $debug;
 
     if ($$char =~ /\n/) {
         $$state = "inside";
@@ -369,9 +369,10 @@ sub _state_multicomment {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     $$buffer .= $$char if $$char =~ m/[\/\*]/;
-    print STDOUT "BUFF: $$buffer\n";
+    print STDERR "BUFF: $$buffer\n" if $debug;
     if ($$buffer eq "*/") {
         $$state = "inside";
         $$buffer = "";
@@ -389,11 +390,12 @@ sub _state_quoted_node {
     my $node_id    = shift;
     my $node_stack = shift;
     my $edges      = shift;
+    my $debug      = shift;
 
     if ($$char eq "\"") {
         # end of quoted node
         push @{$node_stack}, $$buffer;
-        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
         $$state = "inside";
     } else {
@@ -409,7 +411,7 @@ sub slurp {
     my $string = "";
 
     open my $fh, "<", $file
-        or die "Can't open $file:$!\n";
+        or croak "Can't open $file:$!\n";
 
     while (<$fh>) {
         next if $_ =~ m/^\s*#/;
