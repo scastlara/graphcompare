@@ -11,6 +11,7 @@ my $dotdata = slurp($file);
 
 my $buffer = "";
 my $state  = "";
+my $node_id = "A-Z0-9_";
 my @nodes;
 my @interactions;
 
@@ -43,7 +44,7 @@ for (my $i = 0; $i < length($dotdata); $i++) {
         state_quoted_node(\$i, \$buffer, \$char, \$state);
     }
 
-    print STDERR "STATE: $state\tCHAR: $char \n\n";
+    print STDOUT "STATE: $state\tCHAR: $char \n\n";
 
 }
 
@@ -82,11 +83,17 @@ sub state_init {
     my $char   = shift;
     my $state  = shift;
 
-    if ($$char =~ /[A-Z]/i) {
+    if ($$char =~ /[$node_id]/i) {
         # graph name
     } elsif ($$char eq "{") {
         $$state  = "inside";
         $$buffer = "";
+    } elsif ($$char eq "[") {
+        # we found a graph attribute statement
+        # get back to previous position and return 
+        # to normal state (so the attribute will be skipped)
+        $$buffer = "";
+        $$state = "attribute";
     }
 
     return;
@@ -102,7 +109,7 @@ sub state_inside {
     my $char    = shift;
     my $state   = shift;
 
-    $$buffer .= $$char unless $$char =~ m/[\s\n\/]/;
+    $$buffer .= $$char if $$char =~ m/[A-Z0-9\->_]/ig;
     print "BUFFER: $$buffer\n";
     if ($$buffer =~ /^(di|sub)?graph/) {
         # graph init
@@ -116,11 +123,15 @@ sub state_inside {
         $$buffer = "";
     } elsif ($$char eq "[") {
         $$state  = "attribute";
-        push @nodes, $$buffer;
+        if ($$buffer =~ m/$node_id/) {
+            # There is a node in the buffer
+            print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
+            push @nodes, $$buffer;
+        }
         $$buffer = "";
-    } elsif ($$buffer =~ m/^[A-Z0-9]+$/i and $$char eq " ") {
+    } elsif ($$buffer =~ m/^[$node_id]+$/i and $$char =~ m/[\s\n]/) {
         # We have a node
-        print "NODE HERE : $$buffer\n";
+        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
         push @nodes, $$buffer;
         $$buffer = "";
     } elsif ($$buffer eq "->") {
@@ -129,14 +140,14 @@ sub state_inside {
     } elsif( $$char eq "/" and substr($dotdata, $$i+1, 1) eq "/") {
         # WE HAVE A COMMENT!
         $$state  = "comment";
-        if ($$buffer =~ m/^[A-Z0-9]+$/i) {
-            print "NODE-COMMENT HERE : $$buffer\n";
+        if ($$buffer =~ m/^[$node_id]+$/i) {
+            print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;          
         }
         $$buffer = ""; 
     } elsif ($$char eq "/" and substr($dotdata, $$i+1, 1) eq "*") {
         # WE HAVE A POSSIBLY MULTILINE COMMENT
-        if ($$buffer =~ m/^[A-Z0-9]+$/i) {
+        if ($$buffer =~ m/^[$node_id]+$/i) {
             print "NODE-MULTI-COMMENT HERE : $$buffer\n";
             push @nodes, $$buffer;          
         }
@@ -163,7 +174,7 @@ sub state_edge {
     my $char   = shift;
     my $state  = shift;
 
-    if ($$char =~ m/^[A-Z0-9]$/i) {
+    if ($$char =~ m/^[$node_id]$/i) {
         # REGULAR EDGE
         $$buffer .= $$char;
     } elsif ($$char =~ m/"/) {
@@ -178,6 +189,7 @@ sub state_edge {
         print "INT HERE: $$buffer with char $nodes[-1]\n";
         push @interactions, $nodes[-1] . "->" . $$buffer;
         push @nodes, $$buffer;
+        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
         $$state = "inside";
     }
@@ -197,6 +209,7 @@ sub state_quoted_edge {
         print "Q_INT HERE: $$buffer with char $nodes[-1]\n";
         push @interactions, $nodes[-1] . "->" . $$buffer;
         push @nodes, $$buffer;
+        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
         $$state = "inside";
     } else {
@@ -226,6 +239,8 @@ sub state_comment {
     my $char   = shift;
     my $state  = shift;
 
+    print "BUFF: $$buffer\n";
+
     if ($$char =~ /\n/) {
         $$state = "inside";
     }
@@ -240,7 +255,7 @@ sub state_multicomment {
     my $state  = shift;
 
     $$buffer .= $$char if $$char =~ m/[\/\*]/;
-    print STDERR "BUFF: $$buffer\n";
+    print STDOUT "BUFF: $$buffer\n";
     if ($$buffer eq "*/") {
         $$state = "inside";
         $$buffer = "";
@@ -258,6 +273,7 @@ sub state_quoted_node {
     if ($$char eq "\"") {
         # end of quoted node
         push @nodes, $$buffer;
+        print "\tNODE added in stat: $$state at line ", __LINE__, ": $$buffer\n";
         $$buffer = "";
         $$state = "inside";
     } else {
@@ -269,16 +285,18 @@ sub state_quoted_node {
 
 
 sub slurp {
-    my $file = shift;
+    my $file   = shift;
     my $string = "";
 
     open my $fh, "<", $file
         or die "Can't open $file:$!\n";
 
     while (<$fh>) {
-        if ($_ =~ m/\s=\s/) {
-            $_ =~ s/\s=\s/=/g;
+        if ($_ =~ m/\s*=\s*/) {
+            $_ =~ s/\s+=\s+/=/g;
         }
+
+
         $string .= "$_ ";
     }
 
