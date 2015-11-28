@@ -24,10 +24,14 @@ for (my $i = 0; $i < length($dotdata); $i++) {
         state_attribute(\$i, \$buffer, \$char, \$state);
     } elsif ($state eq "edge") {
         state_edge(\$i, \$buffer, \$char, \$state);
+    } elsif ($state eq "quoted_edge") {
+        state_quoted_edge(\$i, \$buffer, \$char, \$state);
     } elsif ($state eq "comment") {
         state_comment(\$i, \$buffer, \$char, \$state);
     } elsif ($state eq "multicomment") {
         state_multicomment(\$i, \$buffer, \$char, \$state);
+    } elsif ($state eq "quoted_node") {
+        state_quoted_node(\$i, \$buffer, \$char, \$state);
     }
 
     print STDERR "STATE: $state\tCHAR: $char \n\n";
@@ -124,7 +128,16 @@ sub state_inside {
         $$state  = "multicomment";
         $$i++; # so we will skip * and it won't be added to buffer
         $$buffer = ""; 
-    }
+    } elsif ($$char eq "\"") {
+        if ($$buffer =~ /[^"]/) {
+            die "PROBLEM HERE\n";
+        } else {
+            # We have the beginning of a quoted node!
+            $$buffer = ""; # remove quote from buffer
+            $$state = "quoted_node";
+
+        }
+    } 
 
     return;
 }
@@ -136,9 +149,17 @@ sub state_edge {
     my $state  = shift;
 
     if ($$char =~ m/^[A-Z0-9]$/i) {
+        # REGULAR EDGE
         $$buffer .= $$char;
-
+    } elsif ($$char =~ m/"/) {
+        if ($$buffer) {
+            die "You can't use quotes inside node strings :(\n";
+        } else {
+            # Edge statement with node starting with quote
+            $$state = "quoted_edge";
+        }
     } elsif ($$char =~ m/[\s\n]/ and $$buffer =~ m/^[A-Z0-9]+$/) {
+        # END OF REGULAR EDGE STATEMENT
         print "INT HERE: $$buffer with char $nodes[-1]\n";
         push @interactions, $nodes[-1] . "->" . $$buffer;
         push @nodes, $$buffer;
@@ -146,9 +167,29 @@ sub state_edge {
         $$state = "inside";
     }
 
-
+    return;
 
 }
+
+sub state_quoted_edge {
+    my $i      = shift;
+    my $buffer = shift;
+    my $char   = shift;
+    my $state  = shift;
+
+    if ($$char eq "\"") {
+        # end of quoted edge
+        print "Q_INT HERE: $$buffer with char $nodes[-1]\n";
+        push @interactions, $nodes[-1] . "->" . $$buffer;
+        push @nodes, $$buffer;
+        $$buffer = "";
+        $$state = "inside";
+    } else {
+        $$buffer .= $$char;
+
+    }
+}
+
 
 sub state_attribute {
     my $i      = shift;
@@ -193,7 +234,23 @@ sub state_multicomment {
     return;
 }
 
+sub state_quoted_node {
+    my $i      = shift;
+    my $buffer = shift;
+    my $char   = shift;
+    my $state  = shift;
 
+    if ($$char eq "\"") {
+        # end of quoted node
+        push @nodes, $$buffer;
+        $$buffer = "";
+        $$state = "inside";
+    } else {
+        $$buffer .= $$char;
+
+    }
+
+}
 
 
 sub slurp {
