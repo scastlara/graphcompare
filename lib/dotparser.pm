@@ -27,29 +27,29 @@ for (my $i = 0; $i < length($dotdata); $i++) {
         unless $state;
 
     if ($state eq "init") {
-        state_init(\$i, \$buffer, \$char, \$state);
+        state_init(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "inside") {
-        state_inside(\$i, $dotdata, \$buffer, \$char, \$state);
+        state_inside(\$i, $dotdata, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "attribute") {
-        state_attribute(\$i, \$buffer, \$char, \$state);
+        state_attribute(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "edge") {
-        state_edge(\$i, \$buffer, \$char, \$state);
+        state_edge(\$i, $dotdata, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "quoted_edge") {
-        state_quoted_edge(\$i, \$buffer, \$char, \$state);
+        state_quoted_edge(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "comment") {
-        state_comment(\$i, \$buffer, \$char, \$state);
+        state_comment(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "multicomment") {
-        state_multicomment(\$i, \$buffer, \$char, \$state);
+        state_multicomment(\$i, \$buffer, \$char, \$state, $node_id);
     } elsif ($state eq "quoted_node") {
-        state_quoted_node(\$i, \$buffer, \$char, \$state);
+        state_quoted_node(\$i, \$buffer, \$char, \$state, $node_id);
     }
 
     print STDOUT "STATE: $state\tCHAR: $char \n\n";
 
 }
 
-print join(":", @nodes), "\n";
-print join("  ", @interactions), "\n";
+print join(" | ", @nodes), "\n";
+print join(" | ", @interactions), "\n";
 
 
 
@@ -62,11 +62,12 @@ sub state_none {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     if ($$char ne " ") {
         $$buffer .= $$char
     } else {
-        if ($$buffer =~ /^(di|sub)?graph/) {
+        if ($$buffer =~ /^(strict)?\s*?(di|sub)?graph/) {
             # graph init
             $$state  = "init";
             $$buffer = "";
@@ -82,6 +83,7 @@ sub state_init {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     if ($$char =~ /[$node_id]/i) {
         # graph name
@@ -108,12 +110,16 @@ sub state_inside {
     my $buffer  = shift;
     my $char    = shift;
     my $state   = shift;
+    my $node_id = shift;
 
     $$buffer .= $$char if $$char =~ m/[A-Z0-9\->_]/ig;
     print "BUFFER: $$buffer\n";
-    if ($$buffer =~ /^(di|sub)?graph/) {
+    if ($$buffer =~ m/^(di|sub)?graph/) {
         # graph init
         $$state  = "init";
+        $$buffer = "";
+    } elsif ($$buffer =~ m/^(node|edge)/) {
+        # We have a node/edge attribute statement. 
         $$buffer = "";
     }
 
@@ -129,21 +135,25 @@ sub state_inside {
             push @nodes, $$buffer;
         }
         $$buffer = "";
-    } elsif ($$buffer =~ m/^[$node_id]+$/i and $$char =~ m/[\s\n]/) {
-        # We have a node
-        print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
-        push @nodes, $$buffer;
-        $$buffer = "";
+    } elsif ($$char =~ m/[\s\n;]/) {
+
+        if ($$buffer =~ m/^[$node_id]+$/i) {
+            # We have a node
+            print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
+            push @nodes, $$buffer;
+            $$buffer = "";
+        }
+
     } elsif ($$buffer eq "->") {
         $$state  = "edge";
         $$buffer = "";
     } elsif( $$char eq "/" and substr($dotdata, $$i+1, 1) eq "/") {
         # WE HAVE A COMMENT!
-        $$state  = "comment";
         if ($$buffer =~ m/^[$node_id]+$/i) {
             print "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n";
             push @nodes, $$buffer;          
         }
+        $$state  = "comment";
         $$buffer = ""; 
     } elsif ($$char eq "/" and substr($dotdata, $$i+1, 1) eq "*") {
         # WE HAVE A POSSIBLY MULTILINE COMMENT
@@ -169,25 +179,41 @@ sub state_inside {
 }
 
 sub state_edge {
-    my $i      = shift;
-    my $buffer = shift;
-    my $char   = shift;
-    my $state  = shift;
+    my $i       = shift;
+    my $dotdata = shift;
+    my $buffer  = shift;
+    my $char    = shift;
+    my $state   = shift;
+    my $node_id = shift;
 
     if ($$char =~ m/^[$node_id]$/i) {
         # REGULAR EDGE
         $$buffer .= $$char;
     } elsif ($$char =~ m/"/) {
         if ($$buffer) {
-            die "You can't use quotes inside node strings :(\n";
+            die "You can't use quotes inside node strings. BUFF: $$buffer CHAR: $$char\n";
         } else {
             # Edge statement with node starting with quote
             $$state = "quoted_edge";
         }
-    } elsif ($$char =~ m/[\s\n\[]/ and $$buffer =~ m/^[A-Z0-9]+$/) {
+    } elsif ($$char =~ m/[\s\n\[;\/]/ and $$buffer =~ m/^[$node_id]+$/) {
         # END OF REGULAR EDGE STATEMENT
         if ($$char =~ m/\[/) {
+            # edge stmt ends with attribute
             $$state = "attribute";
+        } elsif ($$char =~ m/\//) {
+            # edge stmt ends with comment
+            if (substr($dotdata, $$i+1, 1) eq "*") {
+                # multicomment!
+                $$state = "multicomment";
+                $$i++; # so we will skip * and it won't be added to buffer
+            } elsif (substr($dotdata, $$i+1, 1) eq "/") {
+                # regular comment
+                $$state = "comment";
+            } else {
+                die "Found $$char that is not a comment\n";
+            }
+
         } else {
             $$state = "inside"; 
         }
@@ -208,6 +234,7 @@ sub state_quoted_edge {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     if ($$char eq "\"") {
         # end of quoted edge
@@ -229,6 +256,7 @@ sub state_attribute {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     if ($$char eq "]") {
         $$state = "inside";
@@ -243,6 +271,7 @@ sub state_comment {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     print "BUFF: $$buffer\n";
 
@@ -258,6 +287,7 @@ sub state_multicomment {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     $$buffer .= $$char if $$char =~ m/[\/\*]/;
     print STDOUT "BUFF: $$buffer\n";
@@ -274,6 +304,7 @@ sub state_quoted_node {
     my $buffer = shift;
     my $char   = shift;
     my $state  = shift;
+    my $node_id = shift;
 
     if ($$char eq "\"") {
         # end of quoted node
@@ -300,7 +331,6 @@ sub slurp {
         if ($_ =~ m/\s*=\s*/) {
             $_ =~ s/\s+=\s+/=/g;
         }
-
 
         $string .= "$_ ";
     }
