@@ -173,6 +173,7 @@ use Pod::Usage;
 use Data::Dumper;
 use Cwd 'abs_path';
 use Dot::Parser qw(parse_dot);
+use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
 
@@ -471,10 +472,11 @@ sub load_colors {
     my $profile = shift;
     my @colors  = ();
     local $/ = "//";
+    my $colors_file = dist_file("Dot-Parser", "colors.txt");
 
-    open my $fh, '<', "$INSTALL_PATH/../data/colors.txt"
-        or error("Can't open $INSTALL_PATH/data/colors.txt,". 
-                 " is your installpath correct? :$!", 1);
+    open my $fh, '<', "$colors_file"
+        or error("Can't open $colors_file,". 
+                 " i can't find the distribution share/ directory :$!", 1);
 
     while (<$fh>) {
         last if @colors;
@@ -624,10 +626,10 @@ sub print_venn {
 
     if (@group_keys == 3) {
         # We have 2 dotfiles -> venn with 2 circles
-        $venn_template = "$INSTALL_PATH/data/v2_template.svg";
+        $venn_template = dist_file("Dot-Parser", "v2_template.svg");
     } elsif (@group_keys == 7) {
         # We have 3 dotfiles -> venn with 3 circles
-        $venn_template = "$INSTALL_PATH/data/v3_template.svg";
+        $venn_template = dist_file("Dot-Parser", "v3_template.svg");
     } else {
         error("One or more than three DOT files, ". 
                   "won't draw any venn diagram.\n". 
@@ -752,7 +754,7 @@ sub print_html {
     my $filename       = shift;
     my $json           = shift;
     my $color_table    = shift;
-    my $template       = "$INSTALL_PATH/data/cyt.template";
+    my $template       = dist_file("Dot-Parser", "cyt.template");
 
     local $/ = ">DATAHERE";
 

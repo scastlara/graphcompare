@@ -4,7 +4,7 @@ use strict;
 use Cwd 'abs_path';
 use lib '/home/sergio/code/dotcompare/lib';
 use Dot::Parser qw(parse_dot);
-use Test::More tests => 12;
+use Test::More tests => 14;
 
 # Get where testfile is...
 my $path = abs_path($0);
@@ -25,7 +25,7 @@ my $exp_edges = join("||", sort @exp_edges);
 
 
 
-my @test_files = qw(simple comments attributes subgraphs nospaces);
+my @test_files = qw(simple comments attributes subgraphs nospaces hard);
 
 foreach my $testf (@test_files) {
     my ($nodes, $edges) = parse_dot("$path/$testf.dot");
