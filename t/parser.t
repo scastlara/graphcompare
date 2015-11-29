@@ -2,7 +2,6 @@
 use warnings;
 use strict;
 use Cwd 'abs_path';
-use lib '/home/sergio/code/dotcompare/lib';
 use Dot::Parser qw(parse_dot);
 use Test::More tests => 14;
 
