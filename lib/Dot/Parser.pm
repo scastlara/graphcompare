@@ -4,6 +4,10 @@ package Dot::Parser;
 
 Dot::Parser
 
+=head1 DESCRIPTION
+
+This module reads/parses DOT files. 
+
 =head1 SYNOPSIS
 
     use Dot::Parser qw(parse_dot); 
@@ -11,23 +15,121 @@ Dot::Parser
 
 =head1 METHODS
 
-Dot::Parser only exports one function: parse_dot(). This function takes a string with
-the name of a file written in DOT format and returns:
-
 =over 8
 
-=item Nodes
+=item B<parse_dot>
 
-A reference to an array with all the nodes in the file
+Dot::Parser only exports one function: parse_dot(). This function takes a string with
+the name of a file written in DOT format and returns a hash reference that contains 
+an adjacency list of the graph.
 
-=item Edges
+    %hash => 
+        {node1} => {node2} => undef
+                   {node3} => undef
+                   {node4} => undef
 
-A reference to an array with all the edges, written as "A->B".
+        {node2} => {node5} => undef
+        ...
 
 =back
 
-=cut
+=head2 INTERNAL FUNCTIONS
 
+Dot::Parser uses two types of functions: STATES and REGULAR functions.
+
+
+=head3 REGULAR FUNCTIONS
+
+=over 8 
+
+=item B<_slurp>
+
+This function slurps the dotfile. It does some ugly modifications to it
+to help the parser. these are adding spaces between edgeops and removing spaces between
+'=' signs. Node ids with this symbols will be (obviously) altered, but I think it's not
+a big deal to remove one or two spaces. Maybe in the future I could improve this. 
+
+=item B<_add_node>
+
+This function simply adds the node stored in the buffer to the node stack and to the graph
+adjacency list. Then it removes everything in the buffer
+
+=back
+
+=head3 STATES
+
+
+=over 8 
+
+=item B<_none>
+
+This is the initial state. It lasts until the parser reads a graph declaration.
+If your file is not a dot file, you may end up forever in this state.
+
+=item B<_init>
+
+This defines the state in which the Parser has read a keyword.
+It could be either a graph declaration (disubgraph) or a graph attribute declaration
+
+=item B<_inside>
+
+This is the "normal" state of the parser. Here, everything that looks normal
+[A-Za-z0-9_]+ will be considered a node ID if it is not a keyword.
+Thus, it is important to define the cases in which the Parser has to "get out"
+of this state (for example, in the case of rank=id or an [attribute]).
+
+Right now it works but it is very messy. It certainly needs a refactor.
+
+=item B<_edge>
+
+The parser read an edgeops -> and falls into this state. Here, it will look for another
+node ID, and then it will return to the "normal/inside" state. The "ending" of a node ID
+could be a whitespace, a semicolon, an attribute statement, a comment or a multicomment
+If the second node is quoted, this state is not enough, so the parser will fall into the 
+state quoted_edge, which can deal with special characters and symbols
+
+
+=item B<_quoted_node>
+
+This is a quoted node state, which is straightforward. If the parser (in state inside)
+reads an opening double quote, it falls into this state. The parser will add everything 
+to the buffer, and once it gets to a closing double quote it will save the buffer to the
+nodes stack
+
+=item B<_quoted_edge>
+
+This is the state that allows special characters and symbols in the second node 
+in an edge statement. It's similar to the state edge, but it will only end reading
+the node ID when it gets to another double quote.
+
+=item B<_attribute>
+
+This is an attribute statement. Everything will be discarded until the parser
+reads a closing square bracket.
+
+=item B<_ass_attribute>
+
+This funny name represents the state in which the parser reads something like rank=id
+It's not a very well defined state and it may need further improvements.
+
+=item B<_comment>
+
+This is the state of a normal comment //comment that will end with a newline 
+character
+
+=item B<_multicomment>
+
+This special comment /* comment */ ignores newline characters. It will only 
+end when it gets to a closing comment symbol */
+
+
+
+
+
+=back
+
+
+=cut
 
 
 use warnings;
@@ -75,7 +177,7 @@ sub parse_dot {
     my $state  = "none";
 
     # READ DOT FILE
-    my $dotdata = slurp($file);
+    my $dotdata = _slurp($file);
 
     # START PARSING
     for (my $i = 0; $i < length($dotdata); $i++) {
@@ -106,8 +208,6 @@ sub parse_dot {
 #===============================================================================
 
 #--------------------------------------------------------------------------------
-# This is the initial state. It lasts until the parser reads a graph declaration.
-# If your file is not a dot file, you may end up forever in this state.
 sub _state_none {
     my $i          = shift;
     my $dotdata    = shift;
@@ -134,8 +234,6 @@ sub _state_none {
 
 
 #--------------------------------------------------------------------------------
-# This defines the state in which the Parser has read a keyword.
-# It could be either a graph declaration (disubgraph) or a graph attribute declaration
 sub _state_init {
     my $i          = shift;
     my $dotdata    = shift;
@@ -166,10 +264,6 @@ sub _state_init {
 
 
 #--------------------------------------------------------------------------------
-# This is the "normal" state of the parser. Here, everything that looks normal
-# [A-Za-z0-9]+ will be considered a node ID if it is not a keyword.
-# Thus, it is important to define the cases in which the Parser has to "get out"
-# of this state (for example, in the case of rank=id or an [attribute]).
 sub _state_inside {
     my $i          = shift;
     my $dotdata    = shift;
@@ -201,7 +295,7 @@ sub _state_inside {
 
         } elsif ($$char =~  m/[\s\n\t;]/) {
             # NORMAL ENDING OF NODE ID
-            add_node($graph, $node_stack, $buffer, $state, $debug);
+            _add_node($graph, $node_stack, $buffer, $state, $debug);
 
         } elsif ($$char eq "=") {
         # WHOLE GRAPH ATTRIBUTE
@@ -225,7 +319,7 @@ sub _state_inside {
 
          if ($$buffer =~ m/[$node_id]/) {
             # NODE IN BUFFER
-            add_node($graph, $node_stack, $buffer, $state, $debug);
+            _add_node($graph, $node_stack, $buffer, $state, $debug);
 
         } elsif ($$buffer) {
             # BEGINNING OF ATTRIBUTE BUT WITH SOMETHING THAT IS NOT A NODE IN BUFFER
@@ -241,7 +335,7 @@ sub _state_inside {
 
         if ($$buffer =~ m/^[$node_id]+$/i) {
             # NODE IN THE BUFFER
-            add_node($graph, $node_stack, $buffer, $state, $debug);         
+            _add_node($graph, $node_stack, $buffer, $state, $debug);         
         }
 
         if (substr($dotdata, $$i+1, 1) eq "/") {
@@ -267,11 +361,6 @@ sub _state_inside {
 
 
 #--------------------------------------------------------------------------------
-# The parser read an edgeops -> and falls into this state. Here, it will look for another
-# node ID, and then it will return to the "normal/inside" state. The "ending" of a node ID
-# could be a whitespace, a semicolon, an attribute statement, a comment or a multicomment
-# If the second node is quoted, this state is not enough, so the parser will fall into the 
-# state quoted_edge, which can deal with special characters and symbols
 sub _state_edge {
     my $i          = shift;
     my $dotdata    = shift;
@@ -318,7 +407,7 @@ sub _state_edge {
         print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", 
                      __LINE__, "\n" if $debug;
         $graph->{$node_stack->[-1]}->{$$buffer} = 1;
-        add_node($graph, $node_stack, $buffer, $state, $debug);
+        _add_node($graph, $node_stack, $buffer, $state, $debug);
     }
 
     return;
@@ -327,10 +416,6 @@ sub _state_edge {
 
 
 #--------------------------------------------------------------------------------
-# This is a quoted node state, which is straightforward. If the parser (in state inside)
-# reads an opening double quote, it falls into this state. The parser will add everything 
-# to the buffer, and once it gets to a closing double quote it will save the buffer to the
-# nodes stack
 sub _state_quoted_node {
     my $i          = shift;
     my $dotdata    = shift;
@@ -344,7 +429,7 @@ sub _state_quoted_node {
 
     if ($$char eq "\"") {
         # end of quoted node
-        add_node($graph, $node_stack, $buffer, $state, $debug);
+        _add_node($graph, $node_stack, $buffer, $state, $debug);
         $$state = "inside";
     } else {
         $$buffer .= $$char;
@@ -355,9 +440,6 @@ sub _state_quoted_node {
 
 
 #--------------------------------------------------------------------------------
-# This is the state that allows special characters and symbols in the second node 
-# in an edge statement. It's similar to the state edge, but it will only end reading
-# the node ID when it gets to another double quote.
 sub _state_quoted_edge {
     my $i          = shift;
     my $dotdata    = shift;
@@ -373,7 +455,7 @@ sub _state_quoted_edge {
         # end of quoted edge
         print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
         $graph->{$node_stack->[-1]}->{$$buffer} = 1;
-        add_node($graph, $node_stack, $buffer, $state, $debug);
+        _add_node($graph, $node_stack, $buffer, $state, $debug);
         $$state = "inside";
     } else {
         $$buffer .= $$char;
@@ -383,8 +465,6 @@ sub _state_quoted_edge {
 
 
 #--------------------------------------------------------------------------------
-# This is an attribute statement. Everything will be discarded until the parser
-# reads a closing square bracket.
 sub _state_attribute {
     my $i          = shift;
     my $dotdata    = shift;
@@ -406,8 +486,6 @@ sub _state_attribute {
 
 
 #--------------------------------------------------------------------------------
-# This funny name represents the state in which the parser reads something like rank=id
-# It's not a very well defined state and it may need further improvements.
 sub _state_ass_attribute {
     my $i          = shift;
     my $dotdata    = shift;
@@ -431,8 +509,6 @@ sub _state_ass_attribute {
 
 
 #--------------------------------------------------------------------------------
-# This is the state of a normal comment //comment that will end with a newline 
-# character
 sub _state_comment {
     my $i          = shift;
     my $dotdata    = shift;
@@ -455,8 +531,6 @@ sub _state_comment {
 
 
 #--------------------------------------------------------------------------------
-# This special comment /* comment */ ignores newline characters. It will only 
-# end when it gets to a closing comment symbol */
 sub _state_multicomment {
     my $i          = shift;
     my $dotdata    = shift;
@@ -470,7 +544,7 @@ sub _state_multicomment {
 
     $$buffer .= $$char if $$char =~ m/[\/\*]/;
     print STDERR "BUFF: $$buffer\n" if $debug;
-    
+
     if ($$buffer eq "*/") {
         $$state = "inside";
         $$buffer = "";
@@ -481,11 +555,7 @@ sub _state_multicomment {
 
 
 #--------------------------------------------------------------------------------
-# This function (NOT A STATE) slurps the dotfile. It does some ugly modifications to it
-# to help the parser. these are adding spaces between edgeops and removing spaces between
-# '=' signs. Node ids with this symbols will be (obviously) altered, but I think it's not
-# a big deal to remove one or two spaces. Maybe in the future I could improve this. 
-sub slurp {
+sub _slurp {
     my $file   = shift;
     my $string = "";
 
@@ -517,7 +587,7 @@ sub slurp {
 
 
 #--------------------------------------------------------------------------------
-sub add_node {
+sub _add_node {
     my $graph      = shift;
     my $node_stack = shift;
     my $buffer     = shift;
