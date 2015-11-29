@@ -48,12 +48,13 @@ our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 #===============================================================================
 
 sub parse_dot {
-    my $file    = shift;
-    my $debug   = shift;
-    my $node_id = "A-Za-z0-9_";
-    my @nodes   = ();
-    my @edges   = ();
-    my $buffer  = ""; # This will store what has been read in each state
+    my $file           = shift;
+    my $debug          = shift;
+    my $node_id        = "A-Za-z0-9_";
+    my @nodes          = ();
+    my %adjacency_list = ();
+    my $buffer         = ""; 
+        # This will store what has been read in each state
 
     # ALL POSSIBLE STATES OF THE PARSER
     my %states = (
@@ -88,7 +89,7 @@ sub parse_dot {
             \$state, 
             $node_id, 
             \@nodes, 
-            \@edges,
+            \%adjacency_list,
             $debug
         );
 
@@ -97,7 +98,7 @@ sub parse_dot {
     # Remove repeated nodes from stack
     my %nodes = map {$_ => 1} @nodes;
     @nodes = keys %nodes;
-    return(\@nodes, \@edges);
+    return(\%adjacency_list);
 }
 
 
@@ -208,6 +209,7 @@ sub _state_inside {
             # There is a node in the buffer
             print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;
+            $edges->{$$buffer} = () unless exists $edges->{$$buffer};
         } elsif ($$buffer) {
             croak "We have something not allowed in buffer, with state $state. Buffer: $$buffer\n";
         }
@@ -218,6 +220,7 @@ sub _state_inside {
             # We have a node
             print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;
+            $edges->{$$buffer} = () unless exists $edges->{$$buffer};
             $$buffer = "";
        }
 
@@ -228,7 +231,8 @@ sub _state_inside {
         # WE HAVE A COMMENT!
         if ($$buffer =~ m/^[$node_id]+$/i) {
             print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;          
+            push @{$node_stack}, $$buffer;
+            $edges->{$$buffer} = () unless exists $edges->{$$buffer};          
         }
         $$state  = "comment";
         $$buffer = ""; 
@@ -237,7 +241,8 @@ sub _state_inside {
         if ($$buffer =~ m/^[$node_id]+$/i) {
             # We have a node in the buffer
             print STDERR "NODE-MULTI-COMMENT HERE : $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;          
+            push @{$node_stack}, $$buffer;   
+            $edges->{$$buffer} = () unless exists $edges->{$$buffer};       
         } # else the buffer is empty or full of crap
 
         $$state  = "multicomment";
@@ -310,8 +315,10 @@ sub _state_edge {
         }
 
         print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", __LINE__, "\n" if $debug;
-        push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
+        $edges->{$node_stack->[-1]}->{$$buffer} = 1;
+        #push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
         push @{$node_stack}, $$buffer;
+        $edges->{$$buffer} = () unless exists $edges->{$$buffer};
         print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
     }
@@ -340,6 +347,7 @@ sub _state_quoted_node {
     if ($$char eq "\"") {
         # end of quoted node
         push @{$node_stack}, $$buffer;
+        $edges->{$$buffer} = () unless exists $edges->{$$buffer};
         print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
         $$state = "inside";
@@ -369,8 +377,10 @@ sub _state_quoted_edge {
     if ($$char eq "\"") {
         # end of quoted edge
         print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
-        push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
+        $edges->{$node_stack->[-1]}->{$$buffer} = 1;
+        #push @{$edges}, $node_stack->[-1] . "->" . $$buffer;
         push @{$node_stack}, $$buffer;
+        $edges->{$$buffer} = () unless exists $edges->{$$buffer};
         print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
         $$buffer = "";
         $$state = "inside";
