@@ -2,7 +2,6 @@
 use warnings;
 use strict;
 use Cwd 'abs_path';
-use lib '/home/sergio/code/dotcompare/lib';
 use Dot::Parser qw(parse_dot);
 use Test::More tests => 14;
 
@@ -28,7 +27,7 @@ my $exp_edges = join("||", sort @exp_edges);
 my @test_files = qw(simple comments attributes subgraphs nospaces hard);
 
 foreach my $testf (@test_files) {
-    my ($graph) = parse_dot("$path/$testf.dot");
+    my $graph = parse_dot("$path/$testf.dot");
     my $got_nodes = join("||", sort keys %{$graph});
     my @edges = ();
 
@@ -63,7 +62,7 @@ my @sym_exp_edges = (
 );
 my $sym_exp_edges = join("||", sort @sym_exp_edges);
 
-my ($graph) = parse_dot("$path/symbols.dot");
+my $graph = parse_dot("$path/symbols.dot");
 my $got_nodes = join("||", sort keys %{$graph});
 my @edges = ();
 

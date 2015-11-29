@@ -11,5 +11,5 @@ digraph MYNAME{
     F -> "H%"
     "H%"-> a
     K 
-    A -> K
+    A -- K
 }
