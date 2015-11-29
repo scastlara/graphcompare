@@ -519,3 +519,5 @@ sub slurp {
 
     return $string;
 }
+
+1;
