@@ -105,7 +105,7 @@ sub parse_dot {
 #===============================================================================
 
 #--------------------------------------------------------------------------------
-# This is the initial state. It lasts until the parser read a graph declaration.
+# This is the initial state. It lasts until the parser reads a graph declaration.
 # If your file is not a dot file, you may end up forever in this state.
 sub _state_none {
     my $i          = shift;
