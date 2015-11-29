@@ -7,10 +7,10 @@ digraph MYNAME{
     C -> "D E"
     W [node attribute space]
     G->"H%"
-    A->Z
+    A->Z; rank=same
     B -> "D E"
     "D E" -> F  
-    F -> A
+    F -> A; size="small"
     F -> "H%"
     "H%"-> a
     K[node attribute nospace] 
