@@ -1,7 +1,37 @@
 package Dot::Parser;
 
+=head1 NAME
+
+Dot::Parser
+
+=head1 SYNOPSIS
+
+    use Dot::Parser qw(parse_dot); 
+    my ($nodes, $edges) = parse_dot("dotfile.dot");
+
+=head1 METHODS
+
+Dot::Parser only exports one function: parse_dot(). This function takes a string with
+the name of a file written in DOT format and returns:
+
+=over 8
+
+=item Nodes
+
+A reference to an array with all the nodes in the file
+
+=item Edges
+
+A reference to an array with all the edges, written as "A->B".
+
+=back
+
+=cut
+
+
+
 use warnings;
-use strict;
+use strict;q
 use Exporter qw(import);
 use Carp;
 
