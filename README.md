@@ -4,7 +4,7 @@ dotcompare - A program to compare DOT files
 
 # VERSION
 
-v0.3.5
+v0.4.0
 
 # SYNOPSIS
 
@@ -20,7 +20,8 @@ v0.3.5
 
 This script compares two or more DOT (graphviz) files and 
 prints the resulting merged DOT file with different 
-colors for each group. 
+colors for each group. To read the dotfiles, dotcompare uses the module
+Dot::Parser, located in lib/
 
 By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
@@ -55,13 +56,12 @@ option.
     without any external file/script dependencies. This allows for an easy upload of the graph
     to any website.
 
-
 # INSTALLATION
-To install dotcompare you have two options: either you move the files manually to wherever you want or you use the script `install.sh`. 
 
-If you use `install.sh`, it will ask you in which directory you want to store the program and all the files it needs. You will need **ROOT** privileges to use install.sh, as it creates a symlink to dotcompare.pl in `/usr/local/bin` and a man page in `/usr/share/man/man1/`.
-
-
+    perl Makefile.PL
+    make
+    make test
+    make install
 
 # OPTIONS
 
@@ -98,10 +98,6 @@ If you use `install.sh`, it will ask you in which directory you want to store th
 
     Writes html file with the graph using cytoscape.js
 
-# AUTHOR
-
-Sergio Castillo Lara - s.cast.lara@gmail.com
-
 # BUGS AND PROBLEMS
 
 ## Current Limitations
@@ -123,13 +119,19 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
     No support for quotes in node IDs (even if properly escaped).
 
-- _Equal\_signs\_in\_IDs_ 
-
-    Can't use equal signs '=' in node IDs even if quoted.
-
 - _Compass\_ports_ 
 
     No support for compass ports.
+
+# DEPENDENCIES
+
+- File::Share
+- Test::More
+- Graph (only if using option -s)
+
+# AUTHOR
+
+Sergio Castillo Lara - s.cast.lara@gmail.com
 
 ## Reporting Bugs
 
