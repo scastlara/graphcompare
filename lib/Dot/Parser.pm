@@ -8,17 +8,16 @@ use Carp;
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
-our $VERSION     = 1.00;
 our @ISA         = qw(Exporter);
-our @EXPORT_OK   = qw(parse);
-our %EXPORT_TAGS = ( DEFAULT => [qw(parse)]);
+our @EXPORT_OK   = qw(parse_dot);
+our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 
 
 #===============================================================================
 # METHODS AND FUNCTIONS 
 #===============================================================================
 
-sub parse {
+sub parse_dot {
     my $file    = shift;
     my $debug   = shift;
     my $node_id = "A-Za-z0-9_";
@@ -67,7 +66,7 @@ sub parse {
 
     # Remove repeated nodes from stack
     my %nodes = map {$_ => 1} @nodes;
-
+    @nodes = keys %nodes;
     return(\@nodes, \@edges);
 }
 
@@ -148,7 +147,7 @@ sub _state_inside {
     print STDERR "BUFFER: $$buffer\n" if $debug;
 
     # BUFFER KEYWORDS!
-    if ($$buffer =~ m/^(di|sub)?graph/) {
+    if ($$buffer =~ m{ ^ (di|sub)? graph | ^ strict }x) {
         # graph init
         $$state  = "init";
         $$buffer = "";
@@ -165,12 +164,12 @@ sub _state_inside {
     } elsif ($$char eq "[") {
         # Attributes
         $$state  = "attribute";
-        if ($$buffer =~ m/$node_id/) {
+        if ($$buffer =~ m/[$node_id]/) {
             # There is a node in the buffer
             print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
             push @{$node_stack}, $$buffer;
         } elsif ($$buffer) {
-            croak "We have something not allowed in buffer: $$buffer\n";
+            croak "We have something not allowed in buffer, with state $state. Buffer: $$buffer\n";
         }
         $$buffer = "";
     } elsif ($$char =~ m/[\s\n;]/) {
