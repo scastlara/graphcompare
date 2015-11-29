@@ -149,7 +149,13 @@ No support for compass ports.
 
 =item Test::More
 
+=item Pod::Usage
+
 =item Graph (only if using option -s)
+
+=item AutoLoader (if comparing more than 5 files)    
+
+=item Color::Spectrum::Multi (if comparing more than 5 files)    
 
 =back
 
@@ -438,24 +444,6 @@ sub clean_name {
 
     return($cleaned);
 } 
-
-#--------------------------------------------------------------------------------
-sub check_characters {
-    my $statement = shift;
-    my $node_id   = shift;
-    my $ue_quote  = shift;
-    my $dot       = shift;
-
-    # Remove quoted things
-    $statement =~ s{ $ue_quote .*? $ue_quote }{}gx;
-
-    if ($statement =~ m/([^$node_id\s\t\n\->{}])/) {
-        error("Problem parsing DOT file. ".
-              "Not allowed character in $dot at line $..\n\n");
-    }
-
-    return;
-}
 
 
 # COLORS AND GROUPS
