@@ -400,6 +400,7 @@ sub add_elements {
     my $escaped_file = quotemeta($filename);
 
     foreach my $node_edge ( @{$input_list} ) {
+        $node_edge = $insensitive ? uc($node_edge) : $node_edge;
         if (exists $output_hash->{$node_edge}) {
             $output_hash->{$node_edge} .= ":$filename"
                 unless $output_hash->{$node_edge} =~ m/\b$escaped_file\b/;
