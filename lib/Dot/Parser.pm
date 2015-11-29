@@ -95,9 +95,6 @@ sub parse_dot {
 
     }
 
-    # Remove repeated nodes from stack
-    my %nodes = map {$_ => 1} @nodes;
-    @nodes = keys %nodes;
     return(\%adjacency_list);
 }
 
