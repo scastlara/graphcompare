@@ -1,0 +1,24 @@
+strict digraph NAME 
+{
+    A -> B
+    B -> C
+    C -> "D E"
+    subgraph {
+        W 
+        G -> "H%"
+        
+        subgraph NAME 
+        {
+            A -> Z
+            B -> "D E"  
+        }
+    }
+    "D E" -> F  
+    strict subgraph {
+      F -> A  
+    }
+    F -> "H%"
+    "H%"-> a
+    K 
+    A -> K
+}

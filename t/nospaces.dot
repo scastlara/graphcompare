@@ -1,0 +1,3 @@
+digraph MYNAME{
+    A -> B;B -> C;C -> "D E";W;G -> "H%";A -> Z;B -> "D E";"D E" -> F;F -> A;F -> "H%";"H%"-> a;K;A -> K
+}

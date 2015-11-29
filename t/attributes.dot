@@ -1,0 +1,18 @@
+digraph MYNAME{
+    graph [graph attribute]
+    edge [edge attribute]
+    node [node attribute]
+    A-> B [edge attribute space]
+    B ->C[edge attribute no-space]
+    C -> "D E"
+    W [node attribute space]
+    G->"H%"
+    A->Z
+    B -> "D E"
+    "D E" -> F  
+    F -> A
+    F -> "H%"
+    "H%"-> a
+    K[node attribute nospace] 
+    A -> K
+}

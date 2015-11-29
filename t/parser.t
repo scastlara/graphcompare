@@ -2,8 +2,9 @@
 use warnings;
 use strict;
 use Cwd 'abs_path';
-use Dot::Parser qw(parse);
-use Test::More tests => 2;
+use lib '/home/sergio/code/dotcompare/lib';
+use Dot::Parser qw(parse_dot);
+use Test::More tests => 12;
 
 # Get where testfile is...
 my $path = abs_path($0);
@@ -22,14 +23,41 @@ my @exp_edges = (
 );
 my $exp_edges = join("||", sort @exp_edges);
 
-# Parse Dot file
-my ($nodes, $edges) = parse("$path/Thehard.dot");
 
+
+my @test_files = qw(simple comments attributes subgraphs nospaces);
+
+foreach my $testf (@test_files) {
+    my ($nodes, $edges) = parse_dot("$path/$testf.dot");
+    my $got_nodes = join("||", sort @{$nodes});
+    my $got_edges = join("||", sort @{$edges});
+    ok($exp_nodes eq $got_nodes, "Testing dot parser. ". uc($testf). ". Nodes.");
+    ok($exp_edges eq $got_edges, "Testing dot parser. ". uc($testf). ". Edges.");
+}
+
+
+# YET ANOTHER UNRELATED TEST
+
+my @sym_exp_nodes = (
+    '%$&', "%;&/", 
+    ";;;;", "I=Z", 
+    "[AAA]", "[BBB]", 
+    "graph", "strict", 
+    "digraph", "node", 
+    "edge", "subgraph"
+);
+my $sym_exp_nodes = join("||", sort @sym_exp_nodes);
+
+my @sym_exp_edges = (
+    '%$&->%;&/', ";;;;->I=Z", 
+    "[AAA]->[BBB]", "graph->strict", 
+    "digraph->node", "edge->subgraph"
+);
+my $sym_exp_edges = join("||", sort @sym_exp_edges);
+
+my ($nodes, $edges) = parse_dot("$path/symbols.dot");
 my $got_nodes = join("||", sort @{$nodes});
 my $got_edges = join("||", sort @{$edges});
 
-# NODES
-ok($exp_nodes eq $got_nodes, "Testing dot parser: nodes");
-
-# EDGES
-ok($exp_edges eq $got_edges, "Testing dot parser: edges");
+ok($sym_exp_nodes eq $got_nodes, "Testing dot parser. SYMBOLS. Nodes.");
+ok($sym_exp_edges eq $got_edges, "Testing dot parser. SYMBOLS. Edges.");

@@ -1,0 +1,6 @@
+digraph MYNAME{
+    "%$&" -> "%;&/" ";;;;" -> "I = Z";"[AAA]" -> "[BBB]" [attributes]
+    "graph" -> "strict"
+    "digraph" -> "node"
+    "edge" -> "subgraph"
+}

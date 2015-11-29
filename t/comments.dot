@@ -1,0 +1,17 @@
+digraph MYNAME{
+    A -> B //comment separation
+    B -> C//comment after -> noseparation
+    /* multicomment before*/C -> "D E"
+    W/*multicomment after*/
+    G -> "H%"
+    A -> Z
+    B -> "D E"/*multi
+    comment lines */
+    "D E" -> F  
+    F -> A
+    # C preprocessor -> line
+    F -> "H%"
+    "H%"-> a
+    K 
+    A -> K
+}
