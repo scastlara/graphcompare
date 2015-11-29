@@ -127,7 +127,10 @@ option.
 
 - File::Share
 - Test::More
+- Pod::Usage
 - Graph (only if using option -s)
+- AutoLoader (if comparing more than 5 files)    
+- Color::Spectrum::Multi (if comparing more than 5 files)    
 
 # AUTHOR
 
