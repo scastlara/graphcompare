@@ -6,8 +6,7 @@ use Dot::Parser qw(parse_dot);
 
 my $file = shift @ARGV;
 
-my ($nodes, $edges) = parse_dot("$file", 1);
+my ($graph) = parse_dot("$file", 1);
 
-print join("|", @$nodes), "\n";
-print join("|", @$edges), "\n";
-
+use Data::Dumper;
+print Dumper($graph);
