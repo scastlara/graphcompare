@@ -31,7 +31,7 @@ A reference to an array with all the edges, written as "A->B".
 
 
 use warnings;
-use strict;q
+use strict;
 use Exporter qw(import);
 use Carp;
 
