@@ -11,7 +11,7 @@ This module reads/parses DOT files.
 =head1 SYNOPSIS
 
     use Dot::Parser qw(parse_dot); 
-    my ($graph) = parse_dot("dotfile.dot");
+    my $graph = parse_dot("dotfile.dot");
 
 =head1 METHODS
 
