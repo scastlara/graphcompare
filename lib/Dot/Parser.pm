@@ -221,7 +221,7 @@ sub _state_inside {
             $$buffer = "";
        }
 
-    } elsif ($$buffer eq "->") {
+    } elsif ($$buffer eq "->" or $$buffer eq "--") {
         $$state  = "edge";
         $$buffer = "";
     } elsif( $$char eq "/" and substr($dotdata, $$i+1, 1) eq "/") {
@@ -504,7 +504,7 @@ sub slurp {
         # Add space between edges in edge stmts
         # makes everything easier to parse
         if ($_ =~ m/\->|\-\-/) {
-            $_ =~ s/\->|\-\-/ \-> /g;
+            $_ =~ s/(\->|\-\-)/ $1 /g;
         }
 
         $string .= "$_ ";
