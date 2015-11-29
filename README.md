@@ -4,7 +4,7 @@ dotcompare - A program to compare DOT files
 
 # VERSION
 
-v0.4.0
+v0.4.1
 
 # SYNOPSIS
 
