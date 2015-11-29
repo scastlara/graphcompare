@@ -171,7 +171,7 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Data::Dumper;
-use Dot::Parser qw(parse);
+use Dot::Parser qw(parse_dot);
 use Cwd 'abs_path';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -621,7 +621,7 @@ sub load_colors {
     my @colors  = ();
     local $/ = "//";
 
-    open my $fh, '<', "$INSTALL_PATH/data/colors.txt"
+    open my $fh, '<', "$INSTALL_PATH/../data/colors.txt"
         or error("Can't open $INSTALL_PATH/data/colors.txt,". 
                  " is your installpath correct? :$!", 1);
 
