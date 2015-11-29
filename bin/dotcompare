@@ -6,7 +6,7 @@ dotcompare - A program to compare DOT files
 
 =head1 VERSION
 
-v0.4.0
+v0.4.1
 
 =head1 SYNOPSIS
 
@@ -201,7 +201,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.4.0';
+our $VERSION       = 'v0.4.1';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{PWD};
 our $INSTALL_PATH  = get_installpath(); 
@@ -383,10 +383,8 @@ sub read_dot {
     my $edges        = shift;
     my $dot_symbol   = clean_name($dot);
 
-    my ($dot_nodes, $dot_edges) = parse_dot($dot);
-
-    add_elements($dot_nodes, $nodes, $dot_symbol);
-    add_elements($dot_edges, $edges, $dot_symbol);
+    my $graph = parse_dot($dot);
+    add_elements($graph, $nodes, $edges, $dot_symbol);
 
     return;
 }
@@ -394,19 +392,36 @@ sub read_dot {
 
 #--------------------------------------------------------------------------------
 sub add_elements {
-    my $input_list   = shift;
-    my $output_hash  = shift;
+    my $input_graph  = shift;
+    my $nodes_hash   = shift;
+    my $edges_hash   = shift;
     my $filename     = shift;
     my $escaped_file = quotemeta($filename);
 
-    foreach my $node_edge ( @{$input_list} ) {
-        $node_edge = $insensitive ? uc($node_edge) : $node_edge;
-        if (exists $output_hash->{$node_edge}) {
-            $output_hash->{$node_edge} .= ":$filename"
-                unless $output_hash->{$node_edge} =~ m/\b$escaped_file\b/;
+    foreach my $node (keys %{$input_graph}) {
+        my $node_to_add = $insensitive ? uc($node) : $node;
+
+        # ADD NODES
+        if (exists $nodes_hash->{$node_to_add}) {
+            $nodes_hash->{$node_to_add} .= ":$filename"
+                unless $nodes_hash->{$node_to_add} =~ m/\b$escaped_file\b/;
         } else {
-            $output_hash->{$node_edge} = $filename;
-        }        
+            $nodes_hash->{$node_to_add} = $filename;
+        }  
+
+        # ADD EDGES
+        foreach my $child (keys %{ $input_graph->{$node} }) {
+            my $edge = $node . "->" . $child;
+            my $edge_to_add =  $insensitive ? uc($edge) : $edge;
+            if (exists $edges_hash->{$edge_to_add}) {
+                $edges_hash->{$edge_to_add} .= ":$filename"
+                    unless $edges_hash->{$edge_to_add} =~ m/\b$escaped_file\b/;
+            } else {
+                $edges_hash->{$edge_to_add} = $filename;
+            } 
+        }
+        
+
     }
 
     return;
