@@ -503,8 +503,8 @@ sub slurp {
 
         # Add space between edges in edge stmts
         # makes everything easier to parse
-        if ($_ =~ m/\->/) {
-            $_ =~ s/\->/ \-> /g;
+        if ($_ =~ m/\->|\-\-/) {
+            $_ =~ s/\->|\-\-/ \-> /g;
         }
 
         $string .= "$_ ";
