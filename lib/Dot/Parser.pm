@@ -81,6 +81,8 @@ sub parse_dot {
     for (my $i = 0; $i < length($dotdata); $i++) {
         my $char = substr($dotdata, $i, 1);
         
+        print STDERR "STATE: $state\n" if $debug;
+
         $states{$state}->(
             \$i, 
             $dotdata, 
@@ -94,6 +96,7 @@ sub parse_dot {
         );
 
     }
+    print STDERR "---\n" if $debug;
 
     return(\%adjacency_list);
 }
@@ -178,84 +181,85 @@ sub _state_inside {
     my $graph      = shift;
     my $debug      = shift;
 
-    if ($$char =~ m/[$node_id\->_]/ig) {
+    if ($$char =~ m/[$node_id\->]/ig) {
         $$buffer .= $$char 
     }
 
-    print STDERR "BUFFER: $$buffer\n" if $debug;
+    print STDERR "BUFFER: $$buffer\tCHAR: $$char\n" if $debug;
 
-    # BUFFER KEYWORDS!
-    if ($$buffer =~ m{ ^ (di|sub)? graph | ^ strict }x) {
-        # graph init
-        $$state  = "init";
-        $$buffer = "";
-    } elsif ($$buffer =~ m/^(node|edge)/) {
-        # We have a node/edge attribute statement. 
-        $$buffer = "";
-    }
+    if ($$char =~ m/[\s\n;=]/ and $$buffer =~ m/^[$node_id]+$/) {
+        # ENDING CHARACTER AND SOMETHING IN BUFFER
 
-    # WHAT AM I READING?
-    if ($$char eq "=") {
-        # Attribute assignment
-        $$state = "ass_attribute";
-        $$buffer = "";
-    } elsif ($$char eq "[") {
-        # Attributes
-        $$state  = "attribute";
-        if ($$buffer =~ m/[$node_id]/) {
-            # There is a node in the buffer
-            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;
-            $graph->{$$buffer} = () unless exists $graph->{$$buffer};
-        } elsif ($$buffer) {
-            croak "We have something not allowed in buffer, with state $state. Buffer: $$buffer\n";
-        }
-        $$buffer = "";
-    } elsif ($$char =~ m/[\s\n;]/) {
-        # End of node statement, probably
-        if ($$buffer =~ m/^[$node_id]+$/i) {
-            # We have a node
-            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;
-            $graph->{$$buffer} = () unless exists $graph->{$$buffer};
+        if ($$buffer =~ m{ ^ (di|sub)? graph $ | ^ strict $}xi) {
+            # GRAPH ATTRIBUTE/INITIALIZATION
             $$buffer = "";
-       }
+            $$state  = "init";
+
+        } elsif ($$buffer =~ m/^node$|^edge$/i) {
+            # NODE/EDGE ATTRIBUTE
+            $$buffer = "";
+
+        } elsif ($$char =~  m/[\s\n\t;]/) {
+            # NORMAL ENDING OF NODE ID
+            add_node($graph, $node_stack, $buffer, $state, $debug);
+
+        } elsif ($$char eq "=") {
+        # WHOLE GRAPH ATTRIBUTE
+
+            $$state = "ass_attribute";
+            $$buffer = "";
+        }
 
     } elsif ($$buffer eq "->" or $$buffer eq "--") {
+        # EDGE STATEMENT
         $$state  = "edge";
+        $$buffer = ""; 
+
+    } elsif ($$char eq '"') {
+        # QUOTED NODE BEGINNING
+        $$buffer = ""; # remove quote from buffer
+        $$state = "quoted_node";
+
+    } elsif ($$char eq "[") {
+        # ATTRIBUTE STATEMENT
+
+         if ($$buffer =~ m/[$node_id]/) {
+            # NODE IN BUFFER
+            add_node($graph, $node_stack, $buffer, $state, $debug);
+
+        } elsif ($$buffer) {
+            # BEGINNING OF ATTRIBUTE BUT WITH SOMETHING THAT IS NOT A NODE IN BUFFER
+            # THIS IS NOT ALLOWED IN DOT LANGUAGE
+            croak "We have something not allowed in buffer, with state $state. Buffer: $$buffer\n";
+        }
+        
+        $$state  = "attribute";
         $$buffer = "";
-    } elsif( $$char eq "/" and substr($dotdata, $$i+1, 1) eq "/") {
-        # WE HAVE A COMMENT!
-        if ($$buffer =~ m/^[$node_id]+$/i) {
-            print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;
-            $graph->{$$buffer} = () unless exists $graph->{$$buffer};          
-        }
-        $$state  = "comment";
-        $$buffer = ""; 
-    } elsif ($$char eq "/" and substr($dotdata, $$i+1, 1) eq "*") {
-        # WE HAVE A POSSIBLY MULTILINE COMMENT
-        if ($$buffer =~ m/^[$node_id]+$/i) {
-            # We have a node in the buffer
-            print STDERR "NODE-MULTI-COMMENT HERE : $$buffer\n" if $debug;
-            push @{$node_stack}, $$buffer;   
-            $graph->{$$buffer} = () unless exists $graph->{$$buffer};       
-        } # else the buffer is empty or full of crap
 
-        $$state  = "multicomment";
-        $$i++; # so we will skip * and it won't be added to buffer
-        $$buffer = ""; 
-    } elsif ($$char eq "\"") {
-        if ($$buffer =~ /[^"]/) {
-            croak "PROBLEM HERE\n";
+    } elsif ($$char eq "/") {
+        # COMMENT
+
+        if ($$buffer =~ m/^[$node_id]+$/i) {
+            # NODE IN THE BUFFER
+            add_node($graph, $node_stack, $buffer, $state, $debug);         
+        }
+
+        if (substr($dotdata, $$i+1, 1) eq "/") {
+            # REGULAR COMMENT
+            $$state  = "comment";
+            $$buffer = ""; 
+
+        } elsif (substr($dotdata, $$i+1, 1) eq "*") {
+            # C++ COMMENT
+            $$state  = "multicomment";
+            $$i++; # so we will skip * and it won't be added to the buffer
+            $$buffer = "";
+
         } else {
-            # We have the beginning of a quoted node!
-            $$buffer = ""; # remove quote from buffer
-            $$state = "quoted_node";
-
+            # THERE IS A '/' THAT IS NOT A COMMENT
+            croak("Not allowed character $$char found\n");
         }
-    } elsif ($$char =~ m/[^$node_id\->}{]/) {
-        croak "Not allowed character! $$char \n";
+    
     }
 
     return;
@@ -311,13 +315,10 @@ sub _state_edge {
             $$state = "inside"; 
         }
 
-        print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", __LINE__, "\n" if $debug;
+        print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", 
+                     __LINE__, "\n" if $debug;
         $graph->{$node_stack->[-1]}->{$$buffer} = 1;
-        #push @{$graph}, $node_stack->[-1] . "->" . $$buffer;
-        push @{$node_stack}, $$buffer;
-        $graph->{$$buffer} = () unless exists $graph->{$$buffer};
-        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-        $$buffer = "";
+        add_node($graph, $node_stack, $buffer, $state, $debug);
     }
 
     return;
@@ -343,10 +344,7 @@ sub _state_quoted_node {
 
     if ($$char eq "\"") {
         # end of quoted node
-        push @{$node_stack}, $$buffer;
-        $graph->{$$buffer} = () unless exists $graph->{$$buffer};
-        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-        $$buffer = "";
+        add_node($graph, $node_stack, $buffer, $state, $debug);
         $$state = "inside";
     } else {
         $$buffer .= $$char;
@@ -375,11 +373,7 @@ sub _state_quoted_edge {
         # end of quoted edge
         print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
         $graph->{$node_stack->[-1]}->{$$buffer} = 1;
-        #push @{$graph}, $node_stack->[-1] . "->" . $$buffer;
-        push @{$node_stack}, $$buffer;
-        $graph->{$$buffer} = () unless exists $graph->{$$buffer};
-        print STDERR "\tNODE added in state: $$state at line ", __LINE__, ": $$buffer\n" if $debug;
-        $$buffer = "";
+        add_node($graph, $node_stack, $buffer, $state, $debug);
         $$state = "inside";
     } else {
         $$buffer .= $$char;
@@ -476,6 +470,7 @@ sub _state_multicomment {
 
     $$buffer .= $$char if $$char =~ m/[\/\*]/;
     print STDERR "BUFF: $$buffer\n" if $debug;
+    
     if ($$buffer eq "*/") {
         $$state = "inside";
         $$buffer = "";
@@ -518,6 +513,26 @@ sub slurp {
     }
 
     return $string;
+}
+
+
+#--------------------------------------------------------------------------------
+sub add_node {
+    my $graph      = shift;
+    my $node_stack = shift;
+    my $buffer     = shift;
+    my $state      = shift;
+    my $debug      = shift;
+
+    push @{ $node_stack }, $$buffer;
+
+    print STDERR "\tNODE added in state: $$state at line ", __LINE__, 
+                 ": $$buffer\n" if $debug; 
+
+    $graph->{$$buffer} = () unless exists $graph->{$$buffer};
+    $$buffer = "";
+
+    return;
 }
 
 1;
