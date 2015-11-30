@@ -392,6 +392,7 @@ sub read_dot {
     my $nodes        = shift;
     my $edges        = shift;
     my $dot_symbol   = clean_name($dot);
+    my $escaped_file = quotemeta($dot_symbol);
 
     print STDERR "# Reading file $dot...  ";
 
@@ -399,7 +400,19 @@ sub read_dot {
 
     print STDERR "done\n";
 
-    add_elements($graph, $nodes, $edges, $dot_symbol);
+    foreach my $node (keys %{$graph}) {
+        # ADDING NODES
+        my $node_to_add = $insensitive ? uc($node) : $node;
+        add_elements($graph, $nodes, $node_to_add, $dot_symbol, $escaped_file);
+
+        # ADDING EDGES
+        foreach my $child (keys %{ $graph->{$node} }) {
+            my $edge = $node . "::->::" . $child;
+            my $edge_to_add =  $insensitive ? uc($edge) : $edge;
+            add_elements($graph, $edges, $edge_to_add, $dot_symbol, $escaped_file);
+        }
+    }
+
 
     return;
 }
@@ -407,40 +420,20 @@ sub read_dot {
 
 #--------------------------------------------------------------------------------
 sub add_elements {
-    my $input_graph  = shift;
-    my $nodes_hash   = shift;
-    my $edges_hash   = shift;
-    my $filename     = shift;
-    my $escaped_file = quotemeta($filename);
+    my $input_graph   = shift;
+    my $elements_hash = shift;
+    my $node_or_edge  = shift; 
+    my $filename      = shift;
+    my $escaped_file  = shift;
 
-    foreach my $node (keys %{$input_graph}) {
-        my $node_to_add = $insensitive ? uc($node) : $node;
-
-        # ADD NODES
-        if (exists $nodes_hash->{$node_to_add}) {
-            $nodes_hash->{$node_to_add} .= ":$filename"
-                unless $nodes_hash->{$node_to_add} =~ m/\b$escaped_file\b/;
-        } else {
-            $nodes_hash->{$node_to_add} = $filename;
-        }  
-
-        # ADD EDGES
-        foreach my $child (keys %{ $input_graph->{$node} }) {
-            my $edge = $node . "->" . $child;
-            my $edge_to_add =  $insensitive ? uc($edge) : $edge;
-            if (exists $edges_hash->{$edge_to_add}) {
-                $edges_hash->{$edge_to_add} .= ":$filename"
-                    unless $edges_hash->{$edge_to_add} =~ m/\b$escaped_file\b/;
-            } else {
-                $edges_hash->{$edge_to_add} = $filename;
-            } 
-        }
-        
-
-    }
+    if (exists $elements_hash->{$node_or_edge}) {
+        $elements_hash->{$node_or_edge} .= ":$filename"
+            unless $elements_hash->{$node_or_edge} =~ m/\b$escaped_file\b/;
+    } else {
+        $elements_hash->{$node_or_edge} = $filename;
+    }  
 
     return;
-
 }
 
 #--------------------------------------------------------------------------------
@@ -608,8 +601,8 @@ sub write_dot {
     foreach my $datum (@keys) {
         my $output = "";
 
-        if ($datum =~ m/\->/) {
-            my ($parent, $child) = split /\->/, $datum;
+        if ($datum =~ m/::\->::/) {
+            my ($parent, $child) = split /::\->::/, $datum;
             $output = "\"$parent\"->\"$child\"";
         } else {
             $output = "\"$datum\"";
@@ -758,7 +751,7 @@ sub create_json {
     $json .= "],\n edges: [\n";
 
     foreach my $int (keys %{$interactions}) {
-        my ($source, $target) = split /\->/, $int;
+        my ($source, $target) = split /::\->::/, $int;
         $json .= "\t{ data: { id: '$source-$target', " . 
                  "source: '$source', target: '$target', ".
                  "colorEDGE: \'$grps_to_colors->{ $interactions->{$int} }\' }},\n";
@@ -820,7 +813,7 @@ sub load_graphs {
     # Fill graphs with nodes and edges
     foreach my $element ($interactions, $nodes) {
         foreach my $rel (keys %{$element}) {
-            my ($src, $trg) = split /\->/, $rel;
+            my ($src, $trg) = split /::\->::/, $rel;
             my @files = split /:/, $element->{$rel};
 
             foreach my $file (@files) {
