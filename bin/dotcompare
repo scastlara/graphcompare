@@ -151,6 +151,8 @@ No support for compass ports.
 
 =item Pod::Usage
 
+=item Cwd
+
 =item Graph (only if using option -s)
 
 =item AutoLoader (if comparing more than 5 files)    
@@ -209,7 +211,7 @@ use Getopt::Long qw(:config no_ignore_case);
 our $PROGRAM       = "dotcompare";
 our $VERSION       = 'v0.4.1';
 our $USER          = $ENV{ USER };
-our $W_DIRECTORY   = $ENV{PWD};
+our $W_DIRECTORY   = $ENV{ PWD };
 our $INSTALL_PATH  = get_installpath(); 
 
 error("Error trying to find Installation path through \$0.", 1)

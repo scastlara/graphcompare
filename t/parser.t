@@ -10,7 +10,7 @@ my $path = abs_path($0);
 $path =~ s/(.+)\/.*?$/$1\//;
 
 
-# Degine expected nodes
+# Define expected nodes
 my @exp_nodes = ("A","B" ,"C" ,"D E", "F" ,"G" ,"H%","K" ,"W" ,"Z" ,"a");
 my $exp_nodes = join("||", sort @exp_nodes);
 
