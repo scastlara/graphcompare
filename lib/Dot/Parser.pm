@@ -188,7 +188,7 @@ sub parse_dot {
 
         $states{$state}->(
             \$i, 
-            $dotdata, 
+            \$dotdata, 
             \$buffer, 
             \$char, 
             \$state, 
@@ -347,12 +347,12 @@ sub _state_inside {
             _add_node($graph, $node_stack, $buffer, $state, $debug);         
         }
 
-        if (substr($dotdata, $$i+1, 1) eq "/") {
+        if (substr($$dotdata, $$i+1, 1) eq "/") {
             # REGULAR COMMENT
             $$state  = "comment";
             $$buffer = ""; 
 
-        } elsif (substr($dotdata, $$i+1, 1) eq "*") {
+        } elsif (substr($$dotdata, $$i+1, 1) eq "*") {
             # C++ COMMENT
             $$state  = "multicomment";
             $$i++; # so we will skip * and it won't be added to the buffer
@@ -398,11 +398,11 @@ sub _state_edge {
             $$state = "attribute";
         } elsif ($$char =~ m/\//) {
             # edge stmt ends with comment
-            if (substr($dotdata, $$i+1, 1) eq "*") {
+            if (substr($$dotdata, $$i+1, 1) eq "*") {
                 # multicomment!
                 $$state = "multicomment";
                 $$i++; # so we will skip * and it won't be added to buffer
-            } elsif (substr($dotdata, $$i+1, 1) eq "/") {
+            } elsif (substr($$dotdata, $$i+1, 1) eq "/") {
                 # regular comment
                 $$state = "comment";
             } else {
