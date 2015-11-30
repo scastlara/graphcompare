@@ -181,7 +181,7 @@ sub parse_dot {
 
     # START PARSING
     
-    for (my $i = 0; $i < length($dotdata); $i++) {
+    for (my $i = 0; $i < length($dotdata) - 1; $i++) {
         my $char = substr($dotdata, $i, 1);
         
         print STDERR "STATE: $state\n" if $debug;
