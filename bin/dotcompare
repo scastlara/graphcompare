@@ -145,6 +145,8 @@ No support for compass ports.
 
 =over 8
 
+=item File::ShareDir::Install
+
 =item File::Share
 
 =item Test::More
