@@ -40,7 +40,7 @@ Dot::Parser uses two types of functions: STATES and REGULAR functions.
 
 =head3 REGULAR FUNCTIONS
 
-=over 8 
+=over 10 
 
 =item B<_slurp>
 
@@ -59,19 +59,19 @@ adjacency list. Then it removes everything in the buffer
 =head3 STATES
 
 
-=over 8 
+=over 10 
 
-=item B<_none>
+=item B<_state_none>
 
 This is the initial state. It lasts until the parser reads a graph declaration.
 If your file is not a dot file, you may end up forever in this state.
 
-=item B<_init>
+=item B<_state_init>
 
 This defines the state in which the Parser has read a keyword.
 It could be either a graph declaration (disubgraph) or a graph attribute declaration
 
-=item B<_inside>
+=item B<_state_inside>
 
 This is the "normal" state of the parser. Here, everything that looks normal
 [A-Za-z0-9_]+ will be considered a node ID if it is not a keyword.
@@ -80,7 +80,7 @@ of this state (for example, in the case of rank=id or an [attribute]).
 
 Right now it works but it is very messy. It certainly needs a refactor.
 
-=item B<_edge>
+=item B<_state_edge>
 
 The parser read an edgeops -> and falls into this state. Here, it will look for another
 node ID, and then it will return to the "normal/inside" state. The "ending" of a node ID
@@ -89,35 +89,35 @@ If the second node is quoted, this state is not enough, so the parser will fall 
 state quoted_edge, which can deal with special characters and symbols
 
 
-=item B<_quoted_node>
+=item B<_state_quoted_node>
 
 This is a quoted node state, which is straightforward. If the parser (in state inside)
 reads an opening double quote, it falls into this state. The parser will add everything 
 to the buffer, and once it gets to a closing double quote it will save the buffer to the
 nodes stack
 
-=item B<_quoted_edge>
+=item B<_state_quoted_edge>
 
 This is the state that allows special characters and symbols in the second node 
 in an edge statement. It's similar to the state edge, but it will only end reading
 the node ID when it gets to another double quote.
 
-=item B<_attribute>
+=item B<_state_attribute>
 
 This is an attribute statement. Everything will be discarded until the parser
 reads a closing square bracket.
 
-=item B<_ass_attribute>
+=item B<_state_ass_attribute>
 
 This funny name represents the state in which the parser reads something like rank=id
 It's not a very well defined state and it may need further improvements.
 
-=item B<_comment>
+=item B<_state_comment>
 
 This is the state of a normal comment //comment that will end with a newline 
 character
 
-=item B<_multicomment>
+=item B<_state_multicomment>
 
 This special comment /* comment */ ignores newline characters. It will only 
 end when it gets to a closing comment symbol */
