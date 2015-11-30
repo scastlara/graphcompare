@@ -180,6 +180,7 @@ sub parse_dot {
     my $dotdata = _slurp($file);
 
     # START PARSING
+    
     for (my $i = 0; $i < length($dotdata); $i++) {
         my $char = substr($dotdata, $i, 1);
         
