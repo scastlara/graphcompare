@@ -391,7 +391,7 @@ sub read_dot {
     my $edges        = shift;
     my $dot_symbol   = clean_name($dot);
 
-    print STDERR "# Reading file $dot...\t";
+    print STDERR "# Reading file $dot...  ";
 
     my $graph = parse_dot($dot);
 
