@@ -277,31 +277,39 @@ sub _state_inside {
 
     if ($$char =~ m/[$node_id\->]/ig) {
         $$buffer .= $$char 
-    }
+    } 
 
     print STDERR "BUFFER: $$buffer\tCHAR: $$char\n" if $debug;
 
-    if ($$char =~ m/[\s\n;=]/ and $$buffer =~ m/^[$node_id]+$/) {
-        # ENDING CHARACTER AND SOMETHING IN BUFFER
+    if ($$char =~ m/[\s\n;=]/) {
+        # ENDING CHARACTER
 
-        if ($$buffer =~ m{ ^ (di|sub)? graph $ | ^ strict $}xi) {
-            # GRAPH ATTRIBUTE/INITIALIZATION
-            $$buffer = "";
-            $$state  = "init";
+        if ($$buffer =~ m/^[$node_id]+$/) {
+            # SOMETHING IN BUFFER
 
-        } elsif ($$buffer =~ m/^node$|^edge$/i) {
-            # NODE/EDGE ATTRIBUTE
-            $$buffer = "";
+             if ($$buffer =~ m{ ^ (di|sub)? graph $ | ^ strict $}xi) {
+                # GRAPH ATTRIBUTE/INITIALIZATION
+                $$buffer = "";
+                $$state  = "init";
 
-        } elsif ($$char =~  m/[\s\n\t;]/) {
-            # NORMAL ENDING OF NODE ID
-            _add_node($graph, $node_stack, $buffer, $state, $debug);
+            } elsif ($$buffer =~ m/^node$|^edge$/i) {
+                # NODE/EDGE ATTRIBUTE
+                $$buffer = "";
 
-        } elsif ($$char eq "=") {
-        # WHOLE GRAPH ATTRIBUTE
+            } elsif ($$char eq "=") {
+                # WHOLE GRAPH ATTRIBUTE
 
-            $$state = "ass_attribute";
-            $$buffer = "";
+                $$state = "ass_attribute";
+                $$buffer = "";
+           
+            } else {
+                # NORMAL ENDING OF NODE ID
+                _add_node($graph, $node_stack, $buffer, $state, $debug);
+            }           
+       
+        } else {
+            # WHITESPACE AND BUFFER EMPTY
+            return;
         }
 
     } elsif ($$buffer eq "->" or $$buffer eq "--") {
