@@ -9,8 +9,14 @@ install_share dist => 'share';
         NAME            => 'Dot::Parser',
         VERSION_FROM    => 'bin/dotcompare',
         EXE_FILES => ['bin/dotcompare'],
+        PREREQ_PM => {
+            "File::Share"  => 0,
+            "Pod::Usage"   => 0,
+            "Getopt::Long" => 0, 
+        },
         BUILD_REQUIRES => {
             'Test::More' => 0,
+            'File::ShareDir::Install' => 0,
         }
     );
 
