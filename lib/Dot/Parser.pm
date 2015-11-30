@@ -565,32 +565,19 @@ sub _state_multicomment {
 #--------------------------------------------------------------------------------
 sub _slurp {
     my $file   = shift;
-    my $string = "";
+
+    local $/ = undef;
 
     open my $fh, "<", $file
         or croak "Can't open $file:$!\n";
 
-    while (<$fh>) {
-        next if $_ =~ m/^\s*#/;
+    my $dot = <$fh>;
 
-        # Removes spaces between equal signs
-        # we lose node info in IDs with =,
-        # but it is worth the loss. Easier to parse
-        # things like rank=same
-        if ($_ =~ m/\s*=\s*/) {
-            $_ =~ s/\s+=\s+/=/g;
-        }
+    $dot =~ s/\s+=\s+/=/g;
+    $dot =~ s/(\->|\-\-)/ $1 /g;
+    $dot =~ s/\n\s*#.*?\n/\n/g;
 
-        # Add space between edges in edge stmts
-        # makes everything easier to parse
-        if ($_ =~ m/\->|\-\-/) {
-            $_ =~ s/(\->|\-\-)/ $1 /g;
-        }
-
-        $string .= "$_ ";
-    }
-
-    return $string;
+    return $dot;
 }
 
 
