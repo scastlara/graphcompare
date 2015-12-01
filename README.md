@@ -1,6 +1,6 @@
 # NAME
 
-dotcompare - A program to compare DOT files
+dotcompare - A command-line tool to compare DOT files
 
 # VERSION
 
