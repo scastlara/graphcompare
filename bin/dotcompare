@@ -406,12 +406,17 @@ if ($stats) {
 # END REPORT
 my $end_time  = time();
 $current_time = localtime();
-my $run_time  = sprintf("%.2f", (($end_time - $start_time) / 60));
+my $sec = $end_time - $start_time;
+
+my $hours = ($sec/3600) % 24;
+my $minutes = ($sec/60) % 60;   
+my $seconds = $sec % 60;           
+
 my @out_files = grep {$_} ($out_name, $table, $venn, $web);
 print STDERR "\nPROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
-             "\tJob took ~ $run_time minutes\n\n"; 
+             "\tJob took ~ $hours hours, $minutes minutes and $seconds seconds\n\n"; 
 #--
 
 # DEBUGGING
