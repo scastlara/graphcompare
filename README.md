@@ -18,10 +18,9 @@ v0.4.1
 
 # DESCRIPTION
 
-This script compares two or more DOT (graphviz) files and 
-prints the resulting merged DOT file with different 
-colors for each group. To read the dotfiles, dotcompare uses the module
-Dot::Parser, located in lib/
+This script compares two or more DOT (graphviz) files. It prints a merged graph 
+with different colors for nodes and edges depending on the files in which they appear. 
+To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/
 
 By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
