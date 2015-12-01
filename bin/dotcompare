@@ -33,7 +33,7 @@ option.
 
 =over 8
 
-=item - Venn diagram. 
+=item B<Venn diagram> 
 
 If given the option -v, dotcompare will create an
 svg file containing a venn diagram. In this image, you will be able to see
@@ -42,7 +42,7 @@ and those nodes/relationships common to more than one file. The colors will be
 chosen using one of the profiles in data/colors.txt. By default, the color palette
 is set to be "SOFT". To change it, use the option -c (see options below).
 
-=item - Table. 
+=item B<Table>. 
 
 Complementary to the venn diagram, one can choose to create a 
 table containing all the counts (so it can be used to create other plots or tables). The 
@@ -50,7 +50,7 @@ table is already formated to be used by R. Load it to a dataframe using:
 
         df <-read.table(file="yourtable.tbl", header=TRUE)
 
-=item - Webpage with the graph. 
+=item B<Webpage with the graph>. 
 
 With the option -w, one can create a webpage
 with a representation of the merged graph (with different colors for nodes and 
@@ -68,6 +68,48 @@ to any website.
     make
     make test
     make install
+
+
+It is important to note that if you decide to install dotcompare manually, the script needs to use File::Share to find
+the templates. If you choose to not use the Makefile.PL installer, you may encounter some bugs, as dotcompare will be unable to open
+the templates.
+
+=head1 DIRECTORIES
+
+These are the directories and the files inside the distribution:
+    
+=over 8
+
+=item B<bin/>
+
+This directory contains the main script: dotcompare.
+
+=item B<lib/>
+
+Here we can find the module Dot::Parser. To see an explanation about how it works, refer to the POD documentation
+in the script using:
+    
+    perldoc lib/Dot/Parser.pm
+
+=item B<share/>
+
+Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
+some test files, test1.dot, test2.dot and test3.dot to try out the program.
+
+=item B<t/> 
+
+This is the directory with the test files and the script that runs the tests (parser.t).
+
+=item B<Makefile.PL>
+
+This is the script that uses ExtUtils::MakeMaker to create a Makefile to install the distribution.
+
+=item B<MANIFEST>
+
+List of all the files of the distribution.
+
+=back
+
 
 
 =head1 OPTIONS
