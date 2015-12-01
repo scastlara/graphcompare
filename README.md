@@ -29,7 +29,7 @@ STDOUT, but you can change it with the option -o (see options below).
 Dotcompare has some optional outputs, each one specified by one 
 option.
 
-- - Venn diagram. 
+- **Venn diagram** 
 
     If given the option -v, dotcompare will create an
     svg file containing a venn diagram. In this image, you will be able to see
@@ -38,7 +38,7 @@ option.
     chosen using one of the profiles in data/colors.txt. By default, the color palette
     is set to be "SOFT". To change it, use the option -c (see options below).
 
-- - Table. 
+- **Table**. 
 
     Complementary to the venn diagram, one can choose to create a 
     table containing all the counts (so it can be used to create other plots or tables). The 
@@ -46,7 +46,7 @@ option.
 
             df <-read.table(file="yourtable.tbl", header=TRUE)
 
-- - Webpage with the graph. 
+- **Webpage with the graph**. 
 
     With the option -w, one can create a webpage
     with a representation of the merged graph (with different colors for nodes and 
@@ -62,6 +62,42 @@ option.
     make
     make test
     make install
+
+It is important to note that if you decide to install dotcompare manually, the script needs to use File::Share to find
+the templates. If you choose to not use the Makefile.PL installer, you may encounter some bugs, as dotcompare will be unable to open
+the templates.
+
+# DIRECTORIES
+
+These are the directories and the files inside the distribution:
+
+- **bin/**
+
+    This directory contains the main script: dotcompare.
+
+- **lib/**
+
+    Here we can find the module Dot::Parser. To see an explanation about how it works, refer to the POD documentation
+    in the script using:
+
+        perldoc lib/Dot/Parser.pm
+
+- **share/**
+
+    Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
+    some test files, test1.dot, test2.dot and test3.dot to try out the program.
+
+- **t/** 
+
+    This is the directory with the test files and the script that runs the tests (parser.t).
+
+- **Makefile.PL**
+
+    This is the script that uses ExtUtils::MakeMaker to create a Makefile to install the distribution.
+
+- **MANIFEST**
+
+    List of all the files of the distribution.
 
 # OPTIONS
 
@@ -125,9 +161,11 @@ option.
 
 # DEPENDENCIES
 
+- File::ShareDir::Install
 - File::Share
 - Test::More
 - Pod::Usage
+- Cwd
 - Graph (only if using option -s)
 - AutoLoader (if comparing more than 5 files)    
 - Color::Spectrum::Multi (if comparing more than 5 files)    
