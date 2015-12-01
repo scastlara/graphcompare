@@ -166,7 +166,7 @@ These are the directories and the files inside the distribution:
 - Test::More
 - Pod::Usage
 - Cwd
-- Graph (only if using option -s)
+- Graph::Directed (only if using option -s)
 - AutoLoader (if comparing more than 5 files)    
 - Color::Spectrum::Multi (if comparing more than 5 files)    
 

@@ -197,7 +197,7 @@ No support for compass ports.
 
 =item Cwd
 
-=item Graph (only if using option -s)
+=item Graph::Directed (only if using option -s)
 
 =item AutoLoader (if comparing more than 5 files)    
 
