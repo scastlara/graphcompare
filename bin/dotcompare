@@ -6,7 +6,7 @@ dotcompare - A command-line tool to compare DOT files
 
 =head1 VERSION
 
-v0.4.1
+v0.5.0
 
 =head1 SYNOPSIS
 
@@ -252,7 +252,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.4.1';
+our $VERSION       = 'v0.5.0';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{ PWD };
 our $INSTALL_PATH  = get_installpath(); 
