@@ -123,9 +123,6 @@ This special comment /* comment */ ignores newline characters. It will only
 end when it gets to a closing comment symbol */
 
 
-
-
-
 =back
 
 
@@ -158,7 +155,7 @@ our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 # this package, and I don't want it to be saved in memory forever!
 
 # Since they all are lexical variables (my), there shouldn't be any collision 
-# problems with variables in the caller script. 
+# problems with variables in the caller script. TESTED.
 
 my $i          = 0; 
 my $debug      = 0;
