@@ -148,7 +148,7 @@ our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 # Declaring the variables here is UGLY. However, it allows all the
 # subroutines (states) to "see" them. By doing this, the program is
 # 2x faster. I used Devel::NYTProf to profile the program and half
-# the time was spent passing variables to the subroutines. 
+# the time was spent passing variables to the subroutines (and de-referencing).
 
 # IMPORTANT: in order to be able to do several calls to this module without
 # problems, it is necessary to remove all these variables' values
