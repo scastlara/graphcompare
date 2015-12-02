@@ -151,18 +151,21 @@ our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 # the time was spent passing variables to the subroutines. 
 
 # IMPORTANT: in order to be able to do several calls to this module without
-# having problems, it is necessary to remove all these variables' values
+# problems, it is necessary to remove all these variables' values
 # at the start of the function parse_dot().
 
-my $i               = 0; 
-my $debug           = 0;
-my $dotdata         = ""; 
-my $buffer          = ""; 
-my $char            = ""; 
-my $state           = "none"; 
-my $node_id         = "A-Za-z0-9_"; 
-my @node_stack      = (); 
-my %graph           = ();
+# Since they are lexical variables (my), there shouldn't be any problems with
+# collisions with variables in the caller script. 
+
+my $i          = 0; 
+my $debug      = 0;
+my $dotdata    = ""; 
+my $buffer     = ""; 
+my $char       = ""; 
+my $state      = "none"; 
+my $node_id    = "A-Za-z0-9_"; 
+my @node_stack = (); 
+my %graph      = ();
 
 #===============================================================================
 # METHODS AND FUNCTIONS 
@@ -171,6 +174,8 @@ my %graph           = ();
 sub parse_dot {
     my $file           = shift;
     my $debug          = shift;
+
+    # Remove all the possible previous values
     $dotdata           = ""; 
     $buffer            = ""; 
     $state             = "none"; 
