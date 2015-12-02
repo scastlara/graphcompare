@@ -142,20 +142,26 @@ our @EXPORT_OK   = qw(parse_dot);
 our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 
 
-# Declaring the variables here is UGLY. However, it allows all the
-# subroutines (states) to "see" them. By doing this, the program is
-# 2x faster. I used Devel::NYTProf to profile the program and half
-# the time was spent passing variables to the subroutines (and 
-# de-referencing).
+=begin comment
 
-# IMPORTANT: in order to be able to do several calls to this module without
-# problems, it is necessary to remove all these variables' values at the end 
-# of the subroutine parse_dot(). Also, note that %graph is declared inside 
-# parse_dot(). I did this because I can't clear this variable before exiting
-# this package, and I don't want it to be saved in memory forever!
+Declaring the variables here is UGLY. However, it allows all the
+subroutines (states) to "see" them. By doing this, the program is
+2x faster. I used Devel::NYTProf to profile the program and half
+the time was spent passing variables to the subroutines (and 
+de-referencing).
 
-# Since they all are lexical variables (my), there shouldn't be any collision 
-# problems with variables in the caller script. TESTED.
+IMPORTANT: in order to be able to do several calls to this module without
+problems, it is necessary to remove all these variables' values at the end 
+of the subroutine parse_dot(). Also, note that %graph is declared inside 
+parse_dot(). I did this because I can't clear this variable before exiting
+this package, and I don't want it to be saved in memory forever!
+
+Since they all are lexical variables (my), there shouldn't be any collision 
+problems with variables in the caller script. TESTED.
+
+=end comment
+
+=cut
 
 my $i          = 0; 
 my $debug      = 0;
