@@ -4,7 +4,7 @@ dotcompare - A command-line tool to compare DOT files
 
 # VERSION
 
-v0.4.1
+v0.5.0
 
 # SYNOPSIS
 
