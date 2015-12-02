@@ -145,6 +145,25 @@ our @EXPORT_OK   = qw(parse_dot);
 our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 
 
+# Declaring the variables here is UGLY. However, it allows all the
+# subroutines (states) to "see" them. By doing this, the program is
+# 2x faster. I used Devel::NYTProf to profile the program and half
+# the time was spent passing variables to the subroutines. 
+
+# IMPORTANT: in order to be able to do several calls to this module without
+# having problems, it is necessary to remove all these variables' values
+# at the start of the function parse_dot().
+
+my $i               = 0; 
+my $debug           = 0;
+my $dotdata         = ""; 
+my $buffer          = ""; 
+my $char            = ""; 
+my $state           = "none"; 
+my $node_id         = "A-Za-z0-9_"; 
+my @node_stack      = (); 
+my %graph           = ();
+
 #===============================================================================
 # METHODS AND FUNCTIONS 
 #===============================================================================
@@ -152,11 +171,11 @@ our %EXPORT_TAGS = ( DEFAULT => [qw(parse_dot)]);
 sub parse_dot {
     my $file           = shift;
     my $debug          = shift;
-    my $node_id        = "A-Za-z0-9_";
-    my @nodes          = ();
-    my %adjacency_list = ();
-    my $buffer         = ""; 
-        # This will store what has been read in each state
+    $dotdata           = ""; 
+    $buffer            = ""; 
+    $state             = "none"; 
+    @node_stack        = (); 
+    %graph             = ();
 
     # ALL POSSIBLE STATES OF THE PARSER
     my %states = (
@@ -174,34 +193,24 @@ sub parse_dot {
 
 
     # INITIAL STATE
-    my $state  = "none";
+    $state  = "none";
 
     # READ DOT FILE
-    my $dotdata = _slurp($file);
+    $dotdata = _slurp($file);
 
     # START PARSING
     
-    for (my $i = 0; $i < length($dotdata) - 1; $i++) {
-        my $char = substr($dotdata, $i, 1);
+    for ($i = 0; $i < length($dotdata) - 1; $i++) {
+        $char = substr($dotdata, $i, 1);
         
         print STDERR "STATE: $state\n" if $debug;
 
-        $states{$state}->(
-            \$i, 
-            \$dotdata, 
-            \$buffer, 
-            \$char, 
-            \$state, 
-            $node_id, 
-            \@nodes, 
-            \%adjacency_list,
-            $debug
-        );
+        $states{$state}->();
 
     }
     print STDERR "---\n" if $debug;
 
-    return(\%adjacency_list);
+    return(\%graph);
 }
 
 
@@ -210,23 +219,14 @@ sub parse_dot {
 
 #--------------------------------------------------------------------------------
 sub _state_none {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char ne " ") {
-        $$buffer .= $$char
+    if ($char ne " ") {
+        $buffer .= $char
     } else {
-        if ($$buffer =~ /^(strict)?\s*?(di|sub)?graph/) {
+        if ($buffer =~ /^(strict)?\s*?(di|sub)?graph/) {
             # graph init
-            $$state  = "init";
-            $$buffer = "";
+            $state  = "init";
+            $buffer = "";
         }
     }
 
@@ -236,27 +236,18 @@ sub _state_none {
 
 #--------------------------------------------------------------------------------
 sub _state_init {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char =~ /[$node_id]/i) {
+    if ($char =~ /[$node_id]/i) {
         # graph name
-    } elsif ($$char eq "{") {
-        $$state  = "inside";
-        $$buffer = "";
-    } elsif ($$char eq "[") {
+    } elsif ($char eq "{") {
+        $state  = "inside";
+        $buffer = "";
+    } elsif ($char eq "[") {
         # we found a graph attribute statement
         # get back to normal state
         # (so the attribute will be skipped)
-        $$buffer = "";
-        $$state = "attribute";
+        $buffer = "";
+        $state = "attribute";
     }
 
     return;
@@ -266,46 +257,37 @@ sub _state_init {
 
 #--------------------------------------------------------------------------------
 sub _state_inside {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char =~ m/[$node_id\->]/ig) {
-        $$buffer .= $$char 
+    if ($char =~ m/[$node_id\->]/ig) {
+        $buffer .= $char 
     } 
 
-    print STDERR "BUFFER: $$buffer\tCHAR: $$char\n" if $debug;
+    print STDERR "BUFFER: $buffer\tCHAR: $char\n" if $debug;
 
-    if ($$char =~ m/[\s\n;=]/) {
+    if ($char =~ m/[\s\n;=]/) {
         # ENDING CHARACTER
 
-        if ($$buffer =~ m/^[$node_id]+$/) {
+        if ($buffer =~ m/^[$node_id]+$/) {
             # SOMETHING IN BUFFER
 
-             if ($$buffer =~ m{ ^ (di|sub)? graph $ | ^ strict $}xi) {
+             if ($buffer =~ m{ ^ (di|sub)? graph $ | ^ strict $}xi) {
                 # GRAPH ATTRIBUTE/INITIALIZATION
-                $$buffer = "";
-                $$state  = "init";
+                $buffer = "";
+                $state  = "init";
 
-            } elsif ($$buffer =~ m/^node$|^edge$/i) {
+            } elsif ($buffer =~ m/^node$|^edge$/i) {
                 # NODE/EDGE ATTRIBUTE
-                $$buffer = "";
+                $buffer = "";
 
-            } elsif ($$char eq "=") {
+            } elsif ($char eq "=") {
                 # WHOLE GRAPH ATTRIBUTE
 
-                $$state = "ass_attribute";
-                $$buffer = "";
+                $state = "ass_attribute";
+                $buffer = "";
            
             } else {
                 # NORMAL ENDING OF NODE ID
-                _add_node($graph, $node_stack, $buffer, $state, $debug);
+                _add_node();
             }           
        
         } else {
@@ -313,54 +295,54 @@ sub _state_inside {
             return;
         }
 
-    } elsif ($$buffer eq "->" or $$buffer eq "--") {
+    } elsif ($buffer eq "->" or $buffer eq "--") {
         # EDGE STATEMENT
-        $$state  = "edge";
-        $$buffer = ""; 
+        $state  = "edge";
+        $buffer = ""; 
 
-    } elsif ($$char eq '"') {
+    } elsif ($char eq '"') {
         # QUOTED NODE BEGINNING
-        $$buffer = ""; # remove quote from buffer
-        $$state = "quoted_node";
+        $buffer = ""; # remove quote from buffer
+        $state = "quoted_node";
 
-    } elsif ($$char eq "[") {
+    } elsif ($char eq "[") {
         # ATTRIBUTE STATEMENT
 
-         if ($$buffer =~ m/[$node_id]/) {
+         if ($buffer =~ m/[$node_id]/) {
             # NODE IN BUFFER
-            _add_node($graph, $node_stack, $buffer, $state, $debug);
+            _add_node();
 
-        } elsif ($$buffer) {
+        } elsif ($buffer) {
             # BEGINNING OF ATTRIBUTE BUT WITH SOMETHING THAT IS NOT A NODE IN BUFFER
             # THIS IS NOT ALLOWED IN DOT LANGUAGE
-            croak "We have something not allowed in buffer, with state $state. Buffer: $$buffer\n";
+            croak "We have something not allowed in buffer, with state $state. Buffer: $buffer\n";
         }
         
-        $$state  = "attribute";
-        $$buffer = "";
+        $state  = "attribute";
+        $buffer = "";
 
-    } elsif ($$char eq "/") {
+    } elsif ($char eq "/") {
         # COMMENT
 
-        if ($$buffer =~ m/^[$node_id]+$/i) {
+        if ($buffer =~ m/^[$node_id]+$/i) {
             # NODE IN THE BUFFER
-            _add_node($graph, $node_stack, $buffer, $state, $debug);         
+            _add_node();         
         }
 
-        if (substr($$dotdata, $$i+1, 1) eq "/") {
+        if (substr($dotdata, $i+1, 1) eq "/") {
             # REGULAR COMMENT
-            $$state  = "comment";
-            $$buffer = ""; 
+            $state  = "comment";
+            $buffer = ""; 
 
-        } elsif (substr($$dotdata, $$i+1, 1) eq "*") {
+        } elsif (substr($dotdata, $i+1, 1) eq "*") {
             # C++ COMMENT
-            $$state  = "multicomment";
-            $$i++; # so we will skip * and it won't be added to the buffer
-            $$buffer = "";
+            $state  = "multicomment";
+            $i++; # so we will skip * and it won't be added to the buffer
+            $buffer = "";
 
         } else {
             # THERE IS A '/' THAT IS NOT A COMMENT
-            croak("Not allowed character $$char found\n");
+            croak("Not allowed character $char found\n");
         }
     
     }
@@ -371,53 +353,44 @@ sub _state_inside {
 
 #--------------------------------------------------------------------------------
 sub _state_edge {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char =~ m/^[$node_id]$/i) {
+    if ($char =~ m/^[$node_id]$/i) {
         # REGULAR EDGE
-        $$buffer .= $$char;
-    } elsif ($$char =~ m/"/) {
-        if ($$buffer) {
-            croak "You can't use quotes inside node strings. BUFF: $$buffer CHAR: $$char\n";
+        $buffer .= $char;
+    } elsif ($char =~ m/"/) {
+        if ($buffer) {
+            croak "You can't use quotes inside node strings. BUFF: $buffer CHAR: $char\n";
         } else {
             # Edge statement with node starting with quote
-            $$state = "quoted_edge";
+            $state = "quoted_edge";
         }
-    } elsif ($$char =~ m/[\s\n\[;\/]/ and $$buffer =~ m/^[$node_id]+$/) {
+    } elsif ($char =~ m/[\s\n\[;\/]/ and $buffer =~ m/^[$node_id]+$/) {
         # END OF REGULAR EDGE STATEMENT
-        if ($$char =~ m/\[/) {
+        if ($char =~ m/\[/) {
             # edge stmt ends with attribute
-            $$state = "attribute";
-        } elsif ($$char =~ m/\//) {
+            $state = "attribute";
+        } elsif ($char =~ m/\//) {
             # edge stmt ends with comment
-            if (substr($$dotdata, $$i+1, 1) eq "*") {
+            if (substr($dotdata, $i+1, 1) eq "*") {
                 # multicomment!
-                $$state = "multicomment";
-                $$i++; # so we will skip * and it won't be added to buffer
-            } elsif (substr($$dotdata, $$i+1, 1) eq "/") {
+                $state = "multicomment";
+                $i++; # so we will skip * and it won't be added to buffer
+            } elsif (substr($dotdata, $i+1, 1) eq "/") {
                 # regular comment
-                $$state = "comment";
+                $state = "comment";
             } else {
-                croak "Found $$char that is not a comment\n";
+                croak "Found $char that is not a comment\n";
             }
 
         } else {
-            $$state = "inside"; 
+            $state = "inside"; 
         }
 
-        print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", 
+        print STDERR "\tINT HERE: $node_stack[-1] -> $buffer : char $char at line ", 
                      __LINE__, "\n" if $debug;
-        my $parent = pop @{ $node_stack };
-        $graph->{$parent}->{$$buffer} = undef;
-        _add_node($graph, $node_stack, $buffer, $state, $debug);
+        my $parent = pop @node_stack;
+        $graph{$parent}->{$buffer} = undef;
+        _add_node();
     }
 
     return;
@@ -427,22 +400,13 @@ sub _state_edge {
 
 #--------------------------------------------------------------------------------
 sub _state_quoted_node {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char eq "\"") {
+    if ($char eq "\"") {
         # end of quoted node
-        _add_node($graph, $node_stack, $buffer, $state, $debug);
-        $$state = "inside";
+        _add_node();
+        $state = "inside";
     } else {
-        $$buffer .= $$char;
+        $buffer .= $char;
 
     }
 
@@ -451,25 +415,16 @@ sub _state_quoted_node {
 
 #--------------------------------------------------------------------------------
 sub _state_quoted_edge {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char eq "\"") {
+    if ($char eq "\"") {
         # end of quoted edge
-        print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
-        my $parent = pop @{ $node_stack };
-        $graph->{$parent}->{$$buffer} = undef;
-        _add_node($graph, $node_stack, $buffer, $state, $debug);
-        $$state = "inside";
+        print STDERR "\tQ_INT HERE: $node_stack[-1] -> $buffer\n" if $debug;
+        my $parent = pop @node_stack;
+        $graph{$parent}->{$buffer} = undef;
+        _add_node();
+        $state = "inside";
     } else {
-        $$buffer .= $$char;
+        $buffer .= $char;
 
     }
 }
@@ -477,19 +432,10 @@ sub _state_quoted_edge {
 
 #--------------------------------------------------------------------------------
 sub _state_attribute {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char eq "]") {
-        $$state = "inside";
-        $$buffer = "";
+    if ($char eq "]") {
+        $state = "inside";
+        $buffer = "";
     }
 
     return;
@@ -498,21 +444,12 @@ sub _state_attribute {
 
 #--------------------------------------------------------------------------------
 sub _state_ass_attribute {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    if ($$char =~ m/[$node_id\."]/) {
+    if ($char =~ m/[$node_id\."]/) {
         # good
     } else {
         # end of attribute
-        $$state = "inside";
+        $state = "inside";
     }
 
     return;
@@ -521,20 +458,11 @@ sub _state_ass_attribute {
 
 #--------------------------------------------------------------------------------
 sub _state_comment {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    print STDERR "BUFF: $$buffer\n" if $debug;
+    print STDERR "BUFF: $buffer\n" if $debug;
 
-    if ($$char =~ /\n/) {
-        $$state = "inside";
+    if ($char =~ /\n/) {
+        $state = "inside";
     }
 
     return;
@@ -543,22 +471,13 @@ sub _state_comment {
 
 #--------------------------------------------------------------------------------
 sub _state_multicomment {
-    my $i          = shift;
-    my $dotdata    = shift;
-    my $buffer     = shift;
-    my $char       = shift;
-    my $state      = shift;
-    my $node_id    = shift;
-    my $node_stack = shift;
-    my $graph      = shift;
-    my $debug      = shift;
 
-    $$buffer .= $$char if $$char =~ m/[\/\*]/;
-    print STDERR "BUFF: $$buffer\n" if $debug;
+    $buffer .= $char if $char =~ m/[\/\*]/;
+    print STDERR "BUFF: $buffer\n" if $debug;
 
-    if ($$buffer eq "*/") {
-        $$state = "inside";
-        $$buffer = "";
+    if ($buffer eq "*/") {
+        $state = "inside";
+        $buffer = "";
     }
 
     return;
@@ -586,19 +505,14 @@ sub _slurp {
 
 #--------------------------------------------------------------------------------
 sub _add_node {
-    my $graph      = shift;
-    my $node_stack = shift;
-    my $buffer     = shift;
-    my $state      = shift;
-    my $debug      = shift;
 
-    push @{ $node_stack }, $$buffer;
+    push @node_stack, $buffer;
 
-    print STDERR "\tNODE added in state: $$state at line ", __LINE__, 
-                 ": $$buffer\n" if $debug; 
+    print STDERR "\tNODE added in state: $state at line ", __LINE__, 
+                 ": $buffer\n" if $debug; 
 
-    $graph->{$$buffer} = () unless exists $graph->{$$buffer};
-    $$buffer = "";
+    $graph{$buffer} = () unless exists $graph{$buffer};
+    $buffer = "";
 
     return;
 }
