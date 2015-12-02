@@ -415,7 +415,7 @@ sub _state_edge {
 
         print STDERR "\tINT HERE: $node_stack->[-1] -> $$buffer : char $$char at line ", 
                      __LINE__, "\n" if $debug;
-        my $parent = pop { $node_stack };
+        my $parent = pop @{ $node_stack };
         $graph->{$parent}->{$$buffer} = undef;
         _add_node($graph, $node_stack, $buffer, $state, $debug);
     }
@@ -464,7 +464,7 @@ sub _state_quoted_edge {
     if ($$char eq "\"") {
         # end of quoted edge
         print STDERR "\tQ_INT HERE: $node_stack->[-1] -> $$buffer\n" if $debug;
-        my $parent = pop { $node_stack };
+        my $parent = pop @{ $node_stack };
         $graph->{$parent}->{$$buffer} = undef;
         _add_node($graph, $node_stack, $buffer, $state, $debug);
         $$state = "inside";
