@@ -421,8 +421,10 @@ print STDERR "\nPROGRAM FINISHED\n",
 
 # DEBUGGING
 if ($debug) {
-    print STDERR Data::Dumper->Dump([$groups,   $groups_to_colors, \%nodes, \%interactions], 
-                                    [("GROUPS", "GROUPS_2_COLORS", "NODES", "EDGES") ]), "\n";
+    print STDERR Data::Dumper->Dump(
+        [$groups,   $groups_to_colors, \%nodes, \%interactions], 
+        [("GROUPS", "GROUPS_2_COLORS", "NODES", "EDGES") ]
+    ), "\n";
 }
 
 
