@@ -16,8 +16,34 @@ use Getopt::Long qw(:config no_ignore_case);
 # VARIABLES AND OPTIONS
 #===============================================================================
 our @ISA         = qw(Exporter);
-our @EXPORT_OK   = qw(compare_dots);
-our %EXPORT_TAGS = ( DEFAULT => [qw(compare_dots)]);
+our @EXPORT_OK   = qw(
+    compare_dots
+    read_dot
+    add_elements
+    clean_name
+    initialize_groups
+    combinations
+    load_colors
+    array_shuffle
+    assign_colors
+    count_nodeints
+    get_fh
+    write_dot
+    results_table
+    print_venn
+    assign_aliases
+    parse_svg
+    create_json
+    create_ctable
+    print_html
+    load_graphs
+    print_attributes
+);
+
+our %EXPORT_TAGS = ( 
+    default => [qw(compare_dots)],
+    testing => \@EXPORT_OK
+    );
 
 #===============================================================================
 # FUNCTIONS 
@@ -102,7 +128,7 @@ sub compare_dots {
         ), "\n";
     }
 
-    
+    return;
 
 }
 
@@ -606,4 +632,10 @@ sub error {
     }
 
 }
+
+__END__
+1;
+
+
+
 
