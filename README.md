@@ -79,8 +79,8 @@ These are the directories and the files inside the distribution:
 
 - **lib/**
 
-    Here we can find the module Dot::Parser. To see an explanation about how it works, refer to the POD documentation
-    in the script using:
+    Here we can find the two modules: Dot::Compare and Dot::Parser. The main functionality of the application is implemented in
+    Dot::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how it works, refer to its documentation:
 
         perldoc lib/Dot/Parser.pm
 
