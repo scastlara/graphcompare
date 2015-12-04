@@ -181,6 +181,8 @@ sub parse_dot {
     my $debug          = shift;
     my %graph          = (); 
 
+    croak "You have to give me one DOT file!\n"
+        unless $file;
 
     # ALL POSSIBLE STATES OF THE PARSER
     my %states = (
