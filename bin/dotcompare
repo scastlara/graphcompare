@@ -1,5 +1,243 @@
 #!/usr/bin/perl
 
+=head1 NAME
+
+Dot::Compare - A Perl module to compare DOT files
+
+=head1 VERSION
+
+v0.5.1
+
+=head1 SYNOPSIS
+
+    dotcompare  --files file1.dot,file2.dot \\  
+                --stats                     \\
+                --colors HARD               \\   
+                --dot output.dot            \\   
+                --table table.tbl           \\ 
+                --venn venn.svg             \\ 
+                --web graph.html               
+
+=head1 DESCRIPTION
+
+This module compares two or more DOT (graphviz) files. It prints a merged graph 
+with different colors for nodes and edges depending on the files in which they appear. 
+To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/. 
+
+The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution 
+comes with a command-line tool to compare the DOT files. This script is called dotcompare, and it's
+located in the directory bin/
+
+By default, dotcompare will print the resulting graph to
+STDOUT, but you can change it with the option -o (see options below).
+
+dotcompare has some optional outputs, each one specified by one 
+option.
+
+=over 8
+
+=item B<Venn diagram> 
+
+If given the option -v, dotcompare will create an
+svg file containing a venn diagram. In this image, you will be able to see
+a comparison of the counts of nodes and relationships in each input DOT file,
+and those nodes/relationships common to more than one file. The colors will be
+chosen using one of the profiles in data/colors.txt. By default, the color palette
+is set to be "SOFT". To change it, use the option -c (see options below).
+
+=item B<Table>. 
+
+Complementary to the venn diagram, one can choose to create a 
+table containing all the counts (so it can be used to create other plots or tables). The 
+table is already formated to be used by R. Load it to a dataframe using:
+
+        df <-read.table(file="yourtable.tbl", header=TRUE)
+
+=item B<Webpage with the graph>. 
+
+With the option -w, one can create a webpage
+with a representation of the merged graph (with different colors for nodes and 
+relationships depending on their presence in each DOT file). To make this representation,
+dotcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
+embedded in the html file to allow maximum portability: the webpage and the graph work
+without any external file/script dependencies. This allows for an easy upload of the graph
+to any website.
+
+=back
+
+=head1 INSTALLATION
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+
+It is important to note that if you decide to install dotcompare manually, the script needs to use File::Share to find
+the templates. If you choose to not use the Makefile.PL installer, you may encounter some bugs, as dotcompare will be unable to open
+the templates.
+
+=head1 DIRECTORIES
+
+These are the directories and the files inside the distribution:
+    
+=over 8
+
+=item B<bin/>
+
+This directory contains the main script: dotcompare.
+
+=item B<lib/>
+
+Here we can find the module Dot::Parser. To see an explanation about how it works, refer to the POD documentation
+in the script using:
+    
+    perldoc lib/Dot/Parser.pm
+
+=item B<share/>
+
+Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
+some test files, test1.dot, test2.dot and test3.dot to try out the program.
+
+=item B<t/> 
+
+This is the directory with the test files and the script that runs the tests (parser.t).
+
+=item B<Makefile.PL>
+
+This is the script that uses ExtUtils::MakeMaker to create a Makefile to install the distribution.
+
+=item B<MANIFEST>
+
+List of all the files of the distribution.
+
+=back
+
+
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>, B<--help>               
+
+Shows this help. 
+
+=item B<-i>, B<--insensitive> 
+
+Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+
+=item B<-s>, B<--stats> 
+
+Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
+input graphs are very big.
+
+=item B<-f>, B<--files> <file1,file2,...>
+
+REQUIRED. Input DOT files, separated by commas.    
+
+=item B<-o>, B<--out> <filename.dot>
+
+Saves the merged dot file to the specified file. Default to STDOUT.
+
+=item B<-c>, B<--colors> <profile>
+
+Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
+
+=item B<-v>, B<--venn> <filename.svg>
+
+Creates a venn diagram with the results. 
+
+=item B<-w>, B<--web> <filename.html>
+
+Writes html file with the graph using cytoscape.js
+
+=back
+
+=head1 BUGS AND PROBLEMS
+
+=head2 Current Limitations
+
+=over 8
+
+=item I<Undirected_graphs> 
+
+Only works with directed graphs. If undirected, 
+dotcompare considers them to be directed.
+
+=item I<Clusters> 
+
+Still no clusters support e.g. {A B C} -> D
+
+=item I<Multiline_IDs> 
+
+No support for multiline IDs.
+
+=item I<No_escaped_quotes>
+
+No support for quotes in node IDs (even if properly escaped).
+
+
+=item I<Compass_ports> 
+
+No support for compass ports.
+
+
+=back
+
+
+=head1 DEPENDENCIES
+
+=over 8
+
+=item File::ShareDir::Install
+
+=item File::Share
+
+=item Test::More
+
+=item Pod::Usage
+
+=item Cwd
+
+=item Graph::Directed (only if using option -s)
+
+=item AutoLoader (if comparing more than 5 files)    
+
+=item Color::Spectrum::Multi (if comparing more than 5 files)    
+
+=back
+
+
+=head1 AUTHOR
+
+Sergio Castillo Lara - s.cast.lara@gmail.com
+
+
+=head2 Reporting Bugs
+
+Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
+
+=head1 COPYRIGHT 
+
+    (C) 2015 - Sergio CASTILLO LARA
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=cut
+
 
 #===============================================================================
 # MODULES
@@ -9,10 +247,8 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Cwd 'abs_path';
-use lib '/home/sergio/code/dotcompare/lib';
 use Dot::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
-
 
 
 #===============================================================================
