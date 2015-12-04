@@ -1,10 +1,10 @@
 # NAME
 
-dotcompare - A command-line tool to compare DOT files
+Dot::Compare - A Perl module to compare DOT files
 
 # VERSION
 
-v0.5.0
+v0.5.1
 
 # SYNOPSIS
 
@@ -18,14 +18,18 @@ v0.5.0
 
 # DESCRIPTION
 
-This script compares two or more DOT (graphviz) files. It prints a merged graph 
+This module compares two or more DOT (graphviz) files. It prints a merged graph 
 with different colors for nodes and edges depending on the files in which they appear. 
-To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/
+To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/. 
+
+The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution 
+comes with a command-line tool to compare the DOT files. This script is called dotcompare, and it's
+located in the directory bin/
 
 By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
 
-Dotcompare has some optional outputs, each one specified by one 
+dotcompare has some optional outputs, each one specified by one 
 option.
 
 - **Venn diagram** 
