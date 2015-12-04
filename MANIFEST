@@ -2,6 +2,7 @@ Makefile.PL
 MANIFEST
 bin/dotcompare
 lib/Dot/Parser.pm
+lib/Dot/Compare.pm
 t/parser.t
 t/attributes.dot
 t/comments.dot
