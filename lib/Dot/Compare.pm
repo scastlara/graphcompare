@@ -20,7 +20,7 @@ our @EXPORT_OK   = qw(compare_dots);
 
 our %EXPORT_TAGS = ( 
     default => [qw(compare_dots)],
-    all => \@EXPORT_OK
+    testing => \@EXPORT_OK
     );
 
 #===============================================================================
