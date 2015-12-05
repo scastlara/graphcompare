@@ -6,36 +6,36 @@ dotcompare - A command-line tool to compare DOT files
 
 =head1 VERSION
 
-v0.5.1
+v0.5.2
 
 =head1 SYNOPSIS
 
-    dotcompare  --files file1.dot,file2.dot \\  
+    dotcompare  --files file1.dot,file2.dot \\
                 --stats                     \\
-                --colors HARD               \\   
-                --dot output.dot            \\   
-                --table table.tbl           \\ 
-                --venn venn.svg             \\ 
-                --web graph.html               
+                --colors HARD               \\
+                --dot output.dot            \\
+                --table table.tbl           \\
+                --venn venn.svg             \\
+                --web graph.html
 
 =head1 DESCRIPTION
 
-This application compares two or more DOT (graphviz) files. It prints a merged graph 
-with different colors for nodes and edges depending on the files in which they appear. 
-To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/. 
+This application compares two or more DOT (graphviz) files. It prints a merged graph
+with different colors for nodes and edges depending on the files in which they appear.
+To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/.
 
-The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution 
-comes with a command-line tool (dotcompare) to compare the DOT files. 
+The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution
+comes with a command-line tool (dotcompare) to compare the DOT files.
 
 By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
 
-dotcompare has some optional outputs, each one specified by one 
+dotcompare has some optional outputs, each one specified by one
 option.
 
 =over 8
 
-=item B<Venn diagram> 
+=item B<Venn diagram>
 
 If given the option -v, dotcompare will create an
 svg file containing a venn diagram. In this image, you will be able to see
@@ -44,18 +44,18 @@ and those nodes/relationships common to more than one file. The colors will be
 chosen using one of the profiles in data/colors.txt. By default, the color palette
 is set to be "SOFT". To change it, use the option -c (see options below).
 
-=item B<Table>. 
+=item B<Table>.
 
-Complementary to the venn diagram, one can choose to create a 
-table containing all the counts (so it can be used to create other plots or tables). The 
+Complementary to the venn diagram, one can choose to create a
+table containing all the counts (so it can be used to create other plots or tables). The
 table is already formated to be used by R. Load it to a dataframe using:
 
         df <-read.table(file="yourtable.tbl", header=TRUE)
 
-=item B<Webpage with the graph>. 
+=item B<Webpage with the graph>.
 
 With the option -w, one can create a webpage
-with a representation of the merged graph (with different colors for nodes and 
+with a representation of the merged graph (with different colors for nodes and
 relationships depending on their presence in each DOT file). To make this representation,
 dotcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
 embedded in the html file to allow maximum portability: the webpage and the graph work
@@ -79,7 +79,7 @@ the templates.
 =head1 DIRECTORIES
 
 These are the directories and the files inside the distribution:
-    
+
 =over 8
 
 =item B<bin/>
@@ -90,7 +90,7 @@ This directory contains the main script: dotcompare.
 
 Here we can find the two modules: Dot::Compare and Dot::Parser. The main functionality of the application is implemented in
 Dot::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how it works, refer to its documentation:
-    
+
     perldoc lib/Dot/Parser.pm
 
 =item B<share/>
@@ -98,7 +98,7 @@ Dot::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how
 Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
 some test files, test1.dot, test2.dot and test3.dot to try out the program.
 
-=item B<t/> 
+=item B<t/>
 
 This is the directory with the test files and the script that runs the tests (parser.t).
 
@@ -118,22 +118,22 @@ List of all the files of the distribution.
 
 =over 8
 
-=item B<-h>, B<--help>               
+=item B<-h>, B<--help>
 
-Shows this help. 
+Shows this help.
 
-=item B<-i>, B<--insensitive> 
+=item B<-i>, B<--insensitive>
 
-Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+Makes dotocompare case insensitive. By default, dotcompare is case sensitive.
 
-=item B<-s>, B<--stats> 
+=item B<-s>, B<--stats>
 
 Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
 input graphs are very big.
 
 =item B<-f>, B<--files> <file1,file2,...>
 
-REQUIRED. Input DOT files, separated by commas.    
+REQUIRED. Input DOT files, separated by commas.
 
 =item B<-o>, B<--out> <filename.dot>
 
@@ -145,7 +145,7 @@ Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
 
 =item B<-v>, B<--venn> <filename.svg>
 
-Creates a venn diagram with the results. 
+Creates a venn diagram with the results.
 
 =item B<-w>, B<--web> <filename.html>
 
@@ -159,16 +159,16 @@ Writes html file with the graph using cytoscape.js
 
 =over 8
 
-=item I<Undirected_graphs> 
+=item I<Undirected_graphs>
 
-Only works with directed graphs. If undirected, 
+Only works with directed graphs. If undirected,
 dotcompare considers them to be directed.
 
-=item I<Clusters> 
+=item I<Clusters>
 
 Still no clusters support e.g. {A B C} -> D
 
-=item I<Multiline_IDs> 
+=item I<Multiline_IDs>
 
 No support for multiline IDs.
 
@@ -177,7 +177,7 @@ No support for multiline IDs.
 No support for quotes in node IDs (even if properly escaped).
 
 
-=item I<Compass_ports> 
+=item I<Compass_ports>
 
 No support for compass ports.
 
@@ -201,9 +201,9 @@ No support for compass ports.
 
 =item Graph::Directed (only if using option -s)
 
-=item AutoLoader (if comparing more than 5 files)    
+=item AutoLoader (if comparing more than 5 files)
 
-=item Color::Spectrum::Multi (if comparing more than 5 files)    
+=item Color::Spectrum::Multi (if comparing more than 5 files)
 
 =back
 
@@ -217,7 +217,7 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 
-=head1 COPYRIGHT 
+=head1 COPYRIGHT
 
     (C) 2015 - Sergio CASTILLO LARA
 
@@ -245,6 +245,7 @@ Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 use warnings;
 use strict;
 use Pod::Usage;
+use lib '/home/sergio/code/dotcompare/lib/';
 use Cwd 'abs_path';
 use Dot::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
@@ -254,20 +255,20 @@ use Getopt::Long qw(:config no_ignore_case);
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.5.0';
+our $VERSION       = 'v0.5.2';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{ PWD };
 our $INSTALL_PATH  = get_installpath();
 
 
 # If no arguments provided
-pod2usage( -verbose => 1,  
+pod2usage( -verbose => 1,
            -output  => \*STDOUT   ) unless @ARGV;
 
 my %options = ();
 
 GetOptions (
-    \%options, 
+    \%options,
     'help|?'     ,
     "files=s"    ,
     "colors=s"   ,
@@ -278,23 +279,23 @@ GetOptions (
     "stats"      ,
     "insensitive",
     "Test"       ,
-    "debug"      
- ); 
+    "debug"
+ );
 
 
 # If option --help
-pod2usage( -verbose => 1,  
+pod2usage( -verbose => 1,
            -output  => \*STDOUT   ) if $options{help};
 
 my @files = split /,/, $options{files} if defined $options{files};
 
 # If no files or too many files
 if (@files == 0) {
-    error("You have to introduce at least 1 DOT file \n\n\t" . 
+    error("You have to introduce at least 1 DOT file \n\n\t" .
           'perl dotcompare -f file1,file2,file3...', 1
          );
 } elsif (@files == 5 and $options{colors} ne "LARGE") {
-    error("Too many files to use color palette $options{colors}\n". 
+    error("Too many files to use color palette $options{colors}\n".
           "Changing color palette to LARGE\n");
     $options{colors} = "LARGE";
 } elsif (@files > 5) {
@@ -336,19 +337,19 @@ $current_time = localtime();
 my $sec = $end_time - $start_time;
 
 my $hours = ($sec/3600) % 24;
-my $minutes = ($sec/60) % 60;   
-my $seconds = $sec % 60;           
+my $minutes = ($sec/60) % 60;
+my $seconds = $sec % 60;
 
 my @out_files = grep {$_} ($options{out}, $options{table}, $options{venn}, $options{web});
 print STDERR "\nPROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
-             "\tJob took ~ $hours hours, $minutes minutes and $seconds seconds\n\n"; 
+             "\tJob took ~ $hours hours, $minutes minutes and $seconds seconds\n\n";
 #--
 
 
 #===============================================================================
-# FUNCTIONS 
+# FUNCTIONS
 #===============================================================================
 #--------------------------------------------------------------------------------
 sub get_installpath {
@@ -366,7 +367,7 @@ sub error {
 
     my $error_msg = $fatal ? "FATAL" : "MINOR";
     print STDERR "\n# [$error_msg ERROR]\n";
-    print STDERR "# $_\n" foreach (@lines);    
+    print STDERR "# $_\n" foreach (@lines);
 
     if ($fatal) {
         print STDERR "\n\n# Use dotcompare -h to get help.\n\n";

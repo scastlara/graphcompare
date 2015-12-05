@@ -43,8 +43,8 @@ sub compare_dots {
 
     # COLORS AND COUNTS
     my $groups = initialize_groups(\@files);
-    my $colors;
 
+    my $colors;
     if (@files <= 5) {
         $colors = load_colors($options->{colors});
     } else {
@@ -61,6 +61,7 @@ sub compare_dots {
     # COUNT NODES AND INTERACTIONS IN GROUPS
     count_nodeints(\%nodes, $groups, "nodes");
     count_nodeints(\%interactions, $groups, "ints");
+
 
     # WRITE DOT FILE
     my $dot_fh = get_fh($options);
@@ -187,7 +188,7 @@ sub initialize_groups {
         my @combinations = combinations($files_array, $idx);
 
         foreach my $combi (@combinations) {
-            my @sorted = sort @$combi;
+            my @sorted = @$combi;
             $count_hash{join ":",@sorted}->{nodes} = 0;
             $count_hash{join ":",@sorted}->{ints}  = 0;
         } # while
