@@ -18,13 +18,13 @@ use Getopt::Long qw(:config no_ignore_case);
 our @ISA         = qw(Exporter);
 our @EXPORT_OK   = qw(compare_dots);
 
-our %EXPORT_TAGS = ( 
+our %EXPORT_TAGS = (
     default => [qw(compare_dots)],
     testing => \@EXPORT_OK
     );
 
 #===============================================================================
-# FUNCTIONS 
+# FUNCTIONS
 #===============================================================================
 
 # EXPORTED
@@ -79,7 +79,7 @@ sub compare_dots {
     }
 
     if (defined $options->{web}) {
-        my $json        = create_json(\%nodes, \%interactions, $groups_to_colors); 
+        my $json        = create_json(\%nodes, \%interactions, $groups_to_colors);
         my $color_table = create_ctable($groups_to_colors);
         print_html($options->{web}, $json, $color_table);
     }
@@ -101,7 +101,7 @@ sub compare_dots {
     # DEBUGGING
     if (defined $options->{debug}) {
         print STDERR Data::Dumper->Dump(
-            [$groups,   $groups_to_colors, \%nodes, \%interactions], 
+            [$groups,   $groups_to_colors, \%nodes, \%interactions],
             [("GROUPS", "GROUPS_2_COLORS", "NODES", "EDGES") ]
         ), "\n";
     }
@@ -148,7 +148,7 @@ sub read_dot {
 sub add_elements {
     my $input_graph   = shift;
     my $elements_hash = shift;
-    my $node_or_edge  = shift; 
+    my $node_or_edge  = shift;
     my $filename      = shift;
     my $escaped_file  = shift;
 
@@ -157,7 +157,7 @@ sub add_elements {
             unless $elements_hash->{$node_or_edge} =~ m/\b$escaped_file\b/;
     } else {
         $elements_hash->{$node_or_edge} = $filename;
-    }  
+    }
 
     return;
 }
@@ -167,11 +167,11 @@ sub clean_name {
     my $file_name = shift;
     my $cleaned   = $file_name;
 
-    $cleaned =~ s/\.dot//g; 
-    $cleaned =~ s/.+\///; 
+    $cleaned =~ s/\.dot//g;
+    $cleaned =~ s/.+\///;
 
     return($cleaned);
-} 
+}
 
 
 # COLORS AND GROUPS
@@ -196,14 +196,14 @@ sub initialize_groups {
 
     return (\%count_hash);
 
-} 
+}
 
 #--------------------------------------------------------------------------------
 sub combinations {
     my $list = shift;
     my $n    = shift;
 
-    error("Something went wrong when getting the combinations of your files", 1) 
+    error("Something went wrong when getting the combinations of your files", 1)
         if $n > @$list;
 
     return map [$_], @$list if $n <= 1;
@@ -227,7 +227,7 @@ sub load_colors {
     my $colors_file = dist_file("Dot-Parser", "colors.txt");
 
     open my $fh, '<', "$colors_file"
-        or error("Can't open $colors_file,". 
+        or error("Can't open $colors_file,".
                  " i can't find the distribution share/ directory :$!", 1);
 
     while (<$fh>) {
@@ -241,11 +241,11 @@ sub load_colors {
     unless (@colors) {
         error(
               "Your profile \"$profile\" doesn't exist!\n".
-              "Choose one of the following:\n\n". 
+              "Choose one of the following:\n\n".
               "\t- SOFT\n".
               "\t- HARD\n" .
               "\t- LARGE\n" .
-              "\t- CBLIND\n", 
+              "\t- CBLIND\n",
               1
               );
     }
@@ -335,8 +335,8 @@ sub write_dot {
             $output = "\"$datum\"";
         }
 
-        print $fhandle "\t", $output, "\t", 
-                       "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t", 
+        print $fhandle "\t", $output, "\t",
+                       "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t",
                        "// $in_data->{$datum}", "\n";
     }
 
@@ -355,8 +355,8 @@ sub results_table {
 
     print $fh "GROUP\tNODES\tEDGES\n";
     foreach my $group (sort keys %{$groups}) {
-        print $fh    $group, "\t", 
-                     $groups->{$group}->{nodes}, "\t", 
+        print $fh    $group, "\t",
+                     $groups->{$group}->{nodes}, "\t",
                      $groups->{$group}->{ints}, "\n";
     }
 
@@ -371,7 +371,7 @@ sub print_venn {
     my $groups        = shift;
     my $filenames     = shift;
     my $grp_to_colors = shift;
-    my @group_keys    = keys %{$groups}; 
+    my @group_keys    = keys %{$groups};
     my $venn_template = "";
 
     open my $out, ">", $out_file
@@ -384,8 +384,8 @@ sub print_venn {
         # We have 3 dotfiles -> venn with 3 circles
         $venn_template = dist_file("Dot-Parser", "v3_template.svg");
     } else {
-        error("One or more than three DOT files, ". 
-                  "won't draw any venn diagram.\n". 
+        error("One or more than three DOT files, ".
+                  "won't draw any venn diagram.\n".
                   "You could use the option -t to print a ".
                   "table with the results.\n");
         return;
@@ -417,7 +417,7 @@ sub assign_aliases {
         my @grp_parts      = split /\:/, $group;
         my @aliases        = map { $grp_to_alias{$_} } @grp_parts;
         my $alias          = join(":", @aliases);
-        
+
         $grp_to_alias{$group} = $alias;
         $alias_to_grp{$alias} = $group;
     }
@@ -452,7 +452,7 @@ sub parse_svg {
         } elsif ($element eq "INTERACTIONS") {
             print $out_filehandle "$grp_numbers->{$grp_name}->{ints} $rest";
         } elsif ($element eq "NAME") {
-            print $out_filehandle "$alias_to_grp->{$code} $rest";           
+            print $out_filehandle "$alias_to_grp->{$code} $rest";
         } else {
             print $out_filehandle "$grp_to_colors->{$grp_name}$rest";
         }
@@ -471,7 +471,7 @@ sub create_json {
     my $json = "nodes: [\n";
 
     foreach my $node (keys %{$nodes}) {
-        $json .= "\t{ data: { id: '$node', name: '$node', colorNODE: " . 
+        $json .= "\t{ data: { id: '$node', name: '$node', colorNODE: " .
                  "\'$grps_to_colors->{ $nodes->{$node} }\'}},\n";
     }
 
@@ -479,7 +479,7 @@ sub create_json {
 
     foreach my $int (keys %{$interactions}) {
         my ($source, $target) = split /::\->::/, $int;
-        $json .= "\t{ data: { id: '$source-$target', " . 
+        $json .= "\t{ data: { id: '$source-$target', " .
                  "source: '$source', target: '$target', ".
                  "colorEDGE: \'$grps_to_colors->{ $interactions->{$int} }\' }},\n";
     }
@@ -544,7 +544,7 @@ sub load_graphs {
             my @files = split /:/, $element->{$rel};
 
             foreach my $file (@files) {
-                
+
                 if (not exists $graphs{$file}) {
                     $graphs{$file} = Graph::Directed->new;
                 }
@@ -552,15 +552,15 @@ sub load_graphs {
                 if ($trg) {
                     $graphs{$file}->add_edge($src, $trg);
                     $graphs{"MERGED"}->add_edge($src, $trg);
-                } else { 
+                } else {
                     $graphs{$file}->add_vertex($src);
                     $graphs{"MERGED"}->add_vertex($src) ;
                 }
-                
+
             }
         }
     }
-    
+
     # It returns a hash of graph objects with
     # the names of the DOT files as keys
     return(\%graphs);
@@ -600,7 +600,7 @@ sub error {
 
     my $error_msg = $fatal ? "FATAL" : "MINOR";
     print STDERR "\n# [$error_msg ERROR]\n";
-    print STDERR "# $_\n" foreach (@lines);    
+    print STDERR "# $_\n" foreach (@lines);
 
     if ($fatal) {
         print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
