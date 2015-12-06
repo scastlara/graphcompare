@@ -161,7 +161,7 @@ sub _print_node {
     my ($color, $other) = undef;
     ($color, $other) = parse_attributes($attributes) if $attributes;
 
-    print $fh "\t$node ";
+    print $fh "\t\"$node\" ";
     print $fh "[ color = \"$color\" ] " if $color;
     print $fh "//", join(" ", @{$other}) if $other;
     print $fh "\n";
@@ -188,7 +188,7 @@ sub _print_edge {
     my ($color, $other) = undef;
     ($color, $other) = parse_attributes($attributes) if $attributes;
 
-    print $fh "\t$parent -> $child ";
+    print $fh "\t\"$parent\" -> \"$child\" ";
     print $fh "[ color = \"$color\" ] " if $color;
     print $fh "//", join(" ", @{$other}) if $other;
     print $fh "\n";
