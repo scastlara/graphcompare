@@ -41,8 +41,15 @@ sub compare_dots {
     my @files = sort @{$files};
     foreach my $file (@files) {
         my $graph;
-
-        if ($file =~ m/\.(dot|gv)$/) {
+        if (defined $options->{fmtin}) {
+            if ($options->{fmtin} eq "DOT") {
+                $graph = parse_dot($file);
+            } elsif ($options->{fmtin} eq "TBL") {
+                $graph = read_tabgraph($file);
+            } else {
+                error("graphcompare only reads DOT or TBL files\n", 1);
+            }
+        } elsif ($file =~ m/\.(dot|gv)$/) {
             print STDERR "# Reading DOT file $file...  ";
             $graph = parse_dot($file);
         } elsif ($file =~ m/\.(tbl|txt)$/) {
