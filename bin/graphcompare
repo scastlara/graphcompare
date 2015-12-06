@@ -261,7 +261,6 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Cwd 'abs_path';
-use lib '/home/sergio/code/graphcompare/lib';
 use Graphs::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -370,7 +369,7 @@ my $hours = ($sec/3600) % 24;
 my $minutes = ($sec/60) % 60;
 my $seconds = $sec % 60;
 
-my @out_files = grep {$_} ($options{out}, $options{table}, $options{venn}, $options{web});
+my @out_files = grep {$_} ($options{output}, $options{table}, $options{venn}, $options{web});
 print STDERR "\nPROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",

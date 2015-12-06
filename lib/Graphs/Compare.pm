@@ -7,7 +7,6 @@ package Graphs::Compare;
 use warnings;
 use strict;
 use Data::Dumper;
-use lib '/home/sergio/code/graphcompare/lib';
 use Dot::Parser qw(parse_dot);
 use Dot::Writer qw(write_dot);
 use Tabgraph::Reader qw(read_tabgraph);
