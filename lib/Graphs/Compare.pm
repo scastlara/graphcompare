@@ -376,7 +376,7 @@ sub print_venn {
         error("Oops! Something went wrong when doing all the combinations of " .
               "your files. Try changing the names of your files (lowercase, ".
               "remove symbols...)\n Also, consider reporting the bug at:\n" .
-              "\thttps://github.com/scastlara/graphcompare/issues", 1);
+              "\thttps://github.com/scastlara/graphcompare/issues\n", 1);
     }
 
     my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
