@@ -143,7 +143,7 @@ Forces the program to read ALL the files as 'DOT' or 'TBL'. By default, graphcom
 looks at the extension of each file to choose one parser or another.
 
     .dot and .gv for DOT files
-    .tbl or .txt for TBL files.
+    .tbl and .txt for TBL files.
 
 =item B<--output> <filename.dot>
 
