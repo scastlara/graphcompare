@@ -6,13 +6,13 @@ use File::ShareDir::Install;
 install_share dist => 'share';
 
     WriteMakefile(
-        NAME            => 'Dot::Compare',
-        VERSION_FROM    => 'bin/dotcompare',
-        EXE_FILES => ['bin/dotcompare'],
+        NAME            => 'graphcompare',
+        VERSION_FROM    => 'bin/graphcompare',
+        EXE_FILES => ['bin/graphcompare'],
         PREREQ_PM => {
             "File::Share"  => 0,
             "Pod::Usage"   => 0,
-            "Getopt::Long" => 0, 
+            "Getopt::Long" => 0,
         },
         BUILD_REQUIRES => {
             'Test::More' => 0,
