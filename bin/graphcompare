@@ -10,13 +10,13 @@ v0.6.0
 
 =head1 SYNOPSIS
 
-    graphcompare  --input file1.dot,file2.dot \\
-                  --stats                     \\
-                  --colors HARD               \\
-                  --output output.dot         \\
-                  --table table.tbl           \\
-                  --venn venn.svg             \\
-                  --web graph.html
+    graphcompare  -input file1.dot,file2.dot \\
+                  -stats                     \\
+                  -colors HARD               \\
+                  -output output.dot         \\
+                  -table table.tbl           \\
+                  -venn venn.svg             \\
+                  -web graph.html
 
 =head1 DESCRIPTION
 
@@ -120,24 +120,24 @@ List of all the files of the distribution.
 
 =over 8
 
-=item B<-h>, B<--help>
+=item B<-h>, B<-help>
 
 Shows this help.
 
-=item B<-i>, B<--insensitive>
+=item B<-i>, B<-insensitive>
 
 Makes dotocompare case insensitive. By default, graphcompare is case sensitive.
 
-=item B<-s>, B<--stats>
+=item B<-s>, B<-stats>
 
 Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
 input graphs are very big.
 
-=item B<--input> <file1,file2,...>
+=item B<-input> <file1,file2,...>
 
 REQUIRED. Input files, separated by commas. Only DOT (graphviz) or TBL files.
 
-=item B<--fmtin> FORMAT
+=item B<-fmtin> FORMAT
 
 Forces the program to read ALL the files as 'DOT' or 'TBL'. By default, graphcompare
 looks at the extension of each file to choose one parser or another.
@@ -145,24 +145,24 @@ looks at the extension of each file to choose one parser or another.
     .dot and .gv for DOT files
     .tbl and .txt for TBL files.
 
-=item B<--output> <filename.dot>
+=item B<-output> <filename.dot>
 
 Saves the merged dot file to the specified file. Default to STDOUT.
 
-=item B<--fmtout> FORMAT
+=item B<-fmtout> FORMAT
 
 Changes the format of the output graph. By default it will use the DOT language.
 As of now, you can change it to TBL.
 
-=item B<-c>, B<--colors> <profile>
+=item B<-c>, B<-colors> <profile>
 
 Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
 
-=item B<-v>, B<--venn> <filename.svg>
+=item B<-v>, B<-venn> <filename.svg>
 
 Creates a venn diagram with the results.
 
-=item B<-w>, B<--web> <filename.html>
+=item B<-w>, B<-web> <filename.html>
 
 Writes html file with the graph using cytoscape.js
 
@@ -309,7 +309,7 @@ my @files = split /,/, $options{input} if defined $options{input};
 # If no files or too many files
 if (@files == 0) {
     error("You have to introduce at least 1 DOT file \n\n\t" .
-          'perl graphcompare -f file1,file2,file3...', 1
+          'perl graphcompare -input file1,file2,file3...', 1
          );
 } elsif (@files == 5 and $options{colors} ne "LARGE") {
     error("Too many files to use color palette $options{colors}\n".
@@ -353,6 +353,9 @@ print STDERR "\nPROGRAM STARTED\n",
 # CHECK IF VENN DIAGRAM
 if (@files > 3 and defined $options{venn}) {
     error("Too many files to draw a venn diagram.");
+    $options{venn} = undef;
+} elsif (@files == 1 and defined $options{venn}) {
+    error("Only one file. Won't draw any venn diagram");
     $options{venn} = undef;
 }
 
