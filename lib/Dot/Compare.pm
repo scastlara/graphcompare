@@ -65,7 +65,7 @@ sub compare_dots {
 
     # WRITE DOT FILE
     my ($graph, $node_attr) = prepare_data(\%nodes, \%interactions, $groups_to_colors);
-    write_dot({graph => $graph, node_attr => $node_attr, out => "kk.out"});
+    write_dot({graph => $graph, node_attr => $node_attr, out => $options->{output}});
 
     # OPTIONAL OUTPUTS
     if (defined $options->{table}) {

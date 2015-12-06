@@ -6,7 +6,7 @@ dotcompare - A command-line tool to compare DOT files
 
 =head1 VERSION
 
-v0.5.2
+v0.6.0
 
 =head1 SYNOPSIS
 
@@ -131,11 +131,11 @@ Makes dotocompare case insensitive. By default, dotcompare is case sensitive.
 Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
 input graphs are very big.
 
-=item B<-f>, B<--files> <file1,file2,...>
+=item B<--input> <file1,file2,...>
 
 REQUIRED. Input DOT files, separated by commas.
 
-=item B<-o>, B<--out> <filename.dot>
+=item B<--output> <filename.dot>
 
 Saves the merged dot file to the specified file. Default to STDOUT.
 
@@ -254,7 +254,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # VARIABLES AND OPTIONS
 #===============================================================================
 our $PROGRAM       = "dotcompare";
-our $VERSION       = 'v0.5.2';
+our $VERSION       = 'v0.6.0';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{ PWD };
 our $INSTALL_PATH  = get_installpath();
@@ -286,9 +286,6 @@ GetOptions (
 pod2usage( -verbose => 1,
            -output  => \*STDOUT   ) if $options{help};
 
-if (not defined $options{output}) {
-    error("You have to introduce an output file name\n See option --output\n", 1);
-}
 
 my @files = split /,/, $options{input} if defined $options{input};
 
@@ -306,6 +303,9 @@ if (@files == 0) {
           "Will generate one using Color::Spectrum\n");
 }
 
+if (not defined $options{output}) {
+    error("You have to introduce an output file name\n See option --output\n", 1);
+}
 
 # DEFAULT COLOR PALETTE
 if (not defined $options{colors}) {
