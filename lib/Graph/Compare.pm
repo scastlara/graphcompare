@@ -9,6 +9,7 @@ use strict;
 use Data::Dumper;
 use Dot::Parser qw(parse_dot);
 use Dot::Writer qw(write_dot);
+use Tabgraph::Reader qw(read_tabgraph);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -36,11 +37,27 @@ sub compare_dots {
     my %nodes        = ();
     my %interactions = ();
 
-    # READ DOT FILES
+    # READ GRAPH FILES
     my @files = sort @{$files};
     foreach my $file (@files) {
-        read_dot($file, \%nodes, \%interactions, $options);
+        my $graph;
+
+        if ($file =~ m/\.(dot|gv)$/) {
+            print STDERR "# Reading DOT file $file...  ";
+            $graph = parse_dot($file);
+        } elsif ($file =~ m/\.(tbl|txt)$/) {
+            print STDERR "# Reading TBL file $file...  ";
+            $graph = read_tabgraph($file);
+        } else {
+            error("Can't read $file\nDon't know what it is\n" .
+                  "graphcompare only reads DOT (.dot|.gv) or ".
+                  "tabular (.tbl|.txt) files", 1);
+        }
+
+        print STDERR "done\n";
+        read_graph($graph, $file, \%nodes, \%interactions, $options);
     }
+
 
     # COLORS AND COUNTS
     my $groups = initialize_groups(\@files);
@@ -116,33 +133,27 @@ sub compare_dots {
 
 # READING DOT FILES
 #--------------------------------------------------------------------------------
-sub read_dot {
-    my $dot          = shift;
+sub read_graph {
+    my $graph        = shift;
+    my $file          = shift;
     my $nodes        = shift;
     my $edges        = shift;
     my $options      = shift;
-    my $dot_symbol   = clean_name($dot);
-    my $escaped_file = quotemeta($dot_symbol);
-
-    print STDERR "# Reading file $dot...  ";
-
-    my $graph = parse_dot($dot);
-
-    print STDERR "done\n";
+    my $file_symbol   = clean_name($file);
+    my $escaped_file = quotemeta($file_symbol);
 
     foreach my $node (keys %{$graph}) {
         # ADDING NODES
         my $node_to_add = defined $options->{insensitive} ? uc($node) : $node;
-        add_elements($graph, $nodes, $node_to_add, $dot_symbol, $escaped_file);
+        add_elements($graph, $nodes, $node_to_add, $file_symbol, $escaped_file);
 
         # ADDING EDGES
         foreach my $child (keys %{ $graph->{$node} }) {
             my $edge = $node . "::->::" . $child;
             my $edge_to_add =  defined $options->{insensitive} ? uc($edge) : $edge;
-            add_elements($graph, $edges, $edge_to_add, $dot_symbol, $escaped_file);
+            add_elements($graph, $edges, $edge_to_add, $file_symbol, $escaped_file);
         }
     }
-
 
     return;
 }
@@ -171,7 +182,7 @@ sub clean_name {
     my $file_name = shift;
     my $cleaned   = $file_name;
 
-    $cleaned =~ s/\.dot//g;
+    $cleaned =~ s/\.|(dot|gv|tbl|graphml)//g;
     $cleaned =~ s/.+\///;
 
     return($cleaned);
@@ -365,7 +376,7 @@ sub print_venn {
         error("Oops! Something went wrong when doing all the combinations of " .
               "your files. Try changing the names of your files (lowercase, ".
               "remove symbols...)\n Also, consider reporting the bug at:\n" .
-              "\thttps://github.com/scastlara/dotcompare/issues", 1);
+              "\thttps://github.com/scastlara/graphcompare/issues", 1);
     }
 
     my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);
@@ -580,7 +591,7 @@ sub error {
     print STDERR "# $_\n" foreach (@lines);
 
     if ($fatal) {
-        print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
+        print STDERR "\n\n# Use graphcompare -h to get help.\n\n";
         exit(1);
     } else {
         print STDERR "\n\n";

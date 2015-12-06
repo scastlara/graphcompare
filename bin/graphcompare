@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-dotcompare - A command-line tool to compare DOT files
+graphcompare - A command-line tool to compare DOT files
 
 =head1 VERSION
 
@@ -10,7 +10,7 @@ v0.6.0
 
 =head1 SYNOPSIS
 
-    dotcompare  --input file1.dot,file2.dot \\
+    graphcompare  --input file1.dot,file2.dot \\
                 --stats                     \\
                 --colors HARD               \\
                 --output output.dot         \\
@@ -22,22 +22,22 @@ v0.6.0
 
 This application compares two or more DOT (graphviz) files. It prints a merged graph
 with different colors for nodes and edges depending on the files in which they appear.
-To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/.
+To read the dotfiles, graphcompare uses the module Dot::Parser, located in lib/.
 
 The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution
-comes with a command-line tool (dotcompare) to compare the DOT files.
+comes with a command-line tool (graphcompare) to compare the DOT files.
 
-By default, dotcompare will print the resulting graph to
+By default, graphcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
 
-dotcompare has some optional outputs, each one specified by one
+graphcompare has some optional outputs, each one specified by one
 option.
 
 =over 8
 
 =item B<Venn diagram>
 
-If given the option -v, dotcompare will create an
+If given the option -v, graphcompare will create an
 svg file containing a venn diagram. In this image, you will be able to see
 a comparison of the counts of nodes and relationships in each input DOT file,
 and those nodes/relationships common to more than one file. The colors will be
@@ -57,7 +57,7 @@ table is already formated to be used by R. Load it to a dataframe using:
 With the option -w, one can create a webpage
 with a representation of the merged graph (with different colors for nodes and
 relationships depending on their presence in each DOT file). To make this representation,
-dotcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
+graphcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
 embedded in the html file to allow maximum portability: the webpage and the graph work
 without any external file/script dependencies. This allows for an easy upload of the graph
 to any website.
@@ -72,8 +72,8 @@ to any website.
     make install
 
 
-It is important to note that if you decide to install dotcompare manually, the script needs to use File::Share to find
-the templates. If you choose to not use the Makefile.PL installer, you may encounter some bugs, as dotcompare will be unable to open
+It is important to note that if you decide to install graphcompare manually, the script needs to use File::Share to find
+the templates. If you choose to not use the Makefile.PL installer, you may encounter some bugs, as graphcompare will be unable to open
 the templates.
 
 =head1 DIRECTORIES
@@ -84,7 +84,7 @@ These are the directories and the files inside the distribution:
 
 =item B<bin/>
 
-This directory contains the main script: dotcompare.
+This directory contains the main script: graphcompare.
 
 =item B<lib/>
 
@@ -95,7 +95,7 @@ Dot::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how
 
 =item B<share/>
 
-Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
+Here we can find the templates graphcompare uses to create the svg venn diagrams and the html output. We can also find
 some test files, test1.dot, test2.dot and test3.dot to try out the program.
 
 =item B<t/>
@@ -124,7 +124,7 @@ Shows this help.
 
 =item B<-i>, B<--insensitive>
 
-Makes dotocompare case insensitive. By default, dotcompare is case sensitive.
+Makes dotocompare case insensitive. By default, graphcompare is case sensitive.
 
 =item B<-s>, B<--stats>
 
@@ -162,7 +162,7 @@ Writes html file with the graph using cytoscape.js
 =item I<Undirected_graphs>
 
 Only works with directed graphs. If undirected,
-dotcompare considers them to be directed.
+graphcompare considers them to be directed.
 
 =item I<Clusters>
 
@@ -215,7 +215,7 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 =head2 Reporting Bugs
 
-Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
+Report Bugs at I<https://github.com/scastlara/graphcompare/issues> (still private)
 
 =head1 COPYRIGHT
 
@@ -246,6 +246,7 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Cwd 'abs_path';
+use lib '/home/sergio/code/graphcompare/lib';
 use Dot::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -253,7 +254,7 @@ use Getopt::Long qw(:config no_ignore_case);
 #===============================================================================
 # VARIABLES AND OPTIONS
 #===============================================================================
-our $PROGRAM       = "dotcompare";
+our $PROGRAM       = "graphcompare";
 our $VERSION       = 'v0.6.0';
 our $USER          = $ENV{ USER };
 our $W_DIRECTORY   = $ENV{ PWD };
@@ -292,7 +293,7 @@ my @files = split /,/, $options{input} if defined $options{input};
 # If no files or too many files
 if (@files == 0) {
     error("You have to introduce at least 1 DOT file \n\n\t" .
-          'perl dotcompare -f file1,file2,file3...', 1
+          'perl graphcompare -f file1,file2,file3...', 1
          );
 } elsif (@files == 5 and $options{colors} ne "LARGE") {
     error("Too many files to use color palette $options{colors}\n".
@@ -378,7 +379,7 @@ sub error {
     print STDERR "# $_\n" foreach (@lines);
 
     if ($fatal) {
-        print STDERR "\n\n# Use dotcompare -h to get help.\n\n";
+        print STDERR "\n\n# Use graphcompare -h to get help.\n\n";
         exit(1);
     } else {
         print STDERR "\n\n";
