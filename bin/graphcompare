@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-graphcompare - A command-line tool to compare DOT files
+graphcompare - A command-line tool to compare graph files in DOT or tabular format.
 
 =head1 VERSION
 
@@ -11,24 +11,25 @@ v0.6.0
 =head1 SYNOPSIS
 
     graphcompare  --input file1.dot,file2.dot \\
-                --stats                     \\
-                --colors HARD               \\
-                --output output.dot         \\
-                --table table.tbl           \\
-                --venn venn.svg             \\
-                --web graph.html
+                  --stats                     \\
+                  --colors HARD               \\
+                  --output output.dot         \\
+                  --table table.tbl           \\
+                  --venn venn.svg             \\
+                  --web graph.html
 
 =head1 DESCRIPTION
 
-This application compares two or more DOT (graphviz) files. It prints a merged graph
+This application compares two or more graph files (DOT or tabular). It prints a merged graph
 with different colors for nodes and edges depending on the files in which they appear.
-To read the dotfiles, graphcompare uses the module Dot::Parser, located in lib/.
+To read the files, graphcompare uses the module Dot::Parser or the module Tabgraph::Reader,
+both located in lib/.
 
-The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution
-comes with a command-line tool (graphcompare) to compare the DOT files.
+The main functionality of the script can be found at lib/Graphs/Compare.pm. This distribution
+comes with a command-line tool (graphcompare) to compare the files.
 
 By default, graphcompare will print the resulting graph to
-STDOUT, but you can change it with the option -o (see options below).
+STDOUT, but you can change it with the option --output (see options below).
 
 graphcompare has some optional outputs, each one specified by one
 option.
@@ -88,8 +89,9 @@ This directory contains the main script: graphcompare.
 
 =item B<lib/>
 
-Here we can find the two modules: Dot::Compare and Dot::Parser. The main functionality of the application is implemented in
-Dot::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how it works, refer to its documentation:
+Here we can find the modules used by the program: Graphs::Compare, Dot::Parser, Dot::Writer,
+Tabgraph::Reader, Tabgraph::Writer. The main functionality of the application is implemented in
+Graphs::Compare. Dot::Parser is a Perl module that reads graphviz files. To see how it works, refer to its documentation:
 
     perldoc lib/Dot/Parser.pm
 
@@ -246,8 +248,7 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Cwd 'abs_path';
-use lib '/home/sergio/code/graphcompare/lib';
-use Dot::Compare qw(compare_dots);
+use Graphs::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
 
 
@@ -302,10 +303,6 @@ if (@files == 0) {
 } elsif (@files > 5) {
     error("Too many files to use the default color palettes.\n".
           "Will generate one using Color::Spectrum\n");
-}
-
-if (not defined $options{output}) {
-    error("You have to introduce an output file name\n See option --output\n", 1);
 }
 
 # DEFAULT COLOR PALETTE

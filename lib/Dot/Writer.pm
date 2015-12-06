@@ -82,8 +82,14 @@ our %EXPORT_TAGS = (
 #------------------------------------------------------------------------------
 sub write_dot {
     my $options = shift;
+    my $dot_fh  = "";
 
-    my $dot_fh = _open_fh($options);
+    if (not defined $options->{out}) {
+        $dot_fh = \*STDOUT;
+    } else {
+        $dot_fh = _open_fh($options->{out});
+    }
+
     _print_init($options,  $dot_fh);
     _print_elements($options, $dot_fh);
     print $dot_fh "}\n";
@@ -93,13 +99,13 @@ sub write_dot {
 
 #------------------------------------------------------------------------------
 sub _open_fh {
-    my $options = shift;
+    my $outfile = shift;
 
     croak "You have to give me an output filename!\n"
-        unless defined $options->{out};
+        unless defined $outfile;
 
-    open my $fh, ">", $options->{out}
-        or croak "Can't write to $options->{out} : $!\n";
+    open my $fh, ">", $outfile
+        or croak "Can't write to $outfile : $!\n";
 
     return $fh;
 }

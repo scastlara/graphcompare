@@ -80,7 +80,7 @@ sub compare_dots {
     count_nodeints(\%interactions, $groups, "ints");
 
 
-    # WRITE DOT FILE
+    # WRITE GRAPH FILE
     my ($graph, $node_attr) = prepare_data(\%nodes, \%interactions, $groups_to_colors);
     write_dot({graph => $graph, node_attr => $node_attr, out => $options->{output}});
 
