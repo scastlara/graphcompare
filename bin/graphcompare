@@ -322,8 +322,10 @@ if (@files == 0) {
 }
 
 # DEFAULT OUTPUT FORMAT
-if (not defined $options{fmtout} or $options{fmtout} !~ m/^(DOT|TBL)$/) {
+if (not defined $options{fmtout}) {
     $options{fmtout} = "DOT";
+} elsif ($options{fmtout} !~ m/^(DOT|TBL)$/) {
+    error("graphcompare can only write DOT or TBL files\n", 1);
 }
 
 # DEFAULT COLOR PALETTE
