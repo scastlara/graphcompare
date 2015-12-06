@@ -10,10 +10,10 @@ v0.6.0
 
 =head1 SYNOPSIS
 
-    dotcompare  --files file1.dot,file2.dot \\
+    dotcompare  --input file1.dot,file2.dot \\
                 --stats                     \\
                 --colors HARD               \\
-                --dot output.dot            \\
+                --output output.dot         \\
                 --table table.tbl           \\
                 --venn venn.svg             \\
                 --web graph.html
