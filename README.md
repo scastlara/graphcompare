@@ -4,34 +4,34 @@ dotcompare - A command-line tool to compare DOT files
 
 # VERSION
 
-v0.5.1
+v0.6.0
 
 # SYNOPSIS
 
-    dotcompare  --files file1.dot,file2.dot \\  
+    dotcompare  --files file1.dot,file2.dot \\
                 --stats                     \\
-                --colors HARD               \\   
-                --dot output.dot            \\   
-                --table table.tbl           \\ 
-                --venn venn.svg             \\ 
-                --web graph.html               
+                --colors HARD               \\
+                --dot output.dot            \\
+                --table table.tbl           \\
+                --venn venn.svg             \\
+                --web graph.html
 
 # DESCRIPTION
 
-This application compares two or more DOT (graphviz) files. It prints a merged graph 
-with different colors for nodes and edges depending on the files in which they appear. 
-To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/. 
+This application compares two or more DOT (graphviz) files. It prints a merged graph
+with different colors for nodes and edges depending on the files in which they appear.
+To read the dotfiles, dotcompare uses the module Dot::Parser, located in lib/.
 
-The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution 
-comes with a command-line tool (dotcompare) to compare the DOT files. 
+The main functionality of the script can be found at lib/Dot/Compare.pm. This distribution
+comes with a command-line tool (dotcompare) to compare the DOT files.
 
 By default, dotcompare will print the resulting graph to
 STDOUT, but you can change it with the option -o (see options below).
 
-dotcompare has some optional outputs, each one specified by one 
+dotcompare has some optional outputs, each one specified by one
 option.
 
-- **Venn diagram** 
+- **Venn diagram**
 
     If given the option -v, dotcompare will create an
     svg file containing a venn diagram. In this image, you will be able to see
@@ -40,18 +40,18 @@ option.
     chosen using one of the profiles in data/colors.txt. By default, the color palette
     is set to be "SOFT". To change it, use the option -c (see options below).
 
-- **Table**. 
+- **Table**.
 
-    Complementary to the venn diagram, one can choose to create a 
-    table containing all the counts (so it can be used to create other plots or tables). The 
+    Complementary to the venn diagram, one can choose to create a
+    table containing all the counts (so it can be used to create other plots or tables). The
     table is already formated to be used by R. Load it to a dataframe using:
 
             df <-read.table(file="yourtable.tbl", header=TRUE)
 
-- **Webpage with the graph**. 
+- **Webpage with the graph**.
 
     With the option -w, one can create a webpage
-    with a representation of the merged graph (with different colors for nodes and 
+    with a representation of the merged graph (with different colors for nodes and
     relationships depending on their presence in each DOT file). To make this representation,
     dotcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
     embedded in the html file to allow maximum portability: the webpage and the graph work
@@ -89,7 +89,7 @@ These are the directories and the files inside the distribution:
     Here we can find the templates dotcompare uses to create the svg venn diagrams and the html output. We can also find
     some test files, test1.dot, test2.dot and test3.dot to try out the program.
 
-- **t/** 
+- **t/**
 
     This is the directory with the test files and the script that runs the tests (parser.t).
 
@@ -103,24 +103,24 @@ These are the directories and the files inside the distribution:
 
 # OPTIONS
 
-- **-h**, **--help**               
+- **-h**, **--help**
 
-    Shows this help. 
+    Shows this help.
 
-- **-i**, **--insensitive** 
+- **-i**, **--insensitive**
 
-    Makes dotocompare case insensitive. By default, dotcompare is case sensitive.  
+    Makes dotocompare case insensitive. By default, dotcompare is case sensitive.
 
-- **-s**, **--stats** 
+- **-s**, **--stats**
 
     Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
     input graphs are very big.
 
-- **-f**, **--files** &lt;file1,file2,...>
+- **--input** &lt;file1,file2,...>
 
-    REQUIRED. Input DOT files, separated by commas.    
+    REQUIRED. Input DOT files, separated by commas.
 
-- **-o**, **--out** &lt;filename.dot>
+- **--output** &lt;filename.dot>
 
     Saves the merged dot file to the specified file. Default to STDOUT.
 
@@ -130,7 +130,7 @@ These are the directories and the files inside the distribution:
 
 - **-v**, **--venn** &lt;filename.svg>
 
-    Creates a venn diagram with the results. 
+    Creates a venn diagram with the results.
 
 - **-w**, **--web** &lt;filename.html>
 
@@ -140,16 +140,16 @@ These are the directories and the files inside the distribution:
 
 ## Current Limitations
 
-- _Undirected\_graphs_ 
+- _Undirected\_graphs_
 
-    Only works with directed graphs. If undirected, 
+    Only works with directed graphs. If undirected,
     dotcompare considers them to be directed.
 
-- _Clusters_ 
+- _Clusters_
 
     Still no clusters support e.g. {A B C} -> D
 
-- _Multiline\_IDs_ 
+- _Multiline\_IDs_
 
     No support for multiline IDs.
 
@@ -157,7 +157,7 @@ These are the directories and the files inside the distribution:
 
     No support for quotes in node IDs (even if properly escaped).
 
-- _Compass\_ports_ 
+- _Compass\_ports_
 
     No support for compass ports.
 
@@ -169,8 +169,8 @@ These are the directories and the files inside the distribution:
 - Pod::Usage
 - Cwd
 - Graph::Directed (only if using option -s)
-- AutoLoader (if comparing more than 5 files)    
-- Color::Spectrum::Multi (if comparing more than 5 files)    
+- AutoLoader (if comparing more than 5 files)
+- Color::Spectrum::Multi (if comparing more than 5 files)
 
 # AUTHOR
 
@@ -180,7 +180,7 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 Report Bugs at _https://github.com/scastlara/dotcompare/issues_ (still private)
 
-# COPYRIGHT 
+# COPYRIGHT
 
     (C) 2015 - Sergio CASTILLO LARA
 
