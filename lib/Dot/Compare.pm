@@ -8,6 +8,7 @@ use warnings;
 use strict;
 use Data::Dumper;
 use Dot::Parser qw(parse_dot);
+use Dot::Writer qw(write_dot);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -43,7 +44,6 @@ sub compare_dots {
 
     # COLORS AND COUNTS
     my $groups = initialize_groups(\@files);
-
     my $colors;
     if (@files <= 5) {
         $colors = load_colors($options->{colors});
@@ -64,11 +64,8 @@ sub compare_dots {
 
 
     # WRITE DOT FILE
-    my $dot_fh = get_fh($options);
-    print $dot_fh "digraph ALL {\n";
-    write_dot($dot_fh, \%nodes, $groups_to_colors, "NODES", $options);
-    write_dot($dot_fh, \%interactions, $groups_to_colors, "INTERACTIONS", $options);
-    print $dot_fh "}\n";
+    my ($graph, $node_attr) = prepare_data(\%nodes, \%interactions, $groups_to_colors);
+    write_dot({graph => $graph, node_attr => $node_attr, out => "kk.out"});
 
     # OPTIONAL OUTPUTS
     if (defined $options->{table}) {
@@ -76,7 +73,13 @@ sub compare_dots {
     }
 
     if (defined $options->{venn}) {
-        print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
+        if (@files <= 3) {
+            print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
+        } elsif (@files == 1) {
+            error("Only 1 file. Won't draw any venn diagram\n");
+        } else {
+            error("More than 3 files. Won't draw any venn diagram\n");
+        }
     }
 
     if (defined $options->{web}) {
@@ -296,52 +299,26 @@ sub count_nodeints {
     return;
 }
 
-
-# DOT OUTPUT
 #--------------------------------------------------------------------------------
-sub get_fh {
-    my $options = shift;
-    my $out_fh;
+sub prepare_data {
+    my $nodes         = shift;
+    my $edges         = shift;
+    my $grps_2_colors = shift;
+    my %output_graph  = ();
+    my %node_attr     = ();
 
-    if (not defined $options->{out}) {
-        $out_fh =\*STDOUT
-    } else {
-        open $out_fh, ">", $options->{out}
-            or error("Can't write to $options->{out} : $!", 1);
+    foreach my $node (keys %{ $nodes }) {
+        my $source = $nodes->{$node};
+        $node_attr{$node} = "$grps_2_colors->{$source}|$source";
     }
 
-    return($out_fh);
-}
-
-#--------------------------------------------------------------------------------
-sub write_dot {
-    my $fhandle = shift;
-    my $in_data = shift;
-    my $g_to_c  = shift;
-    my $string  = shift;
-    my $options = shift;
-
-    print $fhandle "// $string\n";
-
-    my @keys = keys %{ $in_data };
-    @keys = sort @keys if defined $options->{Test};
-
-    foreach my $datum (@keys) {
-        my $output = "";
-
-        if ($datum =~ m/::\->::/) {
-            my ($parent, $child) = split /::\->::/, $datum;
-            $output = "\"$parent\"->\"$child\"";
-        } else {
-            $output = "\"$datum\"";
-        }
-
-        print $fhandle "\t", $output, "\t",
-                       "[color=\"$g_to_c->{ $in_data->{$datum} }\"]", "\t",
-                       "// $in_data->{$datum}", "\n";
+    foreach my $edge (keys %{ $edges }) {
+        my ($parent, $child) = split /::\->::/, $edge;
+        my $source = $edges->{$edge};
+        $output_graph{$parent}->{$child} = "$grps_2_colors->{$source}|$source";
     }
 
-    return;
+    return(\%output_graph, \%node_attr);
 }
 
 
@@ -384,12 +361,11 @@ sub print_venn {
     } elsif (@group_keys == 7) {
         # We have 3 dotfiles -> venn with 3 circles
         $venn_template = dist_file("Dot-Parser", "v3_template.svg");
-    } else {
-        error("One or more than three DOT files, ".
-                  "won't draw any venn diagram.\n".
-                  "You could use the option -t to print a ".
-                  "table with the results.\n");
-        return;
+    } elsif (@group_keys > 7) {
+        error("Oops! Something went wrong when doing all the combinations of " .
+              "your files. Try changing the names of your files (lowercase, ".
+              "remove symbols...)\n Also, consider reporting the bug at:\n" .
+              "\thttps://github.com/scastlara/dotcompare/issues", 1);
     }
 
     my ($grp_to_alias, $alias_to_grp) = assign_aliases($filenames, \@group_keys);

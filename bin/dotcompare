@@ -245,7 +245,6 @@ Report Bugs at I<https://github.com/scastlara/dotcompare/issues> (still private)
 use warnings;
 use strict;
 use Pod::Usage;
-use lib '/home/sergio/code/dotcompare/lib/';
 use Cwd 'abs_path';
 use Dot::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
@@ -268,11 +267,11 @@ pod2usage( -verbose => 1,
 my %options = ();
 
 GetOptions (
-    \%options,
+    \%options    ,
     'help|?'     ,
-    "files=s"    ,
+    "input=s"    ,
     "colors=s"   ,
-    "out=s"      ,
+    "output=s"   ,
     "table=s"    ,
     "venn=s"     ,
     "web=s"      ,
@@ -287,7 +286,11 @@ GetOptions (
 pod2usage( -verbose => 1,
            -output  => \*STDOUT   ) if $options{help};
 
-my @files = split /,/, $options{files} if defined $options{files};
+if (not defined $options{output}) {
+    error("You have to introduce an output file name\n See option --output\n", 1);
+}
+
+my @files = split /,/, $options{input} if defined $options{input};
 
 # If no files or too many files
 if (@files == 0) {
@@ -326,6 +329,11 @@ print STDERR "\nPROGRAM STARTED\n",
              "\tStart time      $current_time\n\n";
 #--
 
+# CHECK IF VENN DIAGRAM
+if (@files > 3 and defined $options{venn}) {
+    error("Too many files to draw a venn diagram.");
+    $options{venn} = undef;
+}
 
 # RUN THE MODULE
 compare_dots(\@files, \%options);
