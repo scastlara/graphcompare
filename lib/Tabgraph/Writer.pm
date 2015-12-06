@@ -50,7 +50,7 @@ sub print_tabs {
     foreach my $parent (keys %{ $graph }) {
 
         if (not exists $printed{$parent} ) {
-            print $fh $parent, "\t-\t";
+            print $fh $parent, "\t\t";
             if ($attributes->{$parent}) {
                 my @att = split /\|/, $attributes->{$parent};
                 print $fh join("\t", @att);
