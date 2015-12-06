@@ -135,11 +135,24 @@ input graphs are very big.
 
 =item B<--input> <file1,file2,...>
 
-REQUIRED. Input DOT files, separated by commas.
+REQUIRED. Input files, separated by commas. Only DOT (graphviz) or TBL files.
+
+=item B<--fmtin> FORMAT
+
+Forces the program to read ALL the files as 'DOT' or 'TBL'. By default, graphcompare
+looks at the extension of each file to choose one parser or another.
+
+    .dot and .gv for DOT files
+    .tbl or .txt for TBL files.
 
 =item B<--output> <filename.dot>
 
 Saves the merged dot file to the specified file. Default to STDOUT.
+
+=item B<--fmtout> FORMAT
+
+Changes the format of the output graph. By default it will use the DOT language.
+As of now, you can change it to TBL.
 
 =item B<-c>, B<--colors> <profile>
 
