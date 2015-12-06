@@ -7,9 +7,11 @@ package Graphs::Compare;
 use warnings;
 use strict;
 use Data::Dumper;
+use lib '/home/sergio/code/graphcompare/lib';
 use Dot::Parser qw(parse_dot);
 use Dot::Writer qw(write_dot);
 use Tabgraph::Reader qw(read_tabgraph);
+use Tabgraph::Writer qw(write_tbl);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -43,8 +45,10 @@ sub compare_dots {
         my $graph;
         if (defined $options->{fmtin}) {
             if ($options->{fmtin} eq "DOT") {
+                print STDERR "# Reading DOT file $file...  ";
                 $graph = parse_dot($file);
             } elsif ($options->{fmtin} eq "TBL") {
+                print STDERR "# Reading TBL file $file...  ";
                 $graph = read_tabgraph($file);
             } else {
                 error("graphcompare only reads DOT or TBL files\n", 1);
@@ -89,7 +93,15 @@ sub compare_dots {
 
     # WRITE GRAPH FILE
     my ($graph, $node_attr) = prepare_data(\%nodes, \%interactions, $groups_to_colors);
-    write_dot({graph => $graph, node_attr => $node_attr, out => $options->{output}});
+    my $out_options = {
+        graph => $graph, node_attr => $node_attr, out => $options->{output}
+    };
+
+    if ($options->{fmtout} eq "DOT") {
+        write_dot($out_options);
+    } elsif ($options->{fmtout} eq "TBL") {
+        write_tbl($out_options);
+    }
 
     # OPTIONAL OUTPUTS
     if (defined $options->{table}) {
@@ -97,10 +109,10 @@ sub compare_dots {
     }
 
     if (defined $options->{venn}) {
-        if (@files <= 3) {
-            print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
-        } elsif (@files == 1) {
+        if (@files == 1) {
             error("Only 1 file. Won't draw any venn diagram\n");
+        } elsif (@files <= 3) {
+            print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
         } else {
             error("More than 3 files. Won't draw any venn diagram\n");
         }
@@ -138,7 +150,7 @@ sub compare_dots {
 
 }
 
-# READING DOT FILES
+# READING GRAPH FILES
 #--------------------------------------------------------------------------------
 sub read_graph {
     my $graph        = shift;
@@ -328,6 +340,7 @@ sub prepare_data {
     foreach my $node (keys %{ $nodes }) {
         my $source = $nodes->{$node};
         $node_attr{$node} = "$grps_2_colors->{$source}|$source";
+        $output_graph{$node} = undef;
     }
 
     foreach my $edge (keys %{ $edges }) {

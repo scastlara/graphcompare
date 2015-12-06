@@ -261,6 +261,7 @@ use warnings;
 use strict;
 use Pod::Usage;
 use Cwd 'abs_path';
+use lib '/home/sergio/code/graphcompare/lib';
 use Graphs::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -320,10 +321,16 @@ if (@files == 0) {
           "Will generate one using Color::Spectrum\n");
 }
 
+# DEFAULT OUTPUT FORMAT
+if (not defined $options{fmtout} or $options{fmtout} !~ m/^(DOT|TBL)$/) {
+    $options{fmtout} = "DOT";
+}
+
 # DEFAULT COLOR PALETTE
 if (not defined $options{colors}) {
     $options{colors} = "SOFT";
 }
+
 
 #===============================================================================
 # MAIN

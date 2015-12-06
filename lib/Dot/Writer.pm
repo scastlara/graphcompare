@@ -142,16 +142,10 @@ sub _print_elements {
                 $node,
                 exists $attributes->{$node} ? $attributes->{$node} : undef
             );
+            $added_nodes{$node} = undef;
         }
 
         foreach my $c_node ( keys %{ $graph->{$node} } ) {
-            if (not exists $added_nodes{$c_node}) {
-                _print_node(
-                    $dot_fh,
-                    $c_node,
-                    exists $attributes->{$c_node} ? $attributes->{$c_node} : undef
-                );
-            }
             _print_edge( $dot_fh, $node, $c_node, $graph->{$node}->{$c_node} );
         }
     }

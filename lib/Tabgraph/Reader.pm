@@ -27,7 +27,7 @@ sub read_tabgraph {
 
         $out_graph{$par} = {} unless exists $out_graph{$par};
 
-        if (defined $chi and $chi ne "") {
+        if (defined $chi and $chi ne "" and $chi ne "-") {
             $out_graph{$chi} = {} unless exists $out_graph{$chi};
             $out_graph{$par}->{$chi} = undef;
         }
