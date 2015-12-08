@@ -10,12 +10,12 @@ v0.6.0
 
 =head1 SYNOPSIS
 
-    graphcompare  -input file1.dot,file2.dot \\
-                  -stats                     \\
-                  -colors HARD               \\
-                  -output output.dot         \\
-                  -table table.tbl           \\
-                  -venn venn.svg             \\
+    graphcompare  -input file1.dot,file2.dot \
+                  -stats                     \
+                  -colors HARD               \
+                  -output output.dot         \
+                  -table table.tbl           \
+                  -venn venn.svg             \
                   -web graph.html
 
 =head1 DESCRIPTION
