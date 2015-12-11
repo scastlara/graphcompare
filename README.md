@@ -4,17 +4,17 @@ graphcompare - A command-line tool to compare graph files in DOT or tabular form
 
 # VERSION
 
-v0.6.0
+v0.6.1
 
 # SYNOPSIS
 
-    graphcompare  --input file1.dot,file2.dot \\
-                  --stats                     \\
-                  --colors HARD               \\
-                  --output output.dot         \\
-                  --table table.tbl           \\
-                  --venn venn.svg             \\
-                  --web graph.html
+    graphcompare  -input file1.dot,file2.dot \
+                  -stats                     \
+                  -colors HARD               \
+                  -output output.dot         \
+                  -table table.tbl           \
+                  -venn venn.svg             \
+                  -web graph.html
 
 # DESCRIPTION
 
@@ -105,51 +105,54 @@ These are the directories and the files inside the distribution:
 
 # OPTIONS
 
-- **-h**, **--help**
+- **-h**, **-help**
 
     Shows this help.
 
-- **-i**, **--insensitive**
-
-    Makes dotocompare case insensitive. By default, graphcompare is case sensitive.
-
-- **-s**, **--stats**
-
-    Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
-    input graphs are very big.
-
-- **--input** &lt;file1,file2,...>
+- **-in**, **-input** &lt;file1,file2,...>
 
     REQUIRED. Input files, separated by commas. Only DOT (graphviz) or TBL files.
 
-- **--fmtin** FORMAT
+- **-out**, **-output** &lt;filename.dot>
+
+    Saves the merged dot file to the specified file. Default to STDOUT.
+
+- **-fmtin** FORMAT
 
     Forces the program to read ALL the files as 'DOT' or 'TBL'. By default, graphcompare
     looks at the extension of each file to choose one parser or another.
 
-        .dot and .gv for DOT files
-        .tbl and .txt for TBL files.
-
-- **--output** &lt;filename.dot>
-
-    Saves the merged dot file to the specified file. Default to STDOUT.
-
-- **--fmtout** FORMAT
+- **-fmtout** FORMAT
 
     Changes the format of the output graph. By default it will use the DOT language.
     As of now, you can change it to TBL.
 
-- **-c**, **--colors** &lt;profile>
+- **-c**, **-colors** &lt;profile>
 
     Color profile to use: SOFT (default), HARD, LARGE or CBLIND.
 
-- **-v**, **--venn** &lt;filename.svg>
+- **-ig**, **-ignore-case**
+
+    Makes dotocompare case insensitive. By default, graphcompare is case sensitive.
+
+- **-s**, **-stats**
+
+    Prints to STDERR some graph properties for each DOT file. It can be time consuming if the
+    input graphs are very big.
+
+- **-v**, **-venn** &lt;filename.svg>
 
     Creates a venn diagram with the results.
 
-- **-w**, **--web** &lt;filename.html>
+- **-w**, **-web** &lt;filename.html>
 
     Writes html file with the graph using cytoscape.js
+
+- **-n**, **-node-list** &lt;filename.tbl>
+
+    Creates a file with a list of all the nodes and their appeareance on the input files. Each column
+    will represent one of the files, and they will contain a one if the node appears in it, or a zero
+    if it does not.
 
 # BUGS AND PROBLEMS
 
@@ -197,18 +200,18 @@ Report Bugs at _https://github.com/scastlara/graphcompare/issues_ (still private
 
 # COPYRIGHT
 
-    (C) 2015 - Sergio CASTILLO LARA
+    graphcompare  command-line tool to compare graph files.
+    Copyright (C) 2015  Sergio CASTILLO LARA
 
-    This program is free software; you can redistribute it and/or modify
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.

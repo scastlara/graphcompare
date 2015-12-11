@@ -137,6 +137,10 @@ sub compare_dots {
         print STDERR "\n";
     }
 
+    if (defined $options->{"node-list"}) {
+        nodelist($groups, \%nodes, $options->{"node-list"});
+    }
+
     # DEBUGGING
     if (defined $options->{debug}) {
         print STDERR Data::Dumper->Dump(
@@ -162,13 +166,13 @@ sub read_graph {
 
     foreach my $node (keys %{$graph}) {
         # ADDING NODES
-        my $node_to_add = defined $options->{insensitive} ? uc($node) : $node;
+        my $node_to_add = defined $options->{"ignore-case"} ? uc($node) : $node;
         add_elements($graph, $nodes, $node_to_add, $file_symbol, $escaped_file);
 
         # ADDING EDGES
         foreach my $child (keys %{ $graph->{$node} }) {
             my $edge = $node . "::->::" . $child;
-            my $edge_to_add =  defined $options->{insensitive} ? uc($edge) : $edge;
+            my $edge_to_add =  defined $options->{"ignore-case"} ? uc($edge) : $edge;
             add_elements($graph, $edges, $edge_to_add, $file_symbol, $escaped_file);
         }
     }
@@ -595,6 +599,33 @@ sub print_attributes {
     print STDERR "\n";
 
     return;
+}
+
+# NODE LIST
+#--------------------------------------------------------------------------------
+sub nodelist {
+    my $groups   = shift;
+    my $nodes    = shift;
+    my $filename = shift;
+
+    open my $fh, ">", $filename
+        or error("Can't write to $filename : $!");
+
+    my @principal_grps = grep {not /:/} sort keys %{$groups};
+    print $fh "NODES", "\t", join("\t", @principal_grps), "\n";
+
+    foreach my $node (keys %{$nodes}) {
+        my %appears = map { $_ => 1 } split /:/, $nodes->{$node};
+        print $fh "$node";
+        foreach my $group (@principal_grps) {
+            if (exists $appears{$group}) {
+                print $fh "\t1";
+            } else {
+                print $fh "\t0";
+            }
+        }
+        print $fh "\n";
+    }
 }
 
 
