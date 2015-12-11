@@ -264,7 +264,6 @@ Report Bugs at I<https://github.com/scastlara/graphcompare/issues> (still privat
 use warnings;
 use strict;
 use Pod::Usage;
-use lib '/home/sergio/code/graphcompare/lib/';
 use Cwd 'abs_path';
 use Graphs::Compare qw(compare_dots);
 use Getopt::Long qw(:config no_ignore_case);
