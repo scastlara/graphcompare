@@ -103,10 +103,13 @@ sub compare_dots {
     }
 
     # OPTIONAL OUTPUTS
+
+    # TABLE
     if (defined $options->{table}) {
         results_table($options->{table}, $groups);
     }
 
+    # VENN DIAGRAM
     if (defined $options->{venn}) {
         if (@files == 1) {
             error("Only 1 file. Won't draw any venn diagram\n");
@@ -117,12 +120,14 @@ sub compare_dots {
         }
     }
 
+    # WEB GRAPH
     if (defined $options->{web}) {
         my $json        = create_json(\%nodes, \%interactions, $groups_to_colors);
         my $color_table = create_ctable($groups_to_colors);
         print_html($options->{web}, $json, $color_table);
     }
 
+    # GRAPH PROPERTIES
     if (defined $options->{stats}) {
         require Graph::Directed;
         my $graph_objs = load_graphs(\%interactions, \%nodes);
@@ -137,6 +142,7 @@ sub compare_dots {
         print STDERR "\n";
     }
 
+    # NODE LIST
     if (defined $options->{"node-list"}) {
         nodelist($groups, \%nodes, $options->{"node-list"});
     }
