@@ -1,4 +1,4 @@
-digraph DOT3 { 
+digraph DOT3 {
     A -> B
     G -> H
     H -> I
