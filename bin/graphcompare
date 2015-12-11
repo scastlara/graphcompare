@@ -328,7 +328,7 @@ if (@files == 0) {
 # DEFAULT OUTPUT FORMAT
 if (not defined $options{fmtout}) {
     $options{fmtout} = "DOT";
-} elsif ($options{fmtout} !~ m/^(DOT|TBL)$/) {
+} elsif ($options{fmtout} !~ m/^(DOT|TBL)$/i) {
     error("graphcompare can only write DOT or TBL files\n", 1);
 }
 

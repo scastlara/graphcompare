@@ -43,10 +43,10 @@ sub compare_dots {
     foreach my $file (@files) {
         my $graph;
         if (defined $options->{fmtin}) {
-            if ($options->{fmtin} eq "DOT") {
+            if ($options->{fmtin} =~ /DOT/i) {
                 print STDERR "# Reading DOT file $file...  ";
                 $graph = parse_dot($file);
-            } elsif ($options->{fmtin} eq "TBL") {
+            } elsif ($options->{fmtin} =~ /TBL/i) {
                 print STDERR "# Reading TBL file $file...  ";
                 $graph = read_tabgraph($file);
             } else {
@@ -96,9 +96,9 @@ sub compare_dots {
         graph => $graph, node_attr => $node_attr, out => $options->{output}
     };
 
-    if ($options->{fmtout} eq "DOT") {
+    if ($options->{fmtout} =~ /DOT/i) {
         write_dot($out_options);
-    } elsif ($options->{fmtout} eq "TBL") {
+    } elsif ($options->{fmtout} =~ /TBL/i) {
         write_tbl($out_options);
     }
 
