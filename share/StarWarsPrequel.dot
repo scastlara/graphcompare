@@ -1,0 +1,12 @@
+digraph {
+    "Yoda" -> "Anakin"
+    "Anakin" -> "Darth Vader"
+    "Obi-Wan" -> "Darth Vader"
+    "Darth Vader" -> "Obi-Wan"
+    "Yoda" -> "Obi-Wan"
+    "Palpatine" -> "Anakin"
+    "Palpatine" -> "Yoda"
+    "Palpatine" -> "Darth Vader"
+    "Palpatine" -> "Count Dooku"
+    "Jar Jar Binks"
+}

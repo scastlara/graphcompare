@@ -1,0 +1,13 @@
+digraph {
+    "Darth Vader" -> "Luke"
+    "Leia" -> "Luke"
+    "Darth Vader" -> "Leia"
+    "Darth Vader" -> "Obi-Wan"
+    "Obi-Wan" -> "Darth Vader"
+    "Han Solo" -> "Leia"
+    "Leia" -> "Han Solo"
+    "Chewbacca" -> "Han Solo"
+    "Yoda" -> "Luke"
+    "Palpatine" -> "Darth Vader"
+    "Obi-Wan" -> "Luke"
+}

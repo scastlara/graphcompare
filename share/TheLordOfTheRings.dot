@@ -1,0 +1,10 @@
+digraph {
+    "Frodo" -> "Bilbo"
+    "Gandalf" -> "Frodo"
+    "Sam" -> "Frodo"
+    "Aragorn" -> "Gandalf"
+    "Gandalf" -> "Aragorn"
+    "Frodo" -> "The One Ring"
+    "Sauron" -> "The One Ring"
+    "Gollum" -> "The One Ring"
+}
