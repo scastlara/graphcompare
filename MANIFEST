@@ -2,7 +2,7 @@ Makefile.PL
 MANIFEST
 bin/graphcompare
 lib/Dot/Parser.pm
-lib/Graph/Compare.pm
+lib/Graphs/Compare.pm
 lib/Dot/Writer.pm
 lib/Tabgraph/Reader.pm
 t/parser.t
