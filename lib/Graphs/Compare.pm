@@ -267,7 +267,7 @@ sub load_colors {
     my $profile = shift;
     my @colors  = ();
     local $/ = "//";
-    my $colors_file = dist_file("Dot-Parser", "colors.txt");
+    my $colors_file = dist_file("graphcompare", "colors.txt");
 
     open my $fh, '<', "$colors_file"
         or error("Can't open $colors_file,".
@@ -397,10 +397,10 @@ sub print_venn {
 
     if (@group_keys == 3) {
         # We have 2 dotfiles -> venn with 2 circles
-        $venn_template = dist_file("Dot-Parser", "v2_template.svg");
+        $venn_template = dist_file("graphcompare", "v2_template.svg");
     } elsif (@group_keys == 7) {
         # We have 3 dotfiles -> venn with 3 circles
-        $venn_template = dist_file("Dot-Parser", "v3_template.svg");
+        $venn_template = dist_file("graphcompare", "v3_template.svg");
     } elsif (@group_keys > 7) {
         error("Oops! Something went wrong when doing all the combinations of " .
               "your files. Try changing the names of your files (lowercase, ".
@@ -524,7 +524,7 @@ sub print_html {
     my $filename       = shift;
     my $json           = shift;
     my $color_table    = shift;
-    my $template       = dist_file("Dot-Parser", "cyt.template");
+    my $template       = dist_file("graphcompare", "cyt.template");
 
     local $/ = ">DATAHERE";
 
