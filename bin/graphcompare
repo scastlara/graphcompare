@@ -159,6 +159,10 @@ input graphs are very big.
 
 Creates a venn diagram with the results.
 
+=item B<-p>, B<-parallel> <basename>
+
+Creates three parallel plots comparing the in/out/total degree of the graphs using the basename as filename.
+
 =item B<-w>, B<-web> <filename.html>
 
 Writes html file with the graph using cytoscape.js

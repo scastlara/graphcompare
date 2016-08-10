@@ -144,6 +144,10 @@ These are the directories and the files inside the distribution:
 
     Creates a venn diagram with the results.
 
+- **-p**, **-parallel** &lt;basename>
+
+    Creates three parallel plots comparing the in/out/total degree of the graphs using the basename as filename.
+
 - **-w**, **-web** &lt;filename.html>
 
     Writes html file with the graph using cytoscape.js
