@@ -11,6 +11,7 @@ use Dot::Parser qw(parse_dot);
 use Dot::Writer qw(write_dot);
 use Tabgraph::Reader qw(read_tabgraph);
 use Tabgraph::Writer qw(write_tbl);
+use Graphs::Degree qw(nodes_by_degree);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -35,6 +36,7 @@ our %EXPORT_TAGS = (
 sub compare_dots {
     my $files        = shift;
     my $options      = shift;
+    my %t_degree     = ();
     my %nodes        = ();
     my %interactions = ();
 
@@ -66,8 +68,12 @@ sub compare_dots {
 
         print STDERR "done\n";
         read_graph($graph, $file, \%nodes, \%interactions, $options);
-    }
 
+        # NODES DEGREE PLOT
+        if (defined $options->{"parallel"}) {
+            get_degree($graph, clean_name($file), \%t_degree);
+        }
+    }
 
     # COLORS AND COUNTS
     my $groups = initialize_groups(\@files);
@@ -109,6 +115,12 @@ sub compare_dots {
         results_table($options->{table}, $groups);
     }
 
+    # NODE DEGREE PLOT
+    if (defined $options->{parallel}) {
+        print_temp_degree(\%t_degree, \@files);
+        make_degree_plot($options->{parallel});
+    }
+
     # VENN DIAGRAM
     if (defined $options->{venn}) {
         if (@files == 1) {
@@ -146,6 +158,7 @@ sub compare_dots {
     if (defined $options->{"node-list"}) {
         nodelist($groups, \%nodes, $options->{"node-list"});
     }
+
 
     # DEBUGGING
     if (defined $options->{debug}) {
@@ -632,6 +645,122 @@ sub nodelist {
         }
         print $fh "\n";
     }
+}
+
+
+# NODE DEGREE
+#--------------------------------------------------------------------------------
+sub get_degree {
+    my $graph    = shift;
+    my $file     = shift;
+    my $t_degree = shift;
+
+    my $options_to_sort = {
+        graph => $graph,
+    };
+
+    my $degree = nodes_by_degree($options_to_sort);
+    foreach my $node_obj ( @{$degree} ) {
+        $t_degree->{ $node_obj->{name} } = () unless exists $t_degree->{ $node_obj->{name} };
+        $t_degree->{ $node_obj->{name} }->{$file}->{"in"}    = $node_obj->{in};
+        $t_degree->{ $node_obj->{name} }->{$file}->{"out"}   = $node_obj->{out};
+        $t_degree->{ $node_obj->{name} }->{$file}->{"total"} = $node_obj->{in} +  $node_obj->{out};
+    }
+
+    return;
+}
+
+#--------------------------------------------------------------------------------
+sub print_temp_degree {
+    my $t_degree = shift;
+    my $files    = shift;
+    my $tmp      = "degree.graphcompare.tmp";
+    my @clean_files = map {clean_name($_)} @{$files};
+
+    open my $fh, ">", $tmp
+        or error("Can't write to $tmp : $!", 1);
+
+
+    print $fh "NODES";
+    foreach my $file (@clean_files) {
+        print $fh "\t$file-in\t$file-out\t$file-total";
+    }
+    print $fh "\n";
+
+    foreach my $node (keys %{$t_degree}) {
+        print $fh "$node";
+        foreach my $file (@clean_files) {
+            if (exists $t_degree->{$node}->{$file}) {
+                print $fh "\t$t_degree->{$node}->{$file}->{in}",
+                          "\t$t_degree->{$node}->{$file}->{out}",
+                          "\t$t_degree->{$node}->{$file}->{total}",
+            } else {
+                print $fh "\t0\t0\t0";
+            }
+        }
+        print $fh "\n";
+    }
+    return;
+}
+
+#--------------------------------------------------------------------------------
+sub make_degree_plot {
+    require Statistics::R;
+    my $outname = shift;
+    my $file    = "degree.graphcompare.tmp";
+    my $path    = $ENV{'PWD'};
+
+    print STDERR "# Creating degree plot...  ";
+
+
+    my $R_code = <<"RCODE";
+    library(ggplot2);
+    library(GGally);
+
+    setwd("$path");
+    dat <- read.table(file="$file", sep="\t", header=T);
+
+    # IN DEGREE PLOT
+
+    ggparcoord(dat, columns =seq(2, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+        xlab("\nGraph") +
+        ylab("Degree\n") +
+        theme_bw() +
+        scale_color_discrete(guide=F) +
+        labs(title="In Degree\n")
+
+    ggsave(file="$outname.indegree.png");
+
+    # OUT DEGREE PLOT
+    ggparcoord(dat, columns =seq(3, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+        xlab("\nGraph") +
+        ylab("Degree\n") +
+        theme_bw() +
+        scale_color_discrete(guide=F) +
+        labs(title="Out Degree\n")
+
+    ggsave(file="$outname.outdegree.png");
+
+    # TOTAL DEGREE PLOT
+    ggparcoord(dat, columns =seq(4, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+        xlab("\nGraph") +
+        ylab("Degree\n") +
+        theme_bw() +
+        scale_color_discrete(guide=F) +
+        labs(title="Total Degree\n")
+
+    ggsave(file="$outname.totaldegree.png");
+
+RCODE
+
+    my $R = Statistics::R->new();
+
+    $R->startR;
+    $R->send($R_code);
+    $R->stopR();
+
+    print STDERR "done\n";
+    return;
 }
 
 
