@@ -9,14 +9,14 @@ v0.6.2
 # SYNOPSIS
 
 Usage:
-        graphcompare  -input file1.dot,file2.dot \
-                      -stats                     \
-                      -colors HARD               \
-                      -output output.dot         \
-                      -table table.tbl           \
-                      -venn venn.svg             \
-                      -par parallelplot          \
-                      -web graph.html
+
+    graphcompare  -input file1.dot,file2.dot \
+                  -stats                     \
+                  -colors HARD               \
+                  -output output.dot         \
+                  -table table.tbl           \
+                  -venn venn.svg             \
+                  -web graph.html
 
 
 # DESCRIPTION
