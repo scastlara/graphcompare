@@ -8,13 +8,16 @@ v0.6.2
 
 # SYNOPSIS
 
-    graphcompare  -input file1.dot,file2.dot \
-                  -stats                     \
-                  -colors HARD               \
-                  -output output.dot         \
-                  -table table.tbl           \
-                  -venn venn.svg             \
-                  -web graph.html
+Usage:
+        graphcompare  -input file1.dot,file2.dot \
+                      -stats                     \
+                      -colors HARD               \
+                      -output output.dot         \
+                      -table table.tbl           \
+                      -venn venn.svg             \
+                      -par parallelplot          \
+                      -web graph.html
+
 
 # DESCRIPTION
 
@@ -33,6 +36,7 @@ graphcompare has some optional outputs, each one specified by one
 option.
 
 - **Venn diagram**
+![vennexample-graphcompare](https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png) 
 
     If given the option -v, graphcompare will create an
     svg file containing a venn diagram. In this image, you will be able to see
@@ -50,7 +54,7 @@ option.
             df <-read.table(file="yourtable.tbl", header=TRUE)
 
 - **Webpage with the graph**.
-
+![webexample-graphcompare](https://github.com/scastlara/graphcompare/blob/master/share/example.web.html.png)
     With the option -w, one can create a webpage
     with a representation of the merged graph (with different colors for nodes and
     relationships depending on their presence in each DOT file). To make this representation,
@@ -58,6 +62,11 @@ option.
     embedded in the html file to allow maximum portability: the webpage and the graph work
     without any external file/script dependencies. This allows for an easy upload of the graph
     to any website.
+
+- **Parallel Plot**
+![parallelexample-graphcompare](https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png)
+With the option -p, one can choose to create three plots comparing the in-degree, out-degree and total degree of all the nodes in each of the graphs. In order for this option to work, one would need R installed, along with the R packages: [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) and [GGally](https://cran.r-project.org/web/packages/GGally/index.html).
+
 
 # INSTALLATION
 
