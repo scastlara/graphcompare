@@ -714,15 +714,14 @@ sub make_degree_plot {
 
 
     my $R_code = <<"RCODE";
-    library(ggplot2);
-    library(GGally);
+    if (!require(ggplot2)) { stop("\n# [FATAL ERROR]\n ggplot2 not installed.\n") }
+    if (!require(GGally)) { stop("\n# [FATAL ERROR]\n GGally not installed.\n") }
 
     setwd("$path");
     dat <- read.table(file="$file", sep="\t", header=T);
 
     # IN DEGREE PLOT
-
-    ggparcoord(dat, columns =seq(2, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+    ggparcoord(dat, columns =seq(2, length(dat), by=3), groupColumn=1, scale="globalminmax", alpha=0.5) +
         xlab("\nGraph") +
         ylab("Degree\n") +
         theme_bw() +
@@ -732,7 +731,7 @@ sub make_degree_plot {
     ggsave(file="$outname.indegree.png");
 
     # OUT DEGREE PLOT
-    ggparcoord(dat, columns =seq(3, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+    ggparcoord(dat, columns =seq(3, length(dat), by=3), groupColumn=1, scale="globalminmax", alpha=0.5) +
         xlab("\nGraph") +
         ylab("Degree\n") +
         theme_bw() +
@@ -742,7 +741,7 @@ sub make_degree_plot {
     ggsave(file="$outname.outdegree.png");
 
     # TOTAL DEGREE PLOT
-    ggparcoord(dat, columns =seq(4, length(dat), by=3), groupColumn=1, scale="globalminmax") +
+    ggparcoord(dat, columns =seq(4, length(dat), by=3), groupColumn=1, scale="globalminmax", alpha=0.5) +
         xlab("\nGraph") +
         ylab("Degree\n") +
         theme_bw() +
@@ -760,6 +759,7 @@ RCODE
     $R->stopR();
 
     print STDERR "done\n";
+    unlink $file;
     return;
 }
 
