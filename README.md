@@ -35,29 +35,24 @@ STDOUT, but you can change it with the option --output (see options below).
 graphcompare has some optional outputs, each one specified by one
 option.
 
-- **Venn diagram**
+### Venn diagram
 
 <img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="500">
 
 
-    If given the option -v, graphcompare will create an
-    svg file containing a venn diagram. In this image, you will be able to see
-    a comparison of the counts of nodes and relationships in each input DOT file,
-    and those nodes/relationships common to more than one file. The colors will be
-    chosen using one of the profiles in data/colors.txt. By default, the color palette
-    is set to be "SOFT". To change it, use the option -c (see options below).
+If given the option -v, graphcompare will create an svg file containing a venn diagram. In this image, you will be able to see a comparison of the counts of nodes and relationships in each input DOT file, and those nodes/relationships common to more than one file. The colors will be chosen using  one of the profiles in data/colors.txt. By default, the color palette is set to be "SOFT". To change it, use the option -c (see options below).
 
-- **Table**.
+### Table
 
-    Complementary to the venn diagram, one can choose to create a
+Complementary to the venn diagram, one can choose to create a
     table containing all the counts (so it can be used to create other plots or tables). The
     table is already formated to be used by R. Load it to a dataframe using:
 
             df <-read.table(file="yourtable.tbl", header=TRUE)
 
-- **Webpage with the graph**.
+### Webpage with the graph
 ![webexample-graphcompare](https://github.com/scastlara/graphcompare/blob/master/share/example.web.html.png)
-    With the option -w, one can create a webpage
+With the option -w, one can create a webpage
     with a representation of the merged graph (with different colors for nodes and
     relationships depending on their presence in each DOT file). To make this representation,
     graphcompare uses the Open Source library cytoscape.js. All the cytoscape.js code is
@@ -65,7 +60,7 @@ option.
     without any external file/script dependencies. This allows for an easy upload of the graph
     to any website.
 
-- **Parallel Plot**
+### Parallel Plot
 
 <img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="500">
 
