@@ -755,7 +755,7 @@ RCODE
     my $R = Statistics::R->new();
 
     $R->startR;
-    $R->send($R_code);
+    $R->send($R_code) or error("Can't execute R code (maybe modules not installed?)", 1);
     $R->stopR();
 
     print STDERR "done\n";
