@@ -37,7 +37,7 @@ option.
 
 ### Venn diagram
 
-<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.venn.png" width="500">
+<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.venn.png" width="250">
 
 
 If given the option -v, graphcompare will create an svg file containing a venn diagram. In this image, you will be able to see a comparison of the counts of nodes and relationships in each input DOT file, and those nodes/relationships common to more than one file. The colors will be chosen using  one of the profiles in data/colors.txt. By default, the color palette is set to be "SOFT". To change it, use the option -c (see options below).
