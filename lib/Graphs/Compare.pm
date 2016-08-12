@@ -714,8 +714,8 @@ sub make_degree_plot {
 
 
     my $R_code = <<"RCODE";
-    if (!require(ggplot2)) { write("\n# [FATAL ERROR]\n ggplot2 not installed.\n", stderr()); stop(); }
-    if (!require(GGally)) { write("\n# [FATAL ERROR]\n GGally not installed.\n", stderr()); stop(); }
+    library(ggplot2);
+    library(GGally);
 
     setwd("$path");
     dat <- read.table(file="$file", sep="\t", header=T);
