@@ -228,6 +228,11 @@ No support for compass ports.
 
 =item Color::Spectrum::Multi (if comparing more than 5 files)
 
+=item Statistics::R (if option -p)
+
+=item R modules: ggplot2, GGally (if option -p)
+
+
 =back
 
 
