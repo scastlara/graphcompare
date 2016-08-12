@@ -714,8 +714,8 @@ sub make_degree_plot {
 
 
     my $R_code = <<"RCODE";
-    library(ggplot2);
-    library(GGally);
+    if (!require(ggplot2)) {stop("ERROR ggplot2")}
+    if (!require(GGally)) {stop("ERROR GGally")}
 
     setwd("$path");
     dat <- read.table(file="$file", sep="\t", header=T);
@@ -755,7 +755,11 @@ RCODE
     my $R = Statistics::R->new();
 
     $R->startR;
-    $R->send($R_code) or error("Can't execute R code (maybe modules not installed?)", 1);
+    $R->send($R_code);
+    my $error = $R->read;
+    if ($error =~ /ERROR (ggplot2|GGally)/) {
+        error("Can't run R code (maybe $1 not installed?)", 1);
+    }
     $R->stopR();
 
     print STDERR "done\n";
@@ -772,7 +776,7 @@ sub error {
     my @lines = split /\n/, $string;
 
     my $error_msg = $fatal ? "FATAL" : "MINOR";
-    print STDERR "\n# [$error_msg ERROR]\n";
+    print STDERR "\n\n# [$error_msg ERROR]\n";
     print STDERR "# $_\n" foreach (@lines);
 
     if ($fatal) {
