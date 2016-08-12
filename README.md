@@ -201,6 +201,8 @@ These are the directories and the files inside the distribution:
 - Graph::Directed (only if using option -s)
 - AutoLoader (if comparing more than 5 files)
 - Color::Spectrum::Multi (if comparing more than 5 files)
+- R::Statistics (if option -p)
+- R modules: ggplot2, GGally (if option -p)
 
 # AUTHOR
 
