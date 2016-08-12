@@ -37,7 +37,7 @@ option.
 
 - **Venn diagram**
 
-<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="600">
+<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="500">
 
 
     If given the option -v, graphcompare will create an
@@ -67,7 +67,7 @@ option.
 
 - **Parallel Plot**
 
-<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="600">
+<img src="https://github.com/scastlara/graphcompare/blob/master/share/example.parallel.totaldegree.png" width="500">
 
 With the option -p, one can choose to create three plots comparing the in-degree, out-degree and total degree of all the nodes in each of the graphs. In order for this option to work, one would need R installed, along with the R packages: [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) and [GGally](https://cran.r-project.org/web/packages/GGally/index.html).
 
