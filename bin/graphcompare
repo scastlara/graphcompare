@@ -16,6 +16,7 @@ v0.6.2
                   -output output.dot         \
                   -table table.tbl           \
                   -venn venn.svg             \
+                  -par parallelplot          \
                   -web graph.html
 
 =head1 DESCRIPTION
