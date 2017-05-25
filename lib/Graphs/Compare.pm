@@ -12,6 +12,7 @@ use Dot::Writer qw(write_dot);
 use Tabgraph::Reader qw(read_tabgraph);
 use Tabgraph::Writer qw(write_tbl);
 use Graphs::Degree qw(nodes_by_degree);
+use Graphs::Hiveplot qw(create_plots);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
 
@@ -90,6 +91,7 @@ sub compare_dots {
     }
 
     my $groups_to_colors = assign_colors($colors,$groups);
+    print STDERR Dumper($groups_to_colors), "\n";
 
     # COUNT NODES AND INTERACTIONS IN GROUPS
     count_nodeints(\%nodes, $groups, "nodes");
@@ -126,6 +128,7 @@ sub compare_dots {
         if (@files == 1) {
             error("Only 1 file. Won't draw any venn diagram\n");
         } elsif (@files <= 3) {
+            print STDERR Dumper($groups);
             print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
         } else {
             error("More than 3 files. Won't draw any venn diagram\n");
@@ -157,6 +160,24 @@ sub compare_dots {
     # NODE LIST
     if (defined $options->{"node-list"}) {
         nodelist($groups, \%nodes, $options->{"node-list"});
+    }
+
+    # HIVE PLOT
+    if (defined $options->{"Hive-plot"}) {
+        print STDERR "# Creating Hive-Plot in ", $options->{"Hive-plot"}, "...";
+        my $tmpfile = "int-list.tmp";
+        nodelist($groups, \%interactions, $tmpfile);
+        my $labels = get_hive_labels($options, $groups);
+        my $h_fmt  = ($options->{"Hive-plot"} =~ m/pdf$/) ? 1 : 0;
+        my %hive_args = (
+            "tblfile" => $tmpfile,
+            "labels"  => $labels,
+            "psflg"   => $h_fmt,
+            "outfile" => $options->{"Hive-plot"}
+        );
+        create_plots(\%hive_args);
+        #unlink $tmpfile;
+        print STDERR " done\n";
     }
 
 
@@ -765,6 +786,19 @@ RCODE
     print STDERR "done\n";
     unlink $file;
     return;
+}
+
+
+# HIVE PLOT
+#--------------------------------------------------------------------------------
+sub get_hive_labels {
+    my $options = shift;
+    my $groups  = shift;
+    my @labels  = ();
+    my @principal_grps = grep {not /:/} sort keys %{$groups};
+
+    @labels = ($principal_grps[0], 2, $principal_grps[1], 3, $principal_grps[2], 4);
+    return \@labels;
 }
 
 

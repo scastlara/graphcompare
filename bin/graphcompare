@@ -310,6 +310,7 @@ GetOptions (
     "node-list=s",
     "parallel=s" ,
     "ignore-case",
+    "Hive-plot=s",
     "Test"       ,
     "debug"
  );
@@ -319,8 +320,25 @@ GetOptions (
 pod2usage( -verbose => 1,
            -output  => \*STDOUT   ) if $options{help};
 
-
 my @files = split /,/, $options{input} if defined $options{input};
+
+# DEFAULT COLOR PALETTE
+if (not defined $options{colors}) {
+    $options{colors} = "SOFT";
+}
+
+# START REPORT
+my $start_time   = time();
+my $current_time = localtime();
+print STDERR "\nPROGRAM STARTED\n",
+             "\tProgram         $PROGRAM\n",
+             "\tVersion         $VERSION\n",
+             "\tUser            $USER\n",
+             "\tWorking dir     $W_DIRECTORY\n",
+             "\tColor Profile   $options{colors}\n",
+             "\tInput files     ", join("\n\t\t\t", @files), "\n\n",
+             "\tStart time      $current_time\n\n";
+#--
 
 # If no files or too many files
 if (@files == 0) {
@@ -336,6 +354,11 @@ if (@files == 0) {
           "Will generate one using Color::Spectrum\n");
 }
 
+if (@files != 3 and defined $options{"Hive-plot"}) {
+    error("graphcompare can only create a Hive plot with 3 files.", 0);
+    undef $options{"Hive-plot"};
+}
+
 # DEFAULT OUTPUT FORMAT
 if (not defined $options{fmtout}) {
     $options{fmtout} = "DOT";
@@ -343,28 +366,14 @@ if (not defined $options{fmtout}) {
     error("graphcompare can only write DOT or TBL files\n", 1);
 }
 
-# DEFAULT COLOR PALETTE
-if (not defined $options{colors}) {
-    $options{colors} = "SOFT";
-}
+
 
 
 #===============================================================================
 # MAIN
 #===============================================================================
 
-# START REPORT
-my $start_time   = time();
-my $current_time = localtime();
-print STDERR "\nPROGRAM STARTED\n",
-             "\tProgram         $PROGRAM\n",
-             "\tVersion         $VERSION\n",
-             "\tUser            $USER\n",
-             "\tWorking dir     $W_DIRECTORY\n",
-             "\tColor Profile   $options{colors}\n",
-             "\tInput files     ", join("\n\t\t\t", @files), "\n\n",
-             "\tStart time      $current_time\n\n";
-#--
+
 
 # CHECK IF VENN DIAGRAM
 if (@files > 3 and defined $options{venn}) {
