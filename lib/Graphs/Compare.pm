@@ -455,7 +455,7 @@ sub print_upsetr {
     $input_str_nodes =~ s/,$//;
     $input_str_ints =~ s/,$//;
 
-    my $R_code_nodes = <<"RCODE";
+    my $R_code = <<"RCODE";
     if (!require(grid)) {stop("ERROR grid")}
     if (!require(UpSetR)) {stop("ERROR UpSetR")}
     setwd("$path");
