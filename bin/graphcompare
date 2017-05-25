@@ -399,6 +399,10 @@ if ($options{parallel}) {
     push @out_files, $options{parallel} . ".indegree.png", $options{parallel} . ".outdegree.png", $options{parallel} . ".totaldegree.png";
 }
 
+if ($options{upsetr}) {
+    push @out_files, $options{upsetr} . "-nodes.png", $options{upsetr} . "-ints.png";
+}
+
 print STDERR "\nPROGRAM FINISHED\n",
              "\tOutput files \t", join("\n\t\t\t", @out_files), "\n\n",
              "\tEnd time \t$current_time\n\n",
