@@ -1,4 +1,5 @@
-# NAME
+<img src="https://github.com/scastlara/graphcompare/blob/master/share/logo.png" width="250">
+
 
 graphcompare - A command-line tool to compare graph files in DOT or tabular format.
 
