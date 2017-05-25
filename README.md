@@ -5,7 +5,7 @@ graphcompare - A command-line tool to compare graph files in DOT or tabular form
 
 # VERSION
 
-v0.6.2
+v0.7.0
 
 # SYNOPSIS
 
@@ -152,6 +152,11 @@ These are the directories and the files inside the distribution:
 - **-v**, **-venn** &lt;filename.svg>
 
     Creates a venn diagram with the results.
+
+
+- **-u**, **-upsetr** &lt;filename>
+
+    Creates two svg files with the UpSetR plots for Interactions and Nodes see: https://cran.rstudio.com/web/packages/UpSetR/
 
 - **-p**, **-parallel** &lt;basename>
 
