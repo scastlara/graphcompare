@@ -213,7 +213,7 @@ These are the directories and the files inside the distribution:
 - AutoLoader (if comparing more than 5 files)
 - Color::Spectrum::Multi (if comparing more than 5 files)
 - Statistics::R (if option -p)
-- R modules: ggplot2, GGally (if option -p)
+- R modules: ggplot2, GGally (if option -p), UpSetR (if option -u)
 
 # AUTHOR
 
