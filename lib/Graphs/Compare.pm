@@ -443,22 +443,29 @@ sub print_upsetr {
     my $out_file  = shift;
     my $groups    = shift;
     my $path      = $ENV{'PWD'};
-    my $input_str = "";
+    my $input_str_nodes = "";
+    my $input_str_ints = "";
     foreach my $group (keys %{$groups}) {
         my $grp_str = $group;
         $grp_str =~ s/\:/\&/g;
         print "$grp_str\n";
-        $input_str .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{nodes} . ",";
+        $input_str_nodes .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{nodes} . ",";
+        $input_str_ints .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{ints} . ",";
     }
-    $input_str =~ s/,$//;
+    $input_str_nodes =~ s/,$//;
+    $input_str_ints =~ s/,$//;
 
-    my $R_code = <<"RCODE";
+    my $R_code_nodes = <<"RCODE";
     if (!require(grid)) {stop("ERROR grid")}
     if (!require(UpSetR)) {stop("ERROR UpSetR")}
     setwd("$path");
-    expressionInput <- c($input_str)
-    png("$out_file")
-    upset(fromExpression(expressionInput), order.by = "freq")
+    expressionInput_nodes <- c($input_str_nodes)
+    png("$out_file-nodes.png")
+    upset(fromExpression(expressionInput_nodes), order.by = "freq")
+    dev.off()
+    expressionInput_ints <- c($input_str_ints)
+    png("$out_file-ints.png")
+    upset(fromExpression(expressionInput_ints), order.by = "freq")
     dev.off()
 RCODE
 
