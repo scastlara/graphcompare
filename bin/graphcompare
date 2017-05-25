@@ -6,7 +6,7 @@ graphcompare - A command-line tool to compare graph files in DOT or tabular form
 
 =head1 VERSION
 
-v0.6.2
+v0.7.0
 
 =head1 SYNOPSIS
 
@@ -159,6 +159,10 @@ input graphs are very big.
 =item B<-v>, B<-venn> <filename.svg>
 
 Creates a venn diagram with the results.
+
+=item B<-u>, B<-upsetr> <filename>
+
+Creates two svg files with the UpSetR plots for Interactions and Nodes see: https://cran.rstudio.com/web/packages/UpSetR/
 
 =item B<-p>, B<-parallel> <basename>
 
@@ -402,6 +406,10 @@ my @out_files = grep {$_} ($options{output}, $options{table}, $options{venn}, $o
 
 if ($options{parallel}) {
     push @out_files, $options{parallel} . ".indegree.png", $options{parallel} . ".outdegree.png", $options{parallel} . ".totaldegree.png";
+}
+
+if ($options{upsetr}) {
+    push @out_files, $options{upsetr} . "-nodes.png", $options{upsetr} . "-ints.png";
 }
 
 print STDERR "\nPROGRAM FINISHED\n",

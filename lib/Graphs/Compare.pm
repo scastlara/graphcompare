@@ -132,7 +132,7 @@ sub compare_dots {
             print STDERR Dumper($groups);
             print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
         } else {
-            error("More than 3 files. Won't draw any venn diagram\n");
+            error("More than 3 files. Won't draw any venn diagram. Consider plotting an UpSetR with the option -u\n");
         }
     }
 
