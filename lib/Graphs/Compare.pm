@@ -137,7 +137,6 @@ sub compare_dots {
         if (@files == 1) {
             error("Only 1 file. Won't draw any upsetR diagram\n");
         } else {
-            print "HOLAAA\n";
             print_upsetr($options->{upsetr}, $groups)
         }
     }
@@ -448,9 +447,8 @@ sub print_upsetr {
     foreach my $group (keys %{$groups}) {
         my $grp_str = $group;
         $grp_str =~ s/\:/\&/g;
-        print "$grp_str\n";
         $input_str_nodes .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{nodes} . ",";
-        $input_str_ints .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{ints} . ",";
+        $input_str_ints  .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{ints} . ",";
     }
     $input_str_nodes =~ s/,$//;
     $input_str_ints =~ s/,$//;
@@ -460,11 +458,11 @@ sub print_upsetr {
     if (!require(UpSetR)) {stop("ERROR UpSetR")}
     setwd("$path");
     expressionInput_nodes <- c($input_str_nodes)
-    png("$out_file-nodes.png")
+    svg("$out_file-nodes.svg")
     upset(fromExpression(expressionInput_nodes), order.by = "freq")
     dev.off()
     expressionInput_ints <- c($input_str_ints)
-    png("$out_file-ints.png")
+    svg("$out_file-ints.svg")
     upset(fromExpression(expressionInput_ints), order.by = "freq")
     dev.off()
 RCODE
