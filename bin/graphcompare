@@ -309,6 +309,7 @@ GetOptions (
     "stats"      ,
     "node-list=s",
     "parallel=s" ,
+    "upsetr=s"   ,
     "ignore-case",
     "Test"       ,
     "debug"

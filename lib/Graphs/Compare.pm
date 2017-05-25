@@ -14,6 +14,7 @@ use Tabgraph::Writer qw(write_tbl);
 use Graphs::Degree qw(nodes_by_degree);
 use File::Share ':all';
 use Getopt::Long qw(:config no_ignore_case);
+use Data::Dumper;
 
 
 #===============================================================================
@@ -129,6 +130,15 @@ sub compare_dots {
             print_venn($options->{venn}, $groups, \@files, $groups_to_colors);
         } else {
             error("More than 3 files. Won't draw any venn diagram\n");
+        }
+    }
+
+    if (defined $options->{upsetr}) {
+        if (@files == 1) {
+            error("Only 1 file. Won't draw any upsetR diagram\n");
+        } else {
+            print "HOLAAA\n";
+            print_upsetr($options->{upsetr}, $groups)
         }
     }
 
@@ -425,6 +435,46 @@ sub print_venn {
     parse_svg($out, $venn_template, $grp_to_alias, $alias_to_grp, $groups, $grp_to_colors);
     return;
 }
+
+# UPSETR OUTPUT
+#--------------------------------------------------------------------------------
+sub print_upsetr {
+    require Statistics::R;
+    my $out_file  = shift;
+    my $groups    = shift;
+    my $path      = $ENV{'PWD'};
+    my $input_str = "";
+    foreach my $group (keys %{$groups}) {
+        my $grp_str = $group;
+        $grp_str =~ s/\:/\&/g;
+        print "$grp_str\n";
+        $input_str .= "'" . $grp_str . "'" . "=" . $groups->{$group}->{nodes} . ",";
+    }
+    $input_str =~ s/,$//;
+
+    my $R_code = <<"RCODE";
+    if (!require(grid)) {stop("ERROR grid")}
+    if (!require(UpSetR)) {stop("ERROR UpSetR")}
+    setwd("$path");
+    expressionInput <- c($input_str)
+    png("$out_file")
+    upset(fromExpression(expressionInput), order.by = "freq")
+    dev.off()
+RCODE
+
+    my $R = Statistics::R->new();
+
+    $R->startR;
+    $R->send($R_code);
+    my $error = $R->read;
+    if ($error =~ /ERROR (grid|UpSetR)/) {
+        error("Can't run R code (maybe $1 not installed?)", 1);
+    }
+    $R->stopR();
+
+    return
+}
+
 
 #--------------------------------------------------------------------------------
 sub assign_aliases {
