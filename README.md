@@ -67,6 +67,11 @@ With the option -w, one can create a webpage
 
 With the option -p, one can choose to create three plots comparing the in-degree, out-degree and total degree of all the nodes in each of the graphs. In order for this option to work, one would need R installed, along with the R packages: [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) and [GGally](https://cran.r-project.org/web/packages/GGally/index.html).
 
+### UpSetR
+<img src="https://github.com/scastlara/graphcompare/blob/master/share/example-upsetr.svg" width="500">
+
+With the option -u, one can create an UpSetR plot for the nodes and the interactions. This option requires Statistics::R, and the R package: [UpSetR](https://cran.r-project.org/web/packages/UpSetR/index.html).
+
 
 # INSTALLATION
 
