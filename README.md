@@ -5,7 +5,7 @@ graphcompare - A command-line tool to compare graph files in DOT or tabular form
 
 # VERSION
 
-v0.7.0
+v0.1.1
 
 # SYNOPSIS
 
