@@ -409,7 +409,7 @@ if ($options{parallel}) {
 }
 
 if ($options{upsetr}) {
-    push @out_files, $options{upsetr} . "-nodes.png", $options{upsetr} . "-ints.png";
+    push @out_files, $options{upsetr} . "-nodes.svg", $options{upsetr} . "-ints.svg";
 }
 
 print STDERR "\nPROGRAM FINISHED\n",
