@@ -140,7 +140,7 @@ sub compare_dots {
         if (@files == 1) {
             error("Only 1 file. Won't draw any upsetR diagram\n");
         } else {
-            print_upsetr($options->{upsetr}, $groups)
+            print_upsetr($options->{upsetr}, $groups, length(@files))
         }
     }
 
@@ -462,6 +462,7 @@ sub print_upsetr {
     require Statistics::R;
     my $out_file  = shift;
     my $groups    = shift;
+    my $nsets     = shift;
     my $path      = $ENV{'PWD'};
     my $input_str_nodes = "";
     my $input_str_ints = "";
@@ -481,7 +482,7 @@ sub print_upsetr {
     setwd("$path");
     expressionInput_nodes <- c($input_str_nodes)
     svg("$out_file-nodes.svg")
-    upset(fromExpression(expressionInput_nodes), order.by = "freq")
+    upset(fromExpression(expressionInput_nodes), order.by = "freq", nsets=$nsets)
     dev.off()
     expressionInput_ints <- c($input_str_ints)
     svg("$out_file-ints.svg")
