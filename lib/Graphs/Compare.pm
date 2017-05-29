@@ -92,7 +92,6 @@ sub compare_dots {
     }
 
     my $groups_to_colors = assign_colors($colors,$groups);
-    print STDERR Dumper($groups_to_colors), "\n";
 
     # COUNT NODES AND INTERACTIONS IN GROUPS
     count_nodeints(\%nodes, $groups, "nodes");
@@ -137,6 +136,7 @@ sub compare_dots {
     }
 
     if (defined $options->{upsetr}) {
+        print STDERR "\n# CREATING UPSETR PLOTS:\n\n";
         if (@files == 1) {
             error("Only 1 file. Won't draw any upsetR diagram\n");
         } else {
@@ -473,6 +473,7 @@ sub print_upsetr {
     }
     $input_str_nodes =~ s/,$//;
     $input_str_ints =~ s/,$//;
+    print "$input_str_nodes\n";
 
     my $R_code = <<"RCODE";
     if (!require(grid)) {stop("ERROR grid")}
