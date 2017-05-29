@@ -473,7 +473,7 @@ sub print_upsetr {
     }
     $input_str_nodes =~ s/,$//;
     $input_str_ints =~ s/,$//;
-    print "$input_str_nodes\n";
+    print STDERR "$input_str_nodes\n";
 
     my $R_code = <<"RCODE";
     if (!require(grid)) {stop("ERROR grid")}
