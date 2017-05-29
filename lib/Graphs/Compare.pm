@@ -136,11 +136,11 @@ sub compare_dots {
     }
 
     if (defined $options->{upsetr}) {
-        print STDERR "\n# CREATING UPSETR PLOTS:\n\n";
+        print STDERR "\n# Creating UpSetR plots...\n\n";
         if (@files == 1) {
             error("Only 1 file. Won't draw any upsetR diagram\n");
         } else {
-            print_upsetr($options->{upsetr}, $groups, length(@files))
+            print_upsetr($options->{upsetr}, $groups, scalar(@files))
         }
     }
 
@@ -474,7 +474,6 @@ sub print_upsetr {
     }
     $input_str_nodes =~ s/,$//;
     $input_str_ints =~ s/,$//;
-    print STDERR "$input_str_nodes\n";
 
     my $R_code = <<"RCODE";
     if (!require(grid)) {stop("ERROR grid")}
@@ -482,11 +481,11 @@ sub print_upsetr {
     setwd("$path");
     expressionInput_nodes <- c($input_str_nodes)
     svg("$out_file-nodes.svg")
-    upset(fromExpression(expressionInput_nodes), order.by = "freq", nsets=$nsets)
+    upset(fromExpression(expressionInput_nodes), order.by = "freq", empty.intersections="on", nsets=$nsets)
     dev.off()
     expressionInput_ints <- c($input_str_ints)
     svg("$out_file-ints.svg")
-    upset(fromExpression(expressionInput_ints), order.by = "freq")
+    upset(fromExpression(expressionInput_ints), order.by = "freq", empty.intersections="on", nsets=$nsets)
     dev.off()
 RCODE
 
