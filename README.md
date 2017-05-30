@@ -221,7 +221,7 @@ Sergio Castillo Lara - s.cast.lara@gmail.com
 
 ## Reporting Bugs
 
-Report Bugs at _https://github.com/scastlara/graphcompare/issues_ (still private)
+Report Bugs at _https://github.com/scastlara/graphcompare/issues_ 
 
 # COPYRIGHT
 
